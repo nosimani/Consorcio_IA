@@ -1,6 +1,4 @@
 import streamlit as st
-import sqlite3
-import datetime
 import pandas as pd
 
 # Configuración inicial estética
@@ -9,26 +7,12 @@ st.set_page_config(page_title="ConsorcioAI Enterprise Dash", page_icon="🤖", l
 st.title("🏢 ConsorcioAI Core - Panel de Control del Enjambre")
 st.markdown("Bienvenido al sistema de automatización de Propiedad Horizontal basado en agentes de IA.")
 
-# --- BASE DE DATOS LOCAL ---
-DB_NAME = "consorcio_ai_demo.db"
-def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS copropietarios 
-            (unidad TEXT PRIMARY KEY, propietario TEXT, telefono TEXT, porcentual REAL)''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS tickets 
-            (id INTEGER PRIMARY KEY, fecha TEXT, unidad TEXT, categoria TEXT, dictamen TEXT, impacto REAL)''')
-        
-        cursor.execute("SELECT COUNT(*) FROM copropietarios")
-        if cursor.fetchone() == 0:
-            cursor.executemany("INSERT INTO copropietarios VALUES (?,?,?,?)", [
-                ("1° A", "Juan Pérez", "+5491144445555", 0.085),
-                ("4° B", "María Rodriguez", "+5491155556666", 0.120),
-                ("7° C", "Carlos Gómez", "+5491166667777", 0.075)
-            ])
-        conn.commit()
-
-init_db()
+# --- DATOS MATRICIALES FIJOS (EVITA ERRORES DE TRADUCCIÓN O SQL) ---
+datos_consorcio = {
+    "1° A": {"propietario": "Juan Pérez", "telefono": "+5491144445555", "porcentual": 0.085},
+    "4° B": {"propietario": "María Rodriguez", "telefono": "+5491155556666", "porcentual": 0.120},
+    "7° C": {"propietario": "Carlos Gómez", "telefono": "+5491166667777", "porcentual": 0.075}
+}
 
 # --- DISEÑO DE LA INTERFAZ CON SOLAPAS (TABS) ---
 tab_ingreso, tab_front, tab_legal, tab_proveedores, tab_contable = st.tabs([
@@ -50,25 +34,17 @@ with tab_ingreso:
     
     botón_procesar = st.button("🚀 Disparar Flujo del Enjambre")
 
-# --- PROCESAMIENTO HEURÍSTICO PARA LA DEMO ---
+# --- PROCESAMIENTO INTERNO ---
 es_plomeria = any(w in mensaje_vecino.lower() for w in ["agua", "caño", "filtracion", "baño", "cocina"])
 categoria_detectada = "Mantenimiento_Plomería" if es_plomeria else "Administrativo"
 dictamen_legal = "Gasto Consorcial Común (Art. 2041 CCyCN)" if es_plomeria else "Trámite Particular (Art. 2043 CCyCN)"
 costo_total = 48000.00 if es_plomeria else 0.0
 
-with sqlite3.connect(DB_NAME) as conn:
-    cursor = conn.cursor()
-    cursor.execute("SELECT unidad, propietario, telefono, porcentual FROM copropietarios WHERE unidad = ?", (unidad_seleccionada,))
-    vecino_data = cursor.fetchone()
-    
-    cursor.execute("SELECT unidad, propietario, porcentual FROM copropietarios")
-    todos_los_vecinos = cursor.fetchall()
-
-# Mapeo numérico seguro de posiciones en la tupla SQL de vecino_data:
-# 0: unidad, 1: propietario, 2: telefono, 3: porcentual
-propietario_nombre = vecino_data[1]
-propietario_telefono = vecino_data[2]
-porcentual_valor = vecino_data[3]
+# Extracción segura de datos
+vecino = datos_consorcio[unidad_seleccionada]
+propietario_nombre = vecino["propietario"]
+propietario_telefono = vecino["telefono"]
+porcentual_valor = vecino["porcentual"]
 
 impacto_individual = costo_total * porcentual_valor
 
@@ -130,10 +106,10 @@ with tab_contable:
         st.markdown("Visualización del impacto del gasto distribuido entre todas las unidades:")
         
         data_grafico = []
-        for v in todos_los_vecinos:
+        for uni, v in datos_consorcio.items():
             data_grafico.append({
-                "Unidad/Vecino": f"{v[0]} - {v[1]}",
-                "Impacto ARS ($)": costo_total * v[2]
+                "Unidad/Vecino": f"{uni} - {v['propietario']}",
+                "Impacto ARS ($)": costo_total * v['porcentual']
             })
         df = pd.DataFrame(data_grafico)
         
