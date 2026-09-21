@@ -68,7 +68,7 @@ with sqlite3.connect(DB_NAME) as conn:
     cursor.execute("SELECT unidad, propietario, porcentual FROM copropietarios")
     todos_los_vecinos = cursor.fetchall()
 
-impacto_individual = costo_total * vecino_data["porcentual"]
+impacto_individual = costo_total * vecino_data[3]
 
 if botón_procesar:
     st.success(f"¡Flujo activado para la unidad {unidad_seleccionada}! Navegue por las solapas de arriba para ver el trabajo de cada agente.")
