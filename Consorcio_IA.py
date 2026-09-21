@@ -1,5 +1,3 @@
-# Guardamos la aplicación actualizada con soporte gráfico
-
 import streamlit as st
 import sqlite3
 import datetime
@@ -59,16 +57,20 @@ dictamen_legal = "Gasto Consorcial Común (Art. 2041 CCyCN)" if es_plomeria else
 costo_total = 48000.00 if es_plomeria else 0.0
 
 with sqlite3.connect(DB_NAME) as conn:
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM copropietarios WHERE unidad = ?", (unidad_seleccionada,))
+    cursor.execute("SELECT unidad, propietario, telefono, porcentual FROM copropietarios WHERE unidad = ?", (unidad_seleccionada,))
     vecino_data = cursor.fetchone()
     
-    # Extraemos todos los copropietarios para armar el gráfico de distribución
     cursor.execute("SELECT unidad, propietario, porcentual FROM copropietarios")
     todos_los_vecinos = cursor.fetchall()
 
-impacto_individual = costo_total * vecino_data[3]
+# Mapeo numérico seguro de posiciones en la tupla SQL de vecino_data:
+# 0: unidad, 1: propietario, 2: telefono, 3: porcentual
+propietario_nombre = vecino_data[1]
+propietario_telefono = vecino_data[2]
+porcentual_valor = vecino_data[3]
+
+impacto_individual = costo_total * porcentual_valor
 
 if botón_procesar:
     st.success(f"¡Flujo activado para la unidad {unidad_seleccionada}! Navegue por las solapas de arriba para ver el trabajo de cada agente.")
@@ -82,8 +84,6 @@ with tab_front:
     if botón_procesar:
         st.metric(label="Categoría Semántica Detectada", value=categoria_detectada)
         st.write("✅ **Análisis de IA:** El reclamo requiere asistencia técnica urgente de gremios.")
-    else:
-        st.warning("Haga clic en 'Disparar Flujo' en la primera pestaña para ver los resultados.")
 
 # --- SOLAPA 2: LEGAL ---
 with tab_legal:
@@ -94,11 +94,9 @@ with tab_legal:
         st.info(f"📜 **Dictamen Emitido:** {dictamen_legal}")
         st.markdown(f"""
         **Fundamentación Jurídica:**
-        Se analiza la unidad **{unidad_seleccionada}** bajo la titularidad de *{vecino_data['propietario']}*.
+        Se analiza la unidad **{unidad_seleccionada}** bajo la titularidad de *{propietario_nombre}*.
         Al tratarse de una anomalía en un caño estructural/interno, la responsabilidad recae sobre el consorcio según las normativas vigentes de Propiedad Horizontal en Argentina (Art. 2041).
         """)
-    else:
-        st.warning("Haga clic en 'Disparar Flujo' en la primera pestaña.")
 
 # --- SOLAPA 3: PROVEEDORES ---
 with tab_proveedores:
@@ -116,8 +114,6 @@ with tab_proveedores:
             })
         else:
             st.write("No se requiere contratación de gremios de emergencia para este tipo de trámite.")
-    else:
-        st.warning("Haga clic en 'Disparar Flujo' en la primera pestaña.")
 
 # --- SOLAPA 4: CONTABLE ---
 with tab_contable:
@@ -127,30 +123,24 @@ with tab_contable:
     if botón_procesar:
         col1, col2, col3 = st.columns(3)
         col1.metric("Costo Total Arreglo", f"${costo_total:,.2f}")
-        col2.metric(f"Porcentual ({unidad_seleccionada})", f"{vecino_data['porcentual']*100}%")
+        col2.metric(f"Porcentual ({unidad_seleccionada})", f"{porcentual_valor * 100}%")
         col3.metric("Impacto en su Expensa", f"${impacto_individual:,.2f}")
         
-        # --- SECCIÓN DEL GRÁFICO VISUAL ---
         st.write("### 📊 Prorrateo General del Edificio")
         st.markdown("Visualización del impacto del gasto distribuido entre todas las unidades:")
         
-        # Construimos un DataFrame de Pandas con el cálculo de cada vecino
         data_grafico = []
         for v in todos_los_vecinos:
             data_grafico.append({
-                "Unidad/Vecino": f"{v['unidad']} - {v['propietario']}",
-                "Impacto ARS ($)": costo_total * v['porcentual']
+                "Unidad/Vecino": f"{v[0]} - {v[1]}",
+                "Impacto ARS ($)": costo_total * v[2]
             })
         df = pd.DataFrame(data_grafico)
         
-        # Renderizamos el gráfico de barras interactivo
         st.bar_chart(data=df, x="Unidad/Vecino", y="Impacto ARS ($)", use_container_width=True)
         
-        # Alerta de WhatsApp Simulada
-        st.success(f"📲 **Simulación de WhatsApp enviada a {vecino_data['propietario']} ({vecino_data['telefono']}):**")
+        st.success(f"📲 **Simulación de WhatsApp enviada a {propietario_nombre} ({propietario_telefono}):**")
         st.chat_message("assistant").write(
-            f"Estimado/a {vecino_data['propietario']}, su reclamo ha sido procesado. "
+            f"Estimado/a {propietario_nombre}, su reclamo ha sido procesado. "
             f"Dictamen: {dictamen_legal}. Impacto estimado en sus próximas expensas: ${impacto_individual:,.2f}."
         )
-    else:
-        st.warning("Haga clic en 'Disparar Flujo' en la primera pestaña.")
