@@ -1,5 +1,4 @@
 # Guardamos la aplicación actualizada con soporte gráfico
-%%writefile app.py
 
 import streamlit as st
 import sqlite3
