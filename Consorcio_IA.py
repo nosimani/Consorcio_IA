@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN PREMIUM DE LA PÁGINA
+# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL CORPORATIVO)
 # =====================================================================
 st.set_page_config(
     page_title="ConsorcioIA - Enterprise Swarm OS",
@@ -13,15 +13,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Vanguardia (High-Contrast Corporate Dark/Light Mix)
+# Inyección de CSS Avanzado para diseño ejecutivo de alto impacto
 st.markdown("""
     <style>
-        /* Fondo general ultra limpio */
+        /* Fondo general de la plataforma */
         .main {
             background-color: #F1F5F9;
         }
         
-        /* Títulos impactantes */
+        /* Tipografías institucionales */
         h1 {
             color: #0F172A;
             font-family: 'Inter', -apple-system, sans-serif;
@@ -34,7 +34,7 @@ st.markdown("""
             font-weight: 700;
         }
 
-        /* Tarjetas de Métricas Estilizadas en Vidrio (Glassmorphism) */
+        /* Tarjetas de Métricas Ejecutivas (Glassmorphism Oscuro) */
         div[data-testid="stMetric"] {
             background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
             color: white !important;
@@ -59,7 +59,7 @@ st.markdown("""
             font-size: 2rem !important;
         }
 
-        /* Solapas / Pestañas de Alto Contraste */
+        /* Menú de Navegación por Solapas Avanzadas */
         .stTabs [data-baseweb="tab-list"] {
             gap: 12px;
             background-color: #E2E8F0;
@@ -81,7 +81,7 @@ st.markdown("""
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        /* Contenedores de Logs de Agentes Avanzados */
+        /* Reportes de la Inteligencia Artificial (Logs del Enjambre) */
         .agent-card {
             background-color: #FFFFFF;
             padding: 24px;
@@ -106,7 +106,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# PERSISTENCIA DE DATOS DE SIMULACIÓN
+# CORE DE NEGOCIO Y MODELO DE DATOS DE SIMULACIÓN
 # =====================================================================
 if 'libro_diario' not in st.session_state:
     st.session_state.libro_diario = [
@@ -129,84 +129,96 @@ if 'reclamos' not in st.session_state:
     st.session_state.reclamos = []
 
 PROVEEDORES = {
-    "plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}, {"nombre": "Destapaciones Express", "tel": "1133339999"}],
-    "electricidad": [{"nombre": "Electricidad Voltio", "tel": "1177778888"}],
-    "cerrajeria": [{"nombre": "Cerrajería El Llavero", "tel": "1122228888"}]
+    "plomeria": [
+        {"nombre": "Plomería Gas-An", "tel": "1144445555", "email": "gas-an@plomeros.com"},
+        {"nombre": "Destapaciones Express", "tel": "1133339999", "email": "express@destapaciones.com"}
+    ],
+    "electricidad": [
+        {"nombre": "Electricidad Voltio", "tel": "1177778888", "email": "voltio@electricistas.com"}
+    ],
+    "cerrajeria": [
+        {"nombre": "Cerrajería El Llavero", "tel": "1122228888", "email": "contacto@elllavero.com"}
+    ]
 }
 
 # =====================================================================
-# SIDEBAR CONTROL PRINCIPAL (CON EL LOGO CORREGIDO)
+# PANEL LATERAL (SIDEBAR CON LOGO OFICIAL DE RESILIA AGENCY)
 # =====================================================================
 with st.sidebar:
+    # Integración directa del logo corporativo sin imágenes rotas
     st.image("https://imgbox.com", use_container_width=True)
     st.title("ConsorcioIA")
-    st.caption("Enterprise Administration OS")
+    st.caption("AI Swarm ERP para Administración")
     st.markdown("---")
-    st.markdown("💡 **Configuración del Sistema:**")
-    consorcio_act = st.selectbox("Consorcio Activo", ["Av. Corrientes 1234, CABA", "Calle Florida 450, CABA"])
-    st.info("CUIT: 30-11111111-9\n\nJurisdicción: CABA (Ley 941) & CCyCN Argentina")
+    st.markdown("💡 **Variables de Entorno:**")
+    consorcio_act = st.selectbox("Edificio Monitoreado", ["Av. Corrientes 1234, CABA", "Calle Florida 450, CABA"])
+    st.info("CUIT: 30-11111111-9\n\nNormativa: Ley 941 CABA & CCyCN Argentina")
 
 # =====================================================================
-# INTERFAZ PRINCIPAL
+# CUERPO PRINCIPAL / DASHBOARD CENTRAL
 # =====================================================================
-st.title("🏢 Ecosistema de Agentes Autónomos Consorciales")
-st.markdown("Plataforma de inteligencia artificial para la automatización total de la propiedad horizontal.")
+st.title("🏢 Sistema de Enjambre Multiagente Consorcial")
+st.markdown("Automatización integral de reclamos operativos, liquidación contable por coeficientes y auditoría legal.")
 
-# CONTENEDOR DE MÉTRICAS PREMIUM (EFECTO TARJETA FLOTANTE)
+# Fila superior de Indicadores de Alto Impacto
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.metric(label="Total Gastado en el Mes", value=f"${sum(x['Monto'] for x in st.session_state.libro_diario):,.2f}")
+    st.metric(label="Total Gastos del Periodo", value=f"${sum(x['Monto'] for x in st.session_state.libro_diario):,.2f}")
 with m2:
-    st.metric(label="Fondo de Reserva Operativo", value="$450,000.00")
+    st.metric(label="Fondo de Reserva Consorcial", value="$450,000.00")
 with m3:
     uf_morosas = sum(1 for u in st.session_state.unidades.values() if u['saldo'] > 0)
-    st.metric(label="Unidades en Estado de Mora", value=str(uf_morosas))
+    st.metric(label="UFs en Estado de Mora", value=str(uf_morosas))
 with m4:
-    st.metric(label="Incidentes de IA Activos", value=str(len(st.session_state.reclamos)))
+    st.metric(label="Órdenes de Trabajo Activas", value=str(len(st.session_state.reclamos)))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# SOLAPAS REESTILIZADAS
+# Estructura de Navegación por Solapas
 tab_atencion, tab_contable, tab_operaciones = st.tabs([
     "💬 Centro de Atención Omnicanal", 
     "📊 Prorrateo, Finanzas y Libro Diario", 
     "🔧 Logística Operativa y Proveedores"
 ])
 
-# --- SOLAPA 1: ATENCIÓN ---
+# ---------------------------------------------------------------------
+# SOLAPA 1: CENTRO DE ATENCIÓN OMNICANAL (RECLAMOS)
+# ---------------------------------------------------------------------
 with tab_atencion:
-    st.subheader("📥 Recepción de Mensajes e Interacciones")
+    st.subheader("📥 Recepción Automatizada de Mensajes")
+    st.write("Simulá la entrada de un requerimiento para verificar el ruteo inteligente del enjambre.")
+    
     col_input, col_output = st.columns([1, 1.2])
     
     with col_input:
-        st.markdown("### Simular Mensaje Entrante")
+        st.markdown("### Consola de Entrada")
         uf_sel = st.selectbox("Unidad Funcional Emisora", list(st.session_state.unidades.keys()))
-        canal_sel = st.radio("Canal de Comunicación", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-        mensaje_custom = st.text_area("Mensaje del Propietario:", value="Tengo una filtración en el baño, pierde un caño de agua.")
-        procesar = st.button("🚀 Desplegar Enjambre de Agentes", use_container_width=True)
+        canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+        
+        mensaje_sugerido = st.selectbox("Mensajes Frecuentes:", [
+            "Tengo una filtración en el baño, pierde un caño de agua.",
+            "Hola, ¿cuánto debo de expensas?",
+            "Se rompió la cerradura de la puerta de entrada al edificio.",
+            "Necesito saber si entró mi pago del mes pasado."
+        ])
+        
+        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=mensaje_sugerido)
+        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
         
     with col_output:
-        st.markdown("### ⚙️ Trazabilidad de Resoluciones (Logs en Tiempo Real)")
+        st.markdown("### ⚙️ Trazabilidad de Decisiones Automatizadas (Logs)")
         if procesar:
             msg_lower = mensaje_custom.lower()
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Atención (Front-Desk)</div>Mensaje interceptado con éxito en canal <b>{canal_sel}</b> de la UF {uf_sel}. Transfiriendo requerimiento...</div>''', unsafe_allow_html=True)
             
+            # 1. Ejecución del Agente de Front-Desk
+            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Atención (Front-Desk)</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel} ({st.session_state.unidades[uf_sel]['propietario']}). Clasificando intención...</div>''', unsafe_allow_html=True)
+            
+            # Ruteo Contable
             if "expensa" in msg_lower or "pago" in msg_lower or "debo" in msg_lower:
                 saldo = st.session_state.unidades[uf_sel]['saldo']
-                st.markdown(f'''<div class="agent-card agent-contable"><div class="agent-title">📈 Agente Contador (Finanzas)</div>Acceso a base de datos contable verificado. La UF posee un saldo de: ${abs(saldo):,.2f}. Generando respuesta automática.</div>''', unsafe_allow_html=True)
-                st.success(f"Enviado al Propietario: Hola, tu saldo es de ${abs(saldo):,.2f}.")
-            elif any(w in msg_lower for w in ["pierde", "caño", "luz", "filtración", "agua"]):
-                st.markdown('''<div class="agent-card agent-operativo"><div class="agent-title">🔧 Agente Operativo (Mantenimiento)</div>Incidencia técnica de urgencia tipificada. Solicitando cotizaciones a la cartilla de proveedores autorizados...</div>''', unsafe_allow_html=True)
-                st.markdown('''<div class="agent-card agent-legal"><div class="agent-title">⚖️ Agente Legal (Auditoría)</div>Presupuesto analizado bajo el artículo 2046 del CCyCN. Gasto aprobado dentro de la caja chica del periodo corriente.</div>''', unsafe_allow_html=True)
-                st.success("Orden de trabajo emitida al proveedor prioritario. Notificación enviada al propietario.")
-
-# --- SOLAPA 2: CONTABILIDAD ---
-with tab_contable:
-    st.subheader("📊 Auditoría de Libro Diario y Conciliaciones Contables")
-    st.dataframe(pd.DataFrame(st.session_state.libro_diario), use_container_width=True, hide_index=True)
-    if st.button("🧾 Ejecutar Cierre Mensual y Liquidar Expensas", type="primary", use_container_width=True):
-        st.balloons()
-        st.success("¡Liquidación masiva completada! Las expensas fueron prorrateadas según los coeficientes legales y guardadas en la base de datos.")
-
-# --- SOLAPA 3: OPERACIONES ---
+                estado = "Deudor" if saldo > 0 else ("Al día" if saldo == 0 else "Saldo a Favor")
+                st.markdown(f'''<div class="agent-card agent-contable"><div class="agent-title">📈 Agente Contador (Finanzas)</div>Consulta de cuenta procesada. Saldo actual de la UF: <b>${abs(saldo):,.2f}</b> ({estado}). Generando respuesta automática saliente...</div>''', unsafe_allow_html=True)
+                st.success(f"Respuesta enviada: Estimado copropietario, su saldo es de ${abs(saldo):,.2f} ({estado}).")
+            
+            # Ruteo Operativo de Mantenimiento
 
