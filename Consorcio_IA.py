@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL ELÉCTRICO Y DORADO)
+# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL METALIZADO OSCURO Y DORADO)
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
@@ -13,24 +13,24 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul eléctrico, paneles dorados y sub-solapas celestes
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
-        /* Fondo general de la plataforma: Azul Eléctrico Vibrante */
-        .main { background-color: #0052cc; }
+        /* Fondo general de la plataforma: Azul Metalizado Oscuro Profundo */
+        .main { background-color: #0b192c; }
         
-        /* Títulos e identificadores en Blanco/Celeste sobre el fondo azul eléctrico */
+        /* Títulos e identificadores sobre el fondo oscuro */
         h1 { color: #FFFFFF; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; }
-        h2, h3 { color: #60a5fa; font-family: sans-serif; font-weight: 700; }
-        .stMarkdown p { color: #f8fafc; }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
+        .stMarkdown p { color: #e2e8f0; }
 
         /* Paneles de Métricas Ejecutivas en Dorado Premium */
         div[data-testid="stMetric"] {
             background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
-            color: #0c2340 !important;
+            color: #0b192c !important;
             padding: 22px !important;
             border-radius: 16px !important;
-            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.2s;
         }
@@ -40,13 +40,13 @@ st.markdown("""
         
         /* Modificadores de color interno para el texto dentro del panel dorado */
         div[data-testid="stMetric"] label { 
-            color: #1e293b !important; 
+            color: #0f172a !important; 
             font-weight: 800 !important; 
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #0c2340 !important; 
+            color: #0b192c !important; 
             font-weight: 900 !important; 
             font-size: 1.9rem !important;
         }
@@ -64,6 +64,9 @@ st.markdown("""
         /* Tarjetas de los Agentes */
         .agent-card { background-color: #1e293b; padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 18px; color: #f1f5f9; }
         .agent-title { font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
+        
+        /* Ajuste estético para tablas y dataframes sobre el fondo oscuro */
+        .stDataFrame, .stTable { background-color: #1e293b; border-radius: 12px; padding: 5px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -158,6 +161,7 @@ with tab_operaciones:
         st.dataframe(df_all[df_all['Estado'] == 'Finalizada'], use_container_width=True, hide_index=True)
     with subtab_pendientes:
         st.info("No hay órdenes de trabajo pendientes de aprobación.")
+
 
 
 
