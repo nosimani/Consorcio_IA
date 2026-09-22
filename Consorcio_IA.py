@@ -13,10 +13,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Avanzado para fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
+# Inyección de CSS Avanzado para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
+        /* Fondo general de la plataforma: Azul Metalizado Oscuro Profundo */
         .main { background-color: #0b192c; }
+        
+        /* Títulos e identificadores sobre el fondo oscuro */
         h1 { color: #FFFFFF; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; }
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
         .stMarkdown p { color: #e2e8f0; }
@@ -31,16 +34,29 @@ st.markdown("""
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.2s;
         }
-        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 1.9rem !important; }
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Modificadores de color interno para el texto dentro del panel dorado */
+        div[data-testid="stMetric"] label { 
+            color: #0f172a !important; 
+            font-weight: 800 !important; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
+            color: #0b192c !important; 
+            font-weight: 900 !important; 
+            font-size: 1.9rem !important;
+        }
 
         /* Solapas Principales */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 700; color: #94a3b8; transition: all 0.3s; }
         .stTabs [aria-selected="true"] { background-color: #0284c7 !important; color: #FFFFFF !important; }
 
-        /* Solapas Celestes Secundarias */
+        /* Solapas Celestes Secundarias para Órdenes de Trabajo */
         .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; }
         .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
         .celeste-tabs [aria-selected="true"] { background-color: #38bdf8 !important; color: #0f172a !important; font-weight: 800 !important; }
@@ -48,36 +64,60 @@ st.markdown("""
         /* Tarjetas de los Agentes */
         .agent-card { background-color: #1e293b; padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 18px; color: #f1f5f9; }
         .agent-title { font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
+        
+        /* Ajuste estético para tablas y dataframes sobre el fondo oscuro */
         .stDataFrame, .stTable { background-color: #1e293b; border-radius: 12px; padding: 5px; }
     </style>
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL CENTRALIZADA (CONTROL DE CONTEXTO REPOSITORIO)
+# BASE DE DATOS GLOBAL DE EDIFICIOS (ESTRUCTURADA SIN BUCLES PROPENSOS A ERROR)
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
-    lista_ufs = ["1A", "3J", "4K", "5M", "6P"]
     st.session_state.data_consorcios = {
-        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "gasto_base": 295000.0, "mora_uf": ["5M"]},
-        "Larrea 435, CABA": {"reserva": 380000.0, "gasto_base": 115000.0, "mora_uf": ["3J", "6P"]},
-        "Montevideo 891, CABA": {"reserva": 620000.0, "gasto_base": 117000.0, "mora_uf": ["4K", "6P"]},
-        "San Jose 1111, CABA": {"reserva": 290000.0, "gasto_base": 59000.0, "mora_uf": ["5M"]},
-        "Guayaquil 399, CABA": {"reserva": 850000.0, "gasto_base": 515000.0, "mora_uf": ["4K"]}
+        "Av. Corrientes 1234, CABA": {
+            "reserva": 450000.0,
+            "libro_diario": [{"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Ordinario"}],
+            "unidades": ["1A", "3J", "4K", "5M", "6P"],
+            "saldos": {"1A": 1500.0, "3J": 0.0, "4K": -500.0, "5M": 12000.0, "6P": 0.0}
+        },
+        "Larrea 435, CABA": {
+            "reserva": 380000.0,
+            "libro_diario": [{"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Ordinario"}],
+            "unidades": ["1A", "3J", "4K", "5M", "6P"],
+            "saldos": {"1A": 0.0, "3J": 8500.0, "4K": 0.0, "5M": -1200.0, "6P": 4300.0}
+        },
+        "Montevideo 891, CABA": {
+            "reserva": 620000.0,
+            "libro_diario": [{"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Ordinario"}],
+            "unidades": ["1A", "3J", "4K", "5M", "6P"],
+            "saldos": {"1A": -300.0, "3J": 0.0, "4K": 15000.0, "5M": 0.0, "6P": 9100.0}
+        },
+        "San Jose 1111, CABA": {
+            "reserva": 290000.0,
+            "libro_diario": [{"Fecha": "2026-09-03", "Concepto": "Service Técnico Bombas de Agua", "Monto": 41000.0, "Tipo": "Ordinario"}],
+            "unidades": ["1A", "3J", "4K", "5M", "6P"],
+            "saldos": {"1A": 0.0, "3J": 0.0, "4K": -2500.0, "5M": 34000.0, "6P": 0.0}
+        },
+        "Guayaquil 399, CABA": {
+            "reserva": 850000.0,
+            "libro_diario": [{"Fecha": "2026-09-01", "Concepto": "Abono Servicio Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Ordinario"}],
+            "unidades": ["1A", "3J", "4K", "5M", "6P"],
+            "saldos": {"1A": -50000.0, "3J": 0.0, "4K": 12000.0, "5M": 0.0, "6P": 0.0}
+        }
     }
-    
-    for nombre, datos in st.session_state.data_consorcios.items():
-        datos["unidades"] = {uf: {"propietario": f"Propietario {uf}", "porcentaje": 0.20, "saldo": 12000.0 if uf in datos["mora_uf"] else 0.0} for uf in lista_ufs}
-        datos["libro_diario"] = [{"Fecha": "2026-09-10", "Concepto": "Gastos Centrales Generales", "Monto": datos["gasto_base"], "Tipo": "Ordinario"}]
 
+# Repositorio Histórico de Órdenes de Trabajo
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura de entrada", "Estado": "Trabajos en Proceso"},
         {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"},
+        {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Plomería", "Detalle": "Pintura de cochera común", "Estado": "Trabajos en Proceso"}
     ]
 
-# INTEGRACIÓN DE LA TABLA DE EXCEL EXPRESA DEL USUARIO
+# CARTILLA CON LOS DATOS DE TU EXCEL EXACTOS
 CARTILLA_PROVEEDORES = {
     "Cerrajería": [
         "Seleccione un prestador...",
@@ -129,6 +169,7 @@ with st.sidebar:
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
+# Extracción de datos correspondientes al edificio seleccionado en tiempo real
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 unidades_actuales = consorcio_actual["unidades"]
 libro_diario_actual = consorcio_actual["libro_diario"]
@@ -140,36 +181,7 @@ if pantalla_activa == "🏠 Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
     st.markdown(f"Monitoreo activo sobre el consorcio: **{edificio_seleccionado}**")
 
+    # CUATRO INDICADORES DORADOS PREMIUM
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        total_gastos = sum(x['Monto'] for x in libro_diario_actual)
-        st.metric(label="Total gastos del periodo", value=f"${total_gastos:,.2f}")
-    with m2:
-        st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3:
-        uf_mora = sum(1 for u in unidades_actuales.values() if u['saldo'] > 0)
-        st.metric(label="UF en Mora", value=str(uf_mora))
-    with m4:
-        ot_edificio = sum(1 for o in st.session_state.ordenes_globales if o["Edificio"] == edificio_seleccionado)
-        st.metric(label="Ordenes de trabajo", value=str(ot_edificio))
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    tab_atencion, tab_contable, tab_prov = st.tabs([
-        "💬 Centro de Atención Multicanal", 
-        "📊 Prorrateo, Finanzas y Libro Diario", 
-        "📋 Cartilla de Proveedores Desplegable"
-    ])
-
-    with tab_atencion:
-        st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
-        col_input, col_output = st.columns([1, 1.2])
-        with col_input:
-            uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
-            canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
-            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-        with col_output:
-            st.markdown("### ⚙️ Trazabilidad de Decisiones")
-            if procesar:
 
