@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
+# Inyección de CSS Avanzado para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
         /* Fondo general de la plataforma: Azul Metalizado Oscuro Profundo */
@@ -71,109 +71,111 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS ESTRUCTURADA POR EDIFICIO (CON SUS RESPECTIVAS 5 UFs)
+# BASE DE DATOS ESTRUCTURADA POR EDIFICIO CON SUS RESPECTIVAS 5 UFs
 # =====================================================================
-DATA_EDIFICIOS = {
-    "Av. Corrientes 1234, CABA": {
-        "unidades": {
-            "1A": {"propietario": "Juan Pérez", "porcentaje": 0.20, "saldo": 1500.0},
-            "3J": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0},
-            "4K": {"propietario": "Carlos López", "porcentaje": 0.25, "saldo": -500.0},
-            "5M": {"propietario": "Ana Martínez", "porcentaje": 0.18, "saldo": 12000.0},
-            "6P": {"propietario": "Luis Gomez", "porcentaje": 0.22, "saldo": 0.0}
+if 'data_consorcios' not in st.session_state:
+    st.session_state.data_consorcios = {
+        "Av. Corrientes 1234, CABA": {
+            "unidades": {
+                "1A": {"propietario": "Juan Pérez", "porcentaje": 0.20, "saldo": 1500.0},
+                "3J": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0},
+                "4K": {"propietario": "Carlos López", "porcentaje": 0.25, "saldo": -500.0},
+                "5M": {"propietario": "Ana Martínez", "porcentaje": 0.18, "saldo": 12000.0},
+                "6P": {"propietario": "Luis Gomez", "porcentaje": 0.22, "saldo": 0.0}
+            },
+            "fondo_reserva": 450000.00,
+            "libro_diario": [
+                {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
+                {"Fecha": "2026-09-05", "Concepto": "Sueldo Encargado SUTERH", "Monto": 250000.0, "Tipo": "Gasto Ordinario"}
+            ],
+            "trabajos_solicitados": [
+                {"UF": "1A", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"},
+                {"UF": "4K", "Rubro": "Albañilería", "Detalle": "Desprendimiento de revoque en patio común", "Fecha": "2026-09-22"}
+            ],
+            "trabajos_en_proceso": [
+                {"UF": "3J", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso generales", "Proveedor": "Plomería Gas-An"}
+            ],
+            "trabajos_pendientes": [
+                {"UF": "5M", "Rubro": "Electricidad", "Detalle": "Colocación de luminarias LED exteriores", "Motivo": "Espera de materiales"}
+            ]
         },
-        "fondo_reserva": 450000.00,
-        "libro_diario": [
-            {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
-            {"Fecha": "2026-09-05", "Concepto": "Sueldo Encargado SUTERH", "Monto": 250000.0, "Tipo": "Gasto Ordinario"}
-        ],
-        "trabajos_solicitados": [{"UF": "1A", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"}],
-        "trabajos_en_proceso": [{"UF": "3J", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso", "Proveedor": "Plomería Gas-An"}],
-        "trabajos_pendientes": [{"UF": "4K", "Rubro": "Albañilería", "Detalle": "Revoque de patio interno", "Motivo": "Falta de materiales"}]
-    },
-    "Larrea 435, CABA": {
-        "unidades": {
-            "1A": {"propietario": "Sofía Rossi", "porcentaje": 0.20, "saldo": 0.0},
-            "3J": {"propietario": "Jorge Blanco", "porcentaje": 0.15, "saldo": 8500.0},
-            "4K": {"propietario": "Andrés Fernández", "porcentaje": 0.25, "saldo": 0.0},
-            "5M": {"propietario": "Clara Benítez", "porcentaje": 0.18, "saldo": -1200.0},
-            "6P": {"propietario": "Ricardo Darín", "porcentaje": 0.22, "saldo": 4300.0}
+        "Larrea 435, CABA": {
+            "unidades": {
+                "1A": {"propietario": "Sofía Rossi", "porcentaje": 0.20, "saldo": 0.0},
+                "3J": {"propietario": "Jorge Blanco", "porcentaje": 0.15, "saldo": 8500.0},
+                "4K": {"propietario": "Andrés Fernández", "porcentaje": 0.25, "saldo": 0.0},
+                "5M": {"propietario": "Clara Benítez", "porcentaje": 0.18, "saldo": -1200.0},
+                "6P": {"propietario": "Ricardo Darín", "porcentaje": 0.22, "saldo": 4300.0}
+            },
+            "fondo_reserva": 380000.00,
+            "libro_diario": [
+                {"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Gasto Ordinario"},
+                {"Fecha": "2026-09-08", "Concepto": "Destapación de Columna Cloacal", "Monto": 35000.0, "Tipo": "Gasto Ordinario"}
+            ],
+            "trabajos_solicitados": [
+                {"UF": "3J", "Rubro": "Electricidad", "Detalle": "Falla de fase en disyuntor general", "Fecha": "2026-09-22"}
+            ],
+            "trabajos_en_proceso": [
+                {"UF": "1A", "Rubro": "Albañilería", "Detalle": "Reparación de grieta estructural palier", "Proveedor": "Construcciones R&M"}
+            ],
+            "trabajos_pendientes": [
+                {"UF": "6P", "Rubro": "Plomería", "Detalle": "Revisión de colector pluvial de azotea", "Motivo": "Presupuesto elevado"}
+            ]
         },
-        "fondo_reserva": 380000.00,
-        "libro_diario": [
-            {"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Gasto Ordinario"},
-            {"Fecha": "2026-09-08", "Concepto": "Destapación de Columna Cloacal", "Monto": 35000.0, "Tipo": "Gasto Ordinario"}
-        ],
-        "trabajos_solicitados": [{"UF": "3J", "Rubro": "Electricidad", "Detalle": "Luz parpadeante en palier", "Fecha": "2026-09-22"}],
-        "trabajos_en_proceso": [],
-        "trabajos_pendientes": [{"UF": "6P", "Rubro": "Albañilería", "Detalle": "Arreglo de grieta en cochera", "Motivo": "Presupuesto elevado"}]
-    },
-    "Montevideo 891, CABA": {
-        "unidades": {
-            "1A": {"propietario": "Esteban Quito", "porcentaje": 0.15, "saldo": -300.0},
-            "3J": {"propietario": "Mónica Ferrari", "porcentaje": 0.25, "saldo": 0.0},
-            "4K": {"propietario": "Pedro Picapiedra", "porcentaje": 0.20, "saldo": 15000.0},
-            "5M": {"propietario": "Gisela Valenzuela", "porcentaje": 0.15, "saldo": 0.0},
-            "6P": {"propietario": "Roberto Gómez", "porcentaje": 0.25, "saldo": 9100.0}
+        "Montevideo 891, CABA": {
+            "unidades": {
+                "1A": {"propietario": "Esteban Quito", "porcentaje": 0.15, "saldo": -300.0},
+                "3J": {"propietario": "Mónica Ferrari", "porcentaje": 0.25, "saldo": 0.0},
+                "4K": {"propietario": "Pedro Picapiedra", "porcentaje": 0.20, "saldo": 15000.0},
+                "5M": {"propietario": "Gisela Valenzuela", "porcentaje": 0.15, "saldo": 0.0},
+                "6P": {"propietario": "Roberto Gómez", "porcentaje": 0.25, "saldo": 9100.0}
+            },
+            "fondo_reserva": 620000.00,
+            "libro_diario": [
+                {"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Gasto Ordinario"}
+            ],
+            "trabajos_solicitados": [
+                {"UF": "1A", "Rubro": "Plomería", "Detalle": "Filtración leve bajo bacha cocina", "Fecha": "2026-09-21"}
+            ],
+            "trabajos_en_proceso": [
+                {"UF": "4K", "Rubro": "Albañilería", "Detalle": "Pintura completa de cochera", "Proveedor": "Pintores Asociados"}
+            ],
+            "trabajos_pendientes": []
         },
-        "fondo_reserva": 620000.00,
-        "libro_diario": [
-            {"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Gasto Ordinario"},
-            {"Fecha": "2026-09-12", "Concepto": "Seguro Integral Edificio", "Monto": 95000.0, "Tipo": "Gasto Ordinario"}
-        ],
-        "trabajos_solicitados": [],
-        "trabajos_en_proceso": [{"UF": "4K", "Rubro": "Albañilería", "Detalle": "Pintura de fachada interna", "Proveedor": "Pintores Asociados"}],
-        "trabajos_pendientes": []
-    },
-    "San Jose 1111, CABA": {
-        "unidades": {
-            "1A": {"propietario": "Facundo Cabral", "porcentaje": 0.22, "saldo": 0.0},
-            "3J": {"propietario": "Lucía Galán", "porcentaje": 0.18, "saldo": 0.0},
-            "4K": {"propietario": "Joaquín Sabina", "porcentaje": 0.20, "saldo": -2500.0},
-            "5M": {"propietario": "Charly García", "porcentaje": 0.20, "saldo": 34000.0},
-            "6P": {"propietario": "Fito Páez", "porcentaje": 0.20, "saldo": 0.0}
+        "San Jose 1111, CABA": {
+            "unidades": {
+                "1A": {"propietario": "Facundo Cabral", "porcentaje": 0.22, "saldo": 0.0},
+                "3J": {"propietario": "Lucía Galán", "porcentaje": 0.18, "saldo": 0.0},
+                "4K": {"propietario": "Joaquín Sabina", "porcentaje": 0.20, "saldo": -2500.0},
+                "5M": {"propietario": "Charly García", "porcentaje": 0.20, "saldo": 34000.0},
+                "6P": {"propietario": "Fito Páez", "porcentaje": 0.20, "saldo": 0.0}
+            },
+            "fondo_reserva": 290000.00,
+            "libro_diario": [
+                {"Fecha": "2026-09-03", "Concepto": "Service Técnico Bombas de Agua", "Monto": 41000.0, "Tipo": "Gasto Ordinario"}
+            ],
+            "trabajos_solicitados": [
+                {"UF": "5M", "Rubro": "Albañilería", "Detalle": "Fijación de baranda suelta balcón", "Fecha": "2026-09-22"}
+            ],
+            "trabajos_en_proceso": [],
+            "trabajos_pendientes": [
+                {"UF": "4K", "Rubro": "Plomería", "Detalle": "Destapación de cañería pluvial", "Motivo": "Falta de instrumental"}
+            ]
         },
-        "fondo_reserva": 290000.00,
-        "libro_diario": [
-            {"Fecha": "2026-09-03", "Concepto": "Service de Bombas de Agua", "Monto": 41000.0, "Tipo": "Gasto Ordinario"},
-            {"Fecha": "2026-09-15", "Concepto": "Recarga de Matafuegos Gral", "Monto": 18000.0, "Tipo": "Gasto Ordinario"}
-        ],
-        "trabajos_solicitados": [{"UF": "5M", "Rubro": "Plomería", "Detalle": "Pérdida en bacha de cocina", "Fecha": "2026-09-20"}],
-        "trabajos_en_proceso": [],
-        "trabajos_pendientes": []
-    },
-    "Guayaquil 399, CABA": {
-        "unidades": {
-            "1A": {"propietario": "Lionel Messi", "porcentaje": 0.30, "saldo": -50000.0},
-            "3J": {"propietario": "Ángel Di María", "porcentaje": 0.20, "saldo": 0.0},
-            "4K": {"propietario": "Rodrigo De Paul", "porcentaje": 0.15, "saldo": 1200.0},
-            "5M": {"propietario": "Emiliano Martínez", "porcentaje": 0.15, "saldo": 0.0},
-            "6P": {"propietario": "Lionel Scaloni", "porcentaje": 0.20, "saldo": 0.0}
-        },
-        "fondo_reserva": 850000.00,
-        "libro_diario": [
-            {"Fecha": "2026-09-01", "Concepto": "Abono Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Gasto Ordinario"},
-            {"Fecha": "2026-09-10", "Concepto": "Sueldo Vigilancia Privada", "Monto": 450000.0, "Tipo": "Gasto Ordinario"}
-        ],
-        "trabajos_solicitados": [],
-        "trabajos_en_proceso": [{"UF": "4K", "Rubro": "Electricidad", "Detalle": "Instalación de luminaria LED en cocheras", "Proveedor": "Electricidad Voltio"}],
-        "trabajos_pendientes": [{"UF": "3J", "Rubro": "Plomería", "Detalle": "Filtración en losa radiante", "Motivo": "Esperando cese de lluvias"}]
-    }
-}
-
-PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
-
-# =====================================================================
-# PANEL LATERAL (SIDEBAR CON LOGO INTERACTIVO Y SELECTOR DE CONSORCIO)
-# =====================================================================
-with st.sidebar:
-    st.image("https://imgbox.com", use_container_width=True)
-    st.title("Resilia_Condominios")
-    st.caption("AI Swarm ERP Administration")
-    st.markdown("---")
-    
-    # Selector Dinámico del Edificio Monitoreado
-
+        "Guayaquil 399, CABA": {
+            "unidades": {
+                "1A": {"propietario": "Lionel Messi", "porcentaje": 0.30, "saldo": -50000.0},
+                "3J": {"propietario": "Ángel Di María", "porcentaje": 0.20, "saldo": 0.0},
+                "4K": {"propietario": "Rodrigo De Paul", "porcentaje": 0.15, "saldo": 1200.0},
+                "5M": {"propietario": "Emiliano Martínez", "porcentaje": 0.15, "saldo": 0.0},
+                "6P": {"propietario": "Lionel Scaloni", "porcentaje": 0.20, "saldo": 0.0}
+            },
+            "fondo_reserva": 850000.00,
+            "libro_diario": [
+                {"Fecha": "2026-09-01", "Concepto": "Abono Servicio Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Gasto Ordinario"}
+            ],
+            "trabajos_solicitados": [],
+            "trabajos_en_proceso": [
 
 
 
