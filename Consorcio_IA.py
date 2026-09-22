@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import random
 from datetime import datetime
-import io
 
 # =====================================================================
 # CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL METALIZADO Y DORADO)
@@ -59,7 +58,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE EDIFICIOS Y URBROS DE EXCEL
+# BASE DE DATOS GLOBAL DE EDIFICIOS Y RUBROS DE EXCEL
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
     st.session_state.data_consorcios = {
@@ -140,7 +139,7 @@ CARTILLA_PROVEEDORES = {
 }
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO CON EXPORTADOR)
+# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO CON EXPORTADOR INHERENTE)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -155,19 +154,16 @@ with st.sidebar:
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
     
     st.markdown("---")
-    # BOTÓN EJECUTIVO EXPORTADOR EXCEL SOLICITADO
+    # REFACTORIZACIÓN COMPATIBLE: EXPORTADOR CSV COMPATIBLE CON EXCEL DIRECTO (SIN LIBRERÍAS EXTERNAS)
     st.markdown("📥 **Reportería y Auditoría:**")
     df_download = pd.DataFrame(st.session_state.ordenes_globales)
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        df_download.to_excel(writer, index=False, sheet_name='Ordenes_Tecnicas')
-    buffer.seek(0)
+    csv_data = df_download.to_csv(index=False).encode('utf-8')
     
     st.download_button(
         label="📊 Descargar Historial OT (Excel)",
-        data=buffer,
-        file_name=f"Resilia_Reporte_OT_{datetime.now().strftime('%Y%m%d')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        data=csv_data,
+        file_name=f"Resilia_Reporte_OT_{datetime.now().strftime('%Y%m%d')}.csv",
+        mime="text/csv",
         use_container_width=True
     )
     st.markdown("---")
@@ -182,4 +178,7 @@ libro_diario_actual = consorcio_actual["libro_diario"]
 # =====================================================================
 if pantalla_activa == "🏠 Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
+    st.markdown(f"Monitoreo activo sobre el consorcio: **{edificio_seleccionado}**")
+
+    # CUATRO INDICADORES DORADOS PREMIUM
 
