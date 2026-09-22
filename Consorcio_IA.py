@@ -13,13 +13,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Avanzado para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
+# Inyección de CSS Avanzado para fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
-        /* Fondo general de la plataforma: Azul Metalizado Oscuro Profundo */
         .main { background-color: #0b192c; }
-        
-        /* Títulos e identificadores sobre el fondo oscuro */
         h1 { color: #FFFFFF; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; }
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
         .stMarkdown p { color: #e2e8f0; }
@@ -34,29 +31,16 @@ st.markdown("""
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.2s;
         }
-        div[data-testid="stMetric"]:hover {
-            transform: translateY(-5px);
-        }
-        
-        /* Modificadores de color interno para el texto dentro del panel dorado */
-        div[data-testid="stMetric"] label { 
-            color: #0f172a !important; 
-            font-weight: 800 !important; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #0b192c !important; 
-            font-weight: 900 !important; 
-            font-size: 1.9rem !important;
-        }
+        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 1.9rem !important; }
 
         /* Solapas Principales */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 700; color: #94a3b8; transition: all 0.3s; }
         .stTabs [aria-selected="true"] { background-color: #0284c7 !important; color: #FFFFFF !important; }
 
-        /* Solapas Celestes Secundarias para Órdenes de Trabajo */
+        /* Solapas Celestes Secundarias */
         .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; }
         .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
         .celeste-tabs [aria-selected="true"] { background-color: #38bdf8 !important; color: #0f172a !important; font-weight: 800 !important; }
@@ -64,8 +48,6 @@ st.markdown("""
         /* Tarjetas de los Agentes */
         .agent-card { background-color: #1e293b; padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 18px; color: #f1f5f9; }
         .agent-title { font-size: 1.1rem; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
-        
-        /* Ajuste estético para tablas y dataframes sobre el fondo oscuro */
         .stDataFrame, .stTable { background-color: #1e293b; border-radius: 12px; padding: 5px; }
     </style>
 """, unsafe_allow_html=True)
@@ -92,22 +74,18 @@ if 'ordenes_globales' not in st.session_state:
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Albañilería", "Detalle": "Arreglo de revoques en patio", "Estado": "Trabajos en Proceso"},
         {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Plomería", "Detalle": "Revisión de colector pluvial", "Estado": "Trabajos Pendientes"},
-        {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Albañilería", "Detalle": "Pintura de cochera común", "Estado": "Trabajos en Proceso"},
-        {"Edificio": "San Jose 1111, CABA", "UF": "5M", "Tipo de Trabajo": "Albañilería", "Detalle": "Fijación de baranda de balcón", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Guayaquil 399, CABA", "UF": "4K", "Tipo de Trabajo": "Electricidad", "Detalle": "Instalación de tablero de cocheras", "Estado": "Trabajos en Proceso"},
-        {"Edificio": "Guayaquil 399, CABA", "UF": "3J", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en losa radiante", "Estado": "Trabajos Pendientes"}
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Plomería", "Detalle": "Revisión de colector pluvial", "Estado": "Trabajos Pendientes"}
     ]
 
-# Cartilla Homologada con las 3 listas solicitadas de 5 prestadores cada una
+# CARTILLA COMPLETA DE 5 PRESTADORES FICTICIOS PARA CADA UNO DE LOS 5 RUBROS SOLICITADOS
 CARTILLA_PROVEEDORES = {
     "Electricistas": [
         "Seleccione un prestador...",
         "⚡ Electricidad Voltio - Tel: 11-7777-8888 (Ing. Carlos Benítez)",
         "⚡ Serviluz Express - Tel: 11-5555-9991 (Téc. Claudio Rossi)",
         "⚡ Electro-San Telmo - Tel: 11-4444-2222 (Inst. Darío Gómez)",
-        "⚡ Destellos IA - Tel: 11-3333-7777 (Soporte de Tableros)",
-        "⚡ Lumina S.A. - Tel: 11-6666-4444 (Urgencias 24hs Consorcios)"
+        "⚡ Lumina S.A. - Tel: 11-6666-4444 (Urgencias 24hs Consorcios)",
+        "⚡ Instalaciones Alfa - Tel: 11-2222-1111 (Téc. Walter White)"
     ],
     "Plomeros": [
         "Seleccione un prestador...",
@@ -124,6 +102,30 @@ CARTILLA_PROVEEDORES = {
         "🔥 Artefactos Gas Hogar - Tel: 11-5555-4444 (Instalador Matriculado)",
         "🔥 Metrogas Certificados - Tel: 11-9999-8888 (Ing. Daniel Rossi)",
         "🔥 TermoControl Técnico - Tel: 11-3333-2222 (Calderas Centrales)"
+    ],
+    "Albañiles": [
+        "Seleccione un prestador...",
+        "🧱 Construcciones R&M - Tel: 11-3333-4444 (Mtro. Rubén Castro)",
+        "🧱 Albañilería El Progreso - Tel: 11-5555-6666 (Of. Pedro Picapiedra)",
+        "🧱 Estructuras Fuertes - Tel: 11-7777-2222 (Fachadas y Revoques)",
+        "🧱 Revestimientos CABA - Tel: 11-8888-9999 (Colocación de Cerámicos)",
+        "🧱 Soluciones en Mampostería - Tel: 11-4444-8888 (Of. Luis Herrera)"
+    ],
+    "Pintores": [
+        "Seleccione un prestador...",
+        "🎨 Pintores Asociados - Tel: 11-6666-1111 (Línea Consorcios Premium)",
+        "🎨 FlexColor Revestimientos - Tel: 11-2222-5555 (Pintura de Altura)",
+        "🎨 Pinceladas CABA - Tel: 11-4444-3333 (Of. Marcos Juárez)",
+        "🎨 TodoObra Pinturas - Tel: 11-9999-7777 (Impermeabilización de Medianeras)",
+        "🎨 ColorExpress - Tel: 11-8888-4444 (Interiores y Palieres Rápidos)"
+    ],
+    "Techistas": [
+        "Seleccione un prestador...",
+        "🏠 Techados Mar del Plata - Tel: 11-5555-2222 (Especialista en Tejas/Chapas)",
+        "🏠 Membranas e Impermeabilizaciones - Tel: 11-7777-6666 (Soluciones Filtración)",
+        "🏠 Cubiertas Protegidas - Tel: 11-3333-5555 (Ing. Néstor Kirchner)",
+        "🏠 Techistas de Guardia CABA - Tel: 11-4444-9999 (Arreglos Post-Tormenta)",
+        "🏠 Altura Confort - Tel: 11-2222-7777 (Limpieza y Zinguería de Canaletas)"
     ]
 }
 
@@ -170,13 +172,6 @@ if pantalla_activa == "🏠 Panel General por Edificio":
     st.markdown("<br>", unsafe_allow_html=True)
 
     tab_atencion, tab_contable, tab_prov = st.tabs([
-        "💬 Centro de Atención Multicanal", 
-        "📊 Prorrateo, Finanzas y Libro Diario", 
-        "📋 Cartilla de Proveedores Desplegable"
-    ])
-
-    with tab_atencion:
-        st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
 
 
 
