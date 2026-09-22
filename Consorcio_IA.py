@@ -53,7 +53,7 @@ st.markdown("""
 
         /* Solapas Principales */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 700; color: #94a3b8; }
+        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 700; color: #94a3b8; transition: all 0.3s; }
         .stTabs [aria-selected="true"] { background-color: #0284c7 !important; color: #FFFFFF !important; }
 
         /* Solapas Celestes Secundarias para Órdenes de Trabajo */
@@ -70,134 +70,110 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Instancia de datos en memoria clasificados para la demostración
-if 'libro_diario' not in st.session_state:
-    st.session_state.libro_diario = [
-        {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
-        {"Fecha": "2026-09-05", "Concepto": "Sueldo Encargado + Cargas SUTERH", "Monto": 250000.0, "Tipo": "Gasto Ordinario"}
-    ]
-
-if 'unidades' not in st.session_state:
-    st.session_state.unidades = {
-        "101": {"propietario": "Juan Pérez", "porcentaje": 0.10, "saldo": 1500.0},
-        "102": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0}
+# =====================================================================
+# BASE DE DATOS ESTRUCTURADA POR EDIFICIO (CON SUS RESPECTIVAS 5 UFs)
+# =====================================================================
+DATA_EDIFICIOS = {
+    "Av. Corrientes 1234, CABA": {
+        "unidades": {
+            "1A": {"propietario": "Juan Pérez", "porcentaje": 0.20, "saldo": 1500.0},
+            "3J": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0},
+            "4K": {"propietario": "Carlos López", "porcentaje": 0.25, "saldo": -500.0},
+            "5M": {"propietario": "Ana Martínez", "porcentaje": 0.18, "saldo": 12000.0},
+            "6P": {"propietario": "Luis Gomez", "porcentaje": 0.22, "saldo": 0.0}
+        },
+        "fondo_reserva": 450000.00,
+        "libro_diario": [
+            {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
+            {"Fecha": "2026-09-05", "Concepto": "Sueldo Encargado SUTERH", "Monto": 250000.0, "Tipo": "Gasto Ordinario"}
+        ],
+        "trabajos_solicitados": [{"UF": "1A", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"}],
+        "trabajos_en_proceso": [{"UF": "3J", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso", "Proveedor": "Plomería Gas-An"}],
+        "trabajos_pendientes": [{"UF": "4K", "Rubro": "Albañilería", "Detalle": "Revoque de patio interno", "Motivo": "Falta de materiales"}]
+    },
+    "Larrea 435, CABA": {
+        "unidades": {
+            "1A": {"propietario": "Sofía Rossi", "porcentaje": 0.20, "saldo": 0.0},
+            "3J": {"propietario": "Jorge Blanco", "porcentaje": 0.15, "saldo": 8500.0},
+            "4K": {"propietario": "Andrés Fernández", "porcentaje": 0.25, "saldo": 0.0},
+            "5M": {"propietario": "Clara Benítez", "porcentaje": 0.18, "saldo": -1200.0},
+            "6P": {"propietario": "Ricardo Darín", "porcentaje": 0.22, "saldo": 4300.0}
+        },
+        "fondo_reserva": 380000.00,
+        "libro_diario": [
+            {"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Gasto Ordinario"},
+            {"Fecha": "2026-09-08", "Concepto": "Destapación de Columna Cloacal", "Monto": 35000.0, "Tipo": "Gasto Ordinario"}
+        ],
+        "trabajos_solicitados": [{"UF": "3J", "Rubro": "Electricidad", "Detalle": "Luz parpadeante en palier", "Fecha": "2026-09-22"}],
+        "trabajos_en_proceso": [],
+        "trabajos_pendientes": [{"UF": "6P", "Rubro": "Albañilería", "Detalle": "Arreglo de grieta en cochera", "Motivo": "Presupuesto elevado"}]
+    },
+    "Montevideo 891, CABA": {
+        "unidades": {
+            "1A": {"propietario": "Esteban Quito", "porcentaje": 0.15, "saldo": -300.0},
+            "3J": {"propietario": "Mónica Ferrari", "porcentaje": 0.25, "saldo": 0.0},
+            "4K": {"propietario": "Pedro Picapiedra", "porcentaje": 0.20, "saldo": 15000.0},
+            "5M": {"propietario": "Gisela Valenzuela", "porcentaje": 0.15, "saldo": 0.0},
+            "6P": {"propietario": "Roberto Gómez", "porcentaje": 0.25, "saldo": 9100.0}
+        },
+        "fondo_reserva": 620000.00,
+        "libro_diario": [
+            {"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Gasto Ordinario"},
+            {"Fecha": "2026-09-12", "Concepto": "Seguro Integral Edificio", "Monto": 95000.0, "Tipo": "Gasto Ordinario"}
+        ],
+        "trabajos_solicitados": [],
+        "trabajos_en_proceso": [{"UF": "4K", "Rubro": "Albañilería", "Detalle": "Pintura de fachada interna", "Proveedor": "Pintores Asociados"}],
+        "trabajos_pendientes": []
+    },
+    "San Jose 1111, CABA": {
+        "unidades": {
+            "1A": {"propietario": "Facundo Cabral", "porcentaje": 0.22, "saldo": 0.0},
+            "3J": {"propietario": "Lucía Galán", "porcentaje": 0.18, "saldo": 0.0},
+            "4K": {"propietario": "Joaquín Sabina", "porcentaje": 0.20, "saldo": -2500.0},
+            "5M": {"propietario": "Charly García", "porcentaje": 0.20, "saldo": 34000.0},
+            "6P": {"propietario": "Fito Páez", "porcentaje": 0.20, "saldo": 0.0}
+        },
+        "fondo_reserva": 290000.00,
+        "libro_diario": [
+            {"Fecha": "2026-09-03", "Concepto": "Service de Bombas de Agua", "Monto": 41000.0, "Tipo": "Gasto Ordinario"},
+            {"Fecha": "2026-09-15", "Concepto": "Recarga de Matafuegos Gral", "Monto": 18000.0, "Tipo": "Gasto Ordinario"}
+        ],
+        "trabajos_solicitados": [{"UF": "5M", "Rubro": "Plomería", "Detalle": "Pérdida en bacha de cocina", "Fecha": "2026-09-20"}],
+        "trabajos_en_proceso": [],
+        "trabajos_pendientes": []
+    },
+    "Guayaquil 399, CABA": {
+        "unidades": {
+            "1A": {"propietario": "Lionel Messi", "porcentaje": 0.30, "saldo": -50000.0},
+            "3J": {"propietario": "Ángel Di María", "porcentaje": 0.20, "saldo": 0.0},
+            "4K": {"propietario": "Rodrigo De Paul", "porcentaje": 0.15, "saldo": 1200.0},
+            "5M": {"propietario": "Emiliano Martínez", "porcentaje": 0.15, "saldo": 0.0},
+            "6P": {"propietario": "Lionel Scaloni", "porcentaje": 0.20, "saldo": 0.0}
+        },
+        "fondo_reserva": 850000.00,
+        "libro_diario": [
+            {"Fecha": "2026-09-01", "Concepto": "Abono Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Gasto Ordinario"},
+            {"Fecha": "2026-09-10", "Concepto": "Sueldo Vigilancia Privada", "Monto": 450000.0, "Tipo": "Gasto Ordinario"}
+        ],
+        "trabajos_solicitados": [],
+        "trabajos_en_proceso": [{"UF": "4K", "Rubro": "Electricidad", "Detalle": "Instalación de luminaria LED en cocheras", "Proveedor": "Electricidad Voltio"}],
+        "trabajos_pendientes": [{"UF": "3J", "Rubro": "Plomería", "Detalle": "Filtración en losa radiante", "Motivo": "Esperando cese de lluvias"}]
     }
-
-# Simulación de órdenes de trabajo distribuidas por rubros solicitados
-if 'trabajos_solicitados' not in st.session_state:
-    st.session_state.trabajos_solicitados = [
-        {"UF": "101", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"},
-        {"UF": "204", "Rubro": "Albañilería", "Detalle": "Revoque de medianera dañado por filtración", "Fecha": "2026-09-22"},
-        {"UF": "302", "Rubro": "Electricidad", "Detalle": "Cortocircuito en disyuntor del palier del 3° piso", "Fecha": "2026-09-22"}
-    ]
-
-if 'trabajos_en_proceso' not in st.session_state:
-    st.session_state.trabajos_en_proceso = [
-        {"UF": "105", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso en columna central", "Proveedor": "Plomería Gas-An"},
-        {"UF": "401", "Rubro": "Albañilería", "Detalle": "Colocación de cerámicos en hall de entrada", "Proveedor": "Construcciones R&M"}
-    ]
-
-if 'trabajos_pendientes' not in st.session_state:
-    st.session_state.trabajos_pendientes = [
-        {"UF": "202", "Rubro": "Albañilería", "Detalle": "Pintura y enduido en cochera general", "Motivo": "Espera aprobación presupuesto"},
-        {"UF": "102", "Rubro": "Plomería", "Detalle": "Revisión de colector de agua pluvial", "Motivo": "Falta de materiales importados"}
-    ]
+}
 
 PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
 
-# PANEL LATERAL CON EL LOGO REAL CORPORATIVO Y LA NUEVA LISTA DE EDIFICIOS VINCULADOS
+# =====================================================================
+# PANEL LATERAL (SIDEBAR CON LOGO INTERACTIVO Y SELECTOR DE CONSORCIO)
+# =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Administration")
     st.markdown("---")
     
-    # Menú ampliado con los nuevos 5 edificios solicitados
-    consorcio_act = st.selectbox(
-        "Edificios Monitoreados", 
-        [
-            "Av. Corrientes 1234, CABA", 
-            "Larrea 435, CABA", 
-            "Montevideo 891, CABA", 
-            "San Jose 1111, CABA", 
-            "Guayaquil 399, CABA"
-        ]
-    )
-    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
+    # Selector Dinámico del Edificio Monitoreado
 
-# TÍTULO PRINCIPAL
-st.title("🏢 Resilia_Condominios")
-st.markdown("Plataforma avanzada de inteligencia artificial para la gestión y automatización integral de la propiedad horizontal.")
-
-# INDICADORES PRINCIPALES (CUADROS EN DORADO PREMIUM)
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.metric(label="Total gastos del periodo", value=f"${sum(x['Monto'] for x in st.session_state.libro_diario):,.2f}")
-with m2:
-    st.metric(label="Fondos de reserva", value="$450,000.00")
-with m3:
-    uf_morosas = sum(1 for u in st.session_state.unidades.values() if u['saldo'] > 0)
-    st.metric(label="UF en Mora", value=str(uf_morosas))
-with m4:
-    total_ot = len(st.session_state.trabajos_solicitados) + len(st.session_state.trabajos_en_proceso) + len(st.session_state.trabajos_pendientes)
-    st.metric(label="Ordenes de trabajo", value=str(len(st.session_state.trabajos_solicitados)))
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# SOLAPAS PRINCIPALES (MULTICANAL)
-tab_atencion, tab_contable, tab_operaciones = st.tabs([
-    "💬 Centro de Atención Multicanal", 
-    "📊 Prorrateo, Finanzas y Libro Diario", 
-    "🔧 Logística Operativa y Proveedores"
-])
-
-with tab_atencion:
-    st.subheader("📥 Recepción Automatizada de Mensajes (Multicanal)")
-    col_input, col_output = st.columns([1, 1.2])
-    with col_input:
-        uf_sel = st.selectbox("Unidad Funcional Emisora", list(st.session_state.unidades.keys()))
-        canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
-        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-    with col_output:
-        st.markdown("### ⚙️ Trazabilidad de Decisiones")
-        if procesar:
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por canal <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-            st.success("Orden procesada correctamente por el ecosistema de IA.")
-
-with tab_contable:
-    st.subheader("📊 Libro Diario del Consorcio")
-    st.dataframe(pd.DataFrame(st.session_state.libro_diario), use_container_width=True, hide_index=True)
-
-with tab_operaciones:
-    st.subheader("🔧 Control de Mantenimiento y Cartilla de Servicios")
-    
-    # ARQUITECTURA DE SOLAPAS CELESTES REQUERIDAS
-    st.markdown('<div class="celeste-tabs">', unsafe_allow_html=True)
-    subtab_solicitados, subtab_proceso, subtab_pendientes = st.tabs([
-        "🔹 Trabajos Solicitados", 
-        "🔹 Trabajos en Proceso", 
-        "🔹 Trabajos Pendientes"
-    ])
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # --- SUB-SOLAPA 1: TRABAJOS SOLICITADOS ---
-    with subtab_solicitados:
-        st.markdown("#### Historial de Requerimientos Entrantes (Clasificados por Rubro)")
-        df_solicitados = pd.DataFrame(st.session_state.trabajos_solicitados)
-        
-        rubro_filtro_s = st.selectbox("Filtrar Solicitados por Especialidad:", ["Todos", "Plomería", "Albañilería", "Electricidad"], key="f_solicitados")
-        if rubro_filtro_s != "Todos":
-            df_display = df_solicitados[df_solicitados['Rubro'] == rubro_filtro_s]
-        else:
-            df_display = df_solicitados
-            
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-            
-    # --- SUB-SOLAPA 2: TRABAJOS EN PROCESO ---
-    with subtab_proceso:
-        st.markdown("#### Reparaciones Técnicas en Ejecución Activa")
-        df_proceso = pd.DataFrame(st.session_state.trabajos_en_proceso)
         
 
 
