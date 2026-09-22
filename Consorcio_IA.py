@@ -174,7 +174,6 @@ with st.sidebar:
     
     # Selector Dinámico del Edificio Monitoreado
 
-        
 
 
 
