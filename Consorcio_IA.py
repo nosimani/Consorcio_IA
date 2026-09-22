@@ -72,60 +72,44 @@ if 'data_consorcios' not in st.session_state:
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Albañilería", "Detalle": "Arreglo de revoques en patio", "Estado": "Trabajos en Proceso"},
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura de entrada", "Estado": "Trabajos en Proceso"},
         {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Plomería", "Detalle": "Revisión de colector pluvial", "Estado": "Trabajos Pendientes"}
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
     ]
 
-# CARTILLA COMPLETA DE 5 PRESTADORES FICTICIOS PARA CADA UNO DE LOS 5 RUBROS SOLICITADOS
+# INTEGRACIÓN DE LA TABLA DE EXCEL EXPRESA DEL USUARIO
 CARTILLA_PROVEEDORES = {
-    "Electricistas": [
+    "Cerrajería": [
         "Seleccione un prestador...",
-        "⚡ Electricidad Voltio - Tel: 11-7777-8888 (Ing. Carlos Benítez)",
-        "⚡ Serviluz Express - Tel: 11-5555-9991 (Téc. Claudio Rossi)",
-        "⚡ Electro-San Telmo - Tel: 11-4444-2222 (Inst. Darío Gómez)",
-        "⚡ Lumina S.A. - Tel: 11-6666-4444 (Urgencias 24hs Consorcios)",
-        "⚡ Instalaciones Alfa - Tel: 11-2222-1111 (Téc. Walter White)"
+        "🔑 Llave - Tel: 111111111 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔑 Cerradura - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔑 Manojo - Tel: 333333333 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔑 Traba - Tel: 444444444 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔑 Pasador - Tel: 555555555 (CUIT: 2222222222) - Domicilio: xxx"
     ],
-    "Plomeros": [
+    "Electricidad": [
         "Seleccione un prestador...",
-        "🚰 Plomería Gas-An - Tel: 11-4444-5555 (Mtro. Ángel López)",
-        "🚰 Destapaciones Express - Tel: 11-3333-9999 (Juan Carlos)",
-        "🚰 Hidro-Fix Palermo - Tel: 11-2222-8888 (Téc. Marcelo Díaz)",
-        "🚰 Sanitarios Norte - Tel: 11-8888-1111 (Columnas y Colectores)",
-        "🚰 AquaForce CABA - Tel: 11-7777-3333 (Bombas de Agua y Presión)"
+        "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Cablecito - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Patada - Tel: 333333333 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Cortocircuito - Tel: 444444444 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Disyuntor - Tel: 555555555 (CUIT: 2222222222) - Domicilio: x"
     ],
-    "Gasistas": [
+    "Gas": [
         "Seleccione un prestador...",
-        "🔥 Gasistas Matriculados Almagro - Tel: 11-2222-3333 (Mat. 45211)",
-        "🔥 Sigas Soluciones - Tel: 11-6666-7777 (Pruebas de Hermeticidad)",
-        "🔥 Artefactos Gas Hogar - Tel: 11-5555-4444 (Instalador Matriculado)",
-        "🔥 Metrogas Certificados - Tel: 11-9999-8888 (Ing. Daniel Rossi)",
-        "🔥 TermoControl Técnico - Tel: 11-3333-2222 (Calderas Centrales)"
+        "🔥 Pum - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
+        "🔥 Garrafa - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
+        "🔥 Hornalla - Tel: 111111111 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔥 Calefonete - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔥 Estufeta - Tel: 333333333 (CUIT: 2222222222) - Domicilio: xxx"
     ],
-    "Albañiles": [
+    "Plomería": [
         "Seleccione un prestador...",
-        "🧱 Construcciones R&M - Tel: 11-3333-4444 (Mtro. Rubén Castro)",
-        "🧱 Albañilería El Progreso - Tel: 11-5555-6666 (Of. Pedro Picapiedra)",
-        "🧱 Estructuras Fuertes - Tel: 11-7777-2222 (Fachadas y Revoques)",
-        "🧱 Revestimientos CABA - Tel: 11-8888-9999 (Colocación de Cerámicos)",
-        "🧱 Soluciones en Mampostería - Tel: 11-4444-8888 (Of. Luis Herrera)"
-    ],
-    "Pintores": [
-        "Seleccione un prestador...",
-        "🎨 Pintores Asociados - Tel: 11-6666-1111 (Línea Consorcios Premium)",
-        "🎨 FlexColor Revestimientos - Tel: 11-2222-5555 (Pintura de Altura)",
-        "🎨 Pinceladas CABA - Tel: 11-4444-3333 (Of. Marcos Juárez)",
-        "🎨 TodoObra Pinturas - Tel: 11-9999-7777 (Impermeabilización de Medianeras)",
-        "🎨 ColorExpress - Tel: 11-8888-4444 (Interiores y Palieres Rápidos)"
-    ],
-    "Techistas": [
-        "Seleccione un prestador...",
-        "🏠 Techados Mar del Plata - Tel: 11-5555-2222 (Especialista en Tejas/Chapas)",
-        "🏠 Membranas e Impermeabilizaciones - Tel: 11-7777-6666 (Soluciones Filtración)",
-        "🏠 Cubiertas Protegidas - Tel: 11-3333-5555 (Ing. Néstor Kirchner)",
-        "🏠 Techistas de Guardia CABA - Tel: 11-4444-9999 (Arreglos Post-Tormenta)",
-        "🏠 Altura Confort - Tel: 11-2222-7777 (Limpieza y Zinguería de Canaletas)"
+        "🚰 Caño - Tel: 444444444 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Cañito - Tel: 555555555 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Cañete - Tel: 666666666 (CUIT: 2222222222) - Domicilio: xxxx",
+        "🚰 Canilla - Tel: 777777777 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Rejilla - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx"
     ]
 }
 
@@ -172,7 +156,20 @@ if pantalla_activa == "🏠 Panel General por Edificio":
     st.markdown("<br>", unsafe_allow_html=True)
 
     tab_atencion, tab_contable, tab_prov = st.tabs([
+        "💬 Centro de Atención Multicanal", 
+        "📊 Prorrateo, Finanzas y Libro Diario", 
+        "📋 Cartilla de Proveedores Desplegable"
+    ])
 
-
-
+    with tab_atencion:
+        st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
+        col_input, col_output = st.columns([1, 1.2])
+        with col_input:
+            uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
+            canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
+            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+        with col_output:
+            st.markdown("### ⚙️ Trazabilidad de Decisiones")
+            if procesar:
 
