@@ -173,3 +173,4 @@ if pantalla_activa == "🏠 Panel General por Edificio":
 
     with tab_contable:
 
+
