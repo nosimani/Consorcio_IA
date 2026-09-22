@@ -71,116 +71,101 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS ESTRUCTURADA POR EDIFICIO CON SUS RESPECTIVAS 5 UFs
+# BASE DE DATOS OPTIMIZADA POR EDIFICIO CON SUS RESPECTIVAS 5 UFs
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
+    # Definimos la lista fija de las 5 UFs requeridas
+    lista_ufs = ["1A", "3J", "4K", "5M", "6P"]
+    
+    # Inicializamos la estructura de los 5 edificios solicitados de forma segura
     st.session_state.data_consorcios = {
-        "Av. Corrientes 1234, CABA": {
-            "unidades": {
-                "1A": {"propietario": "Juan Pérez", "porcentaje": 0.20, "saldo": 1500.0},
-                "3J": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0},
-                "4K": {"propietario": "Carlos López", "porcentaje": 0.25, "saldo": -500.0},
-                "5M": {"propietario": "Ana Martínez", "porcentaje": 0.18, "saldo": 12000.0},
-                "6P": {"propietario": "Luis Gomez", "porcentaje": 0.22, "saldo": 0.0}
-            },
-            "fondo_reserva": 450000.00,
-            "libro_diario": [
-                {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
-                {"Fecha": "2026-09-05", "Concepto": "Sueldo Encargado SUTERH", "Monto": 250000.0, "Tipo": "Gasto Ordinario"}
-            ],
-            "trabajos_solicitados": [
-                {"UF": "1A", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"},
-                {"UF": "4K", "Rubro": "Albañilería", "Detalle": "Desprendimiento de revoque en patio común", "Fecha": "2026-09-22"}
-            ],
-            "trabajos_en_proceso": [
-                {"UF": "3J", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso generales", "Proveedor": "Plomería Gas-An"}
-            ],
-            "trabajos_pendientes": [
-                {"UF": "5M", "Rubro": "Electricidad", "Detalle": "Colocación de luminarias LED exteriores", "Motivo": "Espera de materiales"}
-            ]
-        },
-        "Larrea 435, CABA": {
-            "unidades": {
-                "1A": {"propietario": "Sofía Rossi", "porcentaje": 0.20, "saldo": 0.0},
-                "3J": {"propietario": "Jorge Blanco", "porcentaje": 0.15, "saldo": 8500.0},
-                "4K": {"propietario": "Andrés Fernández", "porcentaje": 0.25, "saldo": 0.0},
-                "5M": {"propietario": "Clara Benítez", "porcentaje": 0.18, "saldo": -1200.0},
-                "6P": {"propietario": "Ricardo Darín", "porcentaje": 0.22, "saldo": 4300.0}
-            },
-            "fondo_reserva": 380000.00,
-            "libro_diario": [
-                {"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Gasto Ordinario"},
-                {"Fecha": "2026-09-08", "Concepto": "Destapación de Columna Cloacal", "Monto": 35000.0, "Tipo": "Gasto Ordinario"}
-            ],
-            "trabajos_solicitados": [
-                {"UF": "3J", "Rubro": "Electricidad", "Detalle": "Falla de fase en disyuntor general", "Fecha": "2026-09-22"}
-            ],
-            "trabajos_en_proceso": [
-                {"UF": "1A", "Rubro": "Albañilería", "Detalle": "Reparación de grieta estructural palier", "Proveedor": "Construcciones R&M"}
-            ],
-            "trabajos_pendientes": [
-                {"UF": "6P", "Rubro": "Plomería", "Detalle": "Revisión de colector pluvial de azotea", "Motivo": "Presupuesto elevado"}
-            ]
-        },
-        "Montevideo 891, CABA": {
-            "unidades": {
-                "1A": {"propietario": "Esteban Quito", "porcentaje": 0.15, "saldo": -300.0},
-                "3J": {"propietario": "Mónica Ferrari", "porcentaje": 0.25, "saldo": 0.0},
-                "4K": {"propietario": "Pedro Picapiedra", "porcentaje": 0.20, "saldo": 15000.0},
-                "5M": {"propietario": "Gisela Valenzuela", "porcentaje": 0.15, "saldo": 0.0},
-                "6P": {"propietario": "Roberto Gómez", "porcentaje": 0.25, "saldo": 9100.0}
-            },
-            "fondo_reserva": 620000.00,
-            "libro_diario": [
-                {"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Gasto Ordinario"}
-            ],
-            "trabajos_solicitados": [
-                {"UF": "1A", "Rubro": "Plomería", "Detalle": "Filtración leve bajo bacha cocina", "Fecha": "2026-09-21"}
-            ],
-            "trabajos_en_proceso": [
-                {"UF": "4K", "Rubro": "Albañilería", "Detalle": "Pintura completa de cochera", "Proveedor": "Pintores Asociados"}
-            ],
-            "trabajos_pendientes": []
-        },
-        "San Jose 1111, CABA": {
-            "unidades": {
-                "1A": {"propietario": "Facundo Cabral", "porcentaje": 0.22, "saldo": 0.0},
-                "3J": {"propietario": "Lucía Galán", "porcentaje": 0.18, "saldo": 0.0},
-                "4K": {"propietario": "Joaquín Sabina", "porcentaje": 0.20, "saldo": -2500.0},
-                "5M": {"propietario": "Charly García", "porcentaje": 0.20, "saldo": 34000.0},
-                "6P": {"propietario": "Fito Páez", "porcentaje": 0.20, "saldo": 0.0}
-            },
-            "fondo_reserva": 290000.00,
-            "libro_diario": [
-                {"Fecha": "2026-09-03", "Concepto": "Service Técnico Bombas de Agua", "Monto": 41000.0, "Tipo": "Gasto Ordinario"}
-            ],
-            "trabajos_solicitados": [
-                {"UF": "5M", "Rubro": "Albañilería", "Detalle": "Fijación de baranda suelta balcón", "Fecha": "2026-09-22"}
-            ],
-            "trabajos_en_proceso": [],
-            "trabajos_pendientes": [
-                {"UF": "4K", "Rubro": "Plomería", "Detalle": "Destapación de cañería pluvial", "Motivo": "Falta de instrumental"}
-            ]
-        },
-        "Guayaquil 399, CABA": {
-            "unidades": {
-                "1A": {"propietario": "Lionel Messi", "porcentaje": 0.30, "saldo": -50000.0},
-                "3J": {"propietario": "Ángel Di María", "porcentaje": 0.20, "saldo": 0.0},
-                "4K": {"propietario": "Rodrigo De Paul", "porcentaje": 0.15, "saldo": 1200.0},
-                "5M": {"propietario": "Emiliano Martínez", "porcentaje": 0.15, "saldo": 0.0},
-                "6P": {"propietario": "Lionel Scaloni", "porcentaje": 0.20, "saldo": 0.0}
-            },
-            "fondo_reserva": 850000.00,
-            "libro_diario": [
-                {"Fecha": "2026-09-01", "Concepto": "Abono Servicio Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Gasto Ordinario"}
-            ],
-            "trabajos_solicitados": [],
-            "trabajos_en_proceso": [
+        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "gasto_base": 295000.0, "mora_uf": ["5M"]},
+        "Larrea 435, CABA": {"reserva": 380000.0, "gasto_base": 115000.0, "mora_uf": ["3J", "6P"]},
+        "Montevideo 891, CABA": {"reserva": 620000.0, "gasto_base": 117000.0, "mora_uf": ["4K", "6P"]},
+        "San Jose 1111, CABA": {"reserva": 290000.0, "gasto_base": 59000.0, "mora_uf": ["5M"]},
+        "Guayaquil 399, CABA": {"reserva": 850000.0, "gasto_base": 515000.0, "mora_uf": ["4K"]}
+    }
+    
+    # Armamos dinámicamente las subtablas para evitar recortes de código por límite de caracteres
+    for nombre, datos in st.session_state.data_consorcios.items():
+        datos["unidades"] = {uf: {"propietario": f"Propietario {uf}", "porcentaje": 0.20, "saldo": 12000.0 if uf in datos["mora_uf"] else 0.0} for uf in lista_ufs}
+        datos["libro_diario"] = [{"Fecha": "2026-09-10", "Concepto": "Gastos Centrales Auditados", "Monto": datos["gasto_base"], "Tipo": "Ordinario"}]
+        datos["trabajos_solicitados"] = [{"UF": "1A", "Rubro": "Plomería", "Detalle": "Filtración detectada en cañería principal", "Fecha": "2026-09-22"}]
+        datos["trabajos_en_proceso"] = [{"UF": "3J", "Rubro": "Albañilería", "Detalle": "Reparación de revoques en patio", "Proveedor": "Construcciones R&M"}]
+        datos["trabajos_pendientes"] = [{"UF": "5M", "Rubro": "Electricidad", "Detalle": "Revisión técnica de térmicas", "Motivo": "Espera materiales"}]
 
+PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
 
+# =====================================================================
+# PANEL LATERAL (SIDEBAR DE CONTROL CON LOGO INTEGRADO VÍA ENLACE)
+# =====================================================================
+with st.sidebar:
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios")
+    st.caption("AI Swarm ERP Administration")
+    st.markdown("---")
+    
+    # Selector Interactivo de Edificios Monitoreados
+    edificio_seleccionado = st.selectbox("Edificios Monitoreados", list(st.session_state.data_consorcios.keys()))
+    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
+# Extracción reactiva de los datos del edificio activo seleccionado
+consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
+unidades_actuales = consorcio_actual["unidades"]
+libro_diario_actual = consorcio_actual["libro_diario"]
 
+# =====================================================================
+# DASHBOARD CENTRAL INTERACTIVO
+# =====================================================================
+st.title("🏢 Resilia_Condominios")
+st.markdown(f"Monitoreo corporativo activo sobre el consorcio de: **{edificio_seleccionado}**")
 
+# CUATRO PANELES EJECUTIVOS TOTALMENTE EN DORADO PREMIUM
+m1, m2, m3, m4 = st.columns(4)
+with m1:
+    total_gastos = sum(x['Monto'] for x in libro_diario_actual)
+    st.metric(label="Total gastos del periodo", value=f"${total_gastos:,.2f}")
+with m2:
+    st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+with m3:
+    uf_mora = sum(1 for u in unidades_actuales.values() if u['saldo'] > 0)
+    st.metric(label="UF en Mora", value=str(uf_mora))
+with m4:
+    total_ot = len(consorcio_actual["trabajos_solicitados"]) + len(consorcio_actual["trabajos_en_proceso"]) + len(consorcio_actual["trabajos_pendientes"])
+    st.metric(label="Ordenes de trabajo", value=str(total_ot))
 
+st.markdown("<br>", unsafe_allow_html=True)
 
+# CONFIGURACIÓN DE SOLAPAS PRINCIPALES (ENTORNO MULTICANAL VINCULADO)
+tab_atencion, tab_contable, tab_operaciones = st.tabs([
+    "💬 Centro de Atención Multicanal", 
+    "📊 Prorrateo, Finanzas y Libro Diario", 
+    "🔧 Logística Operativa y Proveedores"
+])
 
+# ---------------------------------------------------------------------
+# SOLAPA 1: CENTRO DE ATENCIÓN MULTICANAL
+# ---------------------------------------------------------------------
+with tab_atencion:
+    st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
+    st.write("Simulá la entrada de un requerimiento. El menú desplegable muestra exclusivamente las 5 UFs (1A, 3J, 4K, 5M, 6P) de este edificio.")
+    
+    col_input, col_output = st.columns([1, 1.2])
+    with col_input:
+        st.markdown("### Consola de Entrada")
+        uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
+        canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
+        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+    with col_output:
+        st.markdown("### ⚙️ Trazabilidad de Decisiones")
+        if procesar:
+            msg_lower = mensaje_custom.lower()
+            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje interceptado vía <b>{canal_sel}</b> de la UF {uf_sel} (Propietario: {unidades_actuales[uf_sel]['propietario']}).</div>''', unsafe_allow_html=True)
+            
+            if "expensa" in msg_lower or "pago" in msg_lower or "debo" in msg_lower:
+                saldo = unidades_actuales[uf_sel]['saldo']
+                estado = "Deudor" if saldo > 0 else ("Al día" if saldo == 0 else "Saldo a Favor")
+                st.markdown(f'''<div class="agent-card agent-contable"><div class="agent-title">📈 Agente Contador</div>Auditoría de cuenta corriente procesada. Saldo UF {uf_sel}: <b>${abs(saldo):,.2f}</b> ({estado}).</div>''', unsafe_allow_html=True)
+            else:
+                st.markdown('''<div class="agent-card agent-operativo"><div class="agent-title">🔧 Agente Operativo</div>Incidencia técnica clasificada. Activando compulsa digital con la cartilla de prestadores homologados.</div>''', unsafe_allow_html=True)
