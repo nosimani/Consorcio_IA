@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL Y DORADO)
+# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL ELÉCTRICO Y DORADO)
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
@@ -13,16 +13,16 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul, paneles dorados y sub-solapas celestes
+# Inyección de CSS para forzar el fondo azul eléctrico, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
-        /* Fondo general de la plataforma: Azul Profundo */
-        .main { background-color: #0c2340; }
+        /* Fondo general de la plataforma: Azul Eléctrico Vibrante */
+        .main { background-color: #0052cc; }
         
-        /* Títulos e identificadores en Blanco/Celeste sobre el fondo azul */
+        /* Títulos e identificadores en Blanco/Celeste sobre el fondo azul eléctrico */
         h1 { color: #FFFFFF; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
-        .stMarkdown p { color: #cbd5e1; }
+        h2, h3 { color: #60a5fa; font-family: sans-serif; font-weight: 700; }
+        .stMarkdown p { color: #f8fafc; }
 
         /* Paneles de Métricas Ejecutivas en Dorado Premium */
         div[data-testid="stMetric"] {
@@ -96,11 +96,11 @@ with st.sidebar:
     consorcio_act = st.selectbox("Edificio Monitoreado", ["Av. Corrientes 1234, CABA"])
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-# TÍTULO PRINCIPAL SOLICITADO
+# TÍTULO PRINCIPAL
 st.title("🏢 Resilia_Condominios")
 st.markdown("Plataforma avanzada de inteligencia artificial para la gestión y automatización integral de la propiedad horizontal.")
 
-# INDICADORES PRINCIPALES MODIFICADOS A REQUERIMIENTO (CUADROS EN DORADO)
+# INDICADORES PRINCIPALES (CUADROS EN DORADO PREMIUM)
 m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric(label="Total gastos del periodo", value=f"${sum(x['Monto'] for x in st.session_state.libro_diario):,.2f}")
@@ -114,7 +114,7 @@ with m4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# SOLAPAS PRINCIPALES REVISADAS (MULTICANAL)
+# SOLAPAS PRINCIPALES (MULTICANAL)
 tab_atencion, tab_contable, tab_operaciones = st.tabs([
     "💬 Centro de Atención Multicanal", 
     "📊 Prorrateo, Finanzas y Libro Diario", 
@@ -158,6 +158,7 @@ with tab_operaciones:
         st.dataframe(df_all[df_all['Estado'] == 'Finalizada'], use_container_width=True, hide_index=True)
     with subtab_pendientes:
         st.info("No hay órdenes de trabajo pendientes de aprobación.")
+
 
 
 
