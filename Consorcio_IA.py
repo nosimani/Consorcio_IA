@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL METALIZADO OSCURO Y DORADO)
+# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL METALIZADO Y DORADO)
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
@@ -70,7 +70,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Instancia de datos en memoria para la demostración
+# Instancia de datos en memoria clasificados para la demostración
 if 'libro_diario' not in st.session_state:
     st.session_state.libro_diario = [
         {"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Gasto Ordinario"},
@@ -83,9 +83,24 @@ if 'unidades' not in st.session_state:
         "102": {"propietario": "María Rodriguez", "porcentaje": 0.15, "saldo": 0.0}
     }
 
-if 'reclamos' not in st.session_state:
-    st.session_state.reclamos = [
-        {"UF": "102", "Detalle": "Reparación de filtración", "Proveedor": "Plomería Gas-An", "Costo": 14500.0, "Estado": "Finalizada"}
+# Simulación de órdenes de trabajo distribuidas por rubros solicitados
+if 'trabajos_solicitados' not in st.session_state:
+    st.session_state.trabajos_solicitados = [
+        {"UF": "101", "Rubro": "Plomería", "Detalle": "Rotura de caño de agua en baño principal", "Fecha": "2026-09-21"},
+        {"UF": "204", "Rubro": "Albañilería", "Detalle": "Revoque de medianera dañado por filtración", "Fecha": "2026-09-22"},
+        {"UF": "302", "Rubro": "Electricidad", "Detalle": "Cortocircuito en disyuntor del palier del 3° piso", "Fecha": "2026-09-22"}
+    ]
+
+if 'trabajos_en_proceso' not in st.session_state:
+    st.session_state.trabajos_en_proceso = [
+        {"UF": "105", "Rubro": "Plomería", "Detalle": "Cambio de llaves de paso en columna central", "Proveedor": "Plomería Gas-An"},
+        {"UF": "401", "Rubro": "Albañilería", "Detalle": "Colocación de cerámicos en hall de entrada", "Proveedor": "Construcciones R&M"}
+    ]
+
+if 'trabajos_pendientes' not in st.session_state:
+    st.session_state.trabajos_pendientes = [
+        {"UF": "202", "Rubro": "Albañilería", "Detalle": "Pintura y enduido en cochera general", "Motivo": "Espera aprobación presupuesto"},
+        {"UF": "102", "Rubro": "Plomería", "Detalle": "Revisión de colector de agua pluvial", "Motivo": "Falta de materiales importados"}
     ]
 
 PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
@@ -113,7 +128,8 @@ with m3:
     uf_morosas = sum(1 for u in st.session_state.unidades.values() if u['saldo'] > 0)
     st.metric(label="UF en Mora", value=str(uf_morosas))
 with m4:
-    st.metric(label="Ordenes de trabajo", value=str(len(st.session_state.reclamos)))
+    total_ot = len(st.session_state.trabajos_solicitados) + len(st.session_state.trabajos_en_proceso) + len(st.session_state.trabajos_pendientes)
+    st.metric(label="Ordenes de trabajo", value=str(total_ot))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -145,22 +161,41 @@ with tab_contable:
 with tab_operaciones:
     st.subheader("🔧 Control de Mantenimiento y Cartilla de Servicios")
     
-    # SUB-SOLAPAS CELESTES SOLICITADAS
+    # NUEVA ARQUITECTURA DE SOLAPAS CELESTES REQUERIDAS
     st.markdown('<div class="celeste-tabs">', unsafe_allow_html=True)
-    subtab_activas, subtab_finalizadas, subtab_pendientes = st.tabs([
-        "🔹 Ordenes de trabajo activas", 
-        "🔹 Ordenes de trabajo finalizadas", 
-        "🔹 Ordenes de trabajo Pendientes"
+    subtab_solicitados, subtab_proceso, subtab_pendientes = st.tabs([
+        "🔹 Trabajos Solicitados", 
+        "🔹 Trabajos en Proceso", 
+        "🔹 Trabajos Pendientes"
     ])
     st.markdown('</div>', unsafe_allow_html=True)
     
-    df_all = pd.DataFrame(st.session_state.reclamos)
-    with subtab_activas:
-        st.info("No se registran órdenes de trabajo activas en este momento.")
-    with subtab_finalizadas:
-        st.dataframe(df_all[df_all['Estado'] == 'Finalizada'], use_container_width=True, hide_index=True)
-    with subtab_pendientes:
-        st.info("No hay órdenes de trabajo pendientes de aprobación.")
+    # --- SUB-SOLAPA 1: TRABAJOS SOLICITADOS ---
+    with subtab_solicitados:
+        st.markdown("#### Historial de Requerimientos Entrantes (Clasificados por Rubro)")
+        df_solicitados = pd.DataFrame(st.session_state.trabajos_solicitados)
+        
+        # Filtros visuales interactivos por rubro para facilitar la navegación
+        rubro_filtro_s = st.selectbox("Filtrar Solicitados por Especialidad:", ["Todos", "Plomería", "Albañilería", "Electricidad"], key="f_solicitados")
+        if rubro_filtro_s != "Todos":
+            df_display = df_solicitados[df_solicitados['Rubro'] == rubro_filtro_s]
+        else:
+            df_display = df_solicitados
+            
+        st.dataframe(df_display, use_container_width=True, hide_index=True)
+            
+    # --- SUB-SOLAPA 2: TRABAJOS EN PROCESO ---
+    with subtab_proceso:
+        st.markdown("#### Reparaciones Técnicas en Ejecución Activa")
+        df_proceso = pd.DataFrame(st.session_state.trabajos_en_proceso)
+        
+        rubro_filtro_p = st.selectbox("Filtrar en Proceso por Especialidad:", ["Todos", "Plomería", "Albañilería", "Electricidad"], key="f_proceso")
+        if rubro_filtro_p != "Todos":
+            df_display_p = df_proceso[df_proceso['Rubro'] == rubro_filtro_p]
+        else:
+            df_display_p = df_proceso
+            
+
 
 
 
