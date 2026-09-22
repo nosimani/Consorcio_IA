@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Avanzado para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
         /* Fondo general de la plataforma: Azul Metalizado Oscuro Profundo */
@@ -71,13 +71,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS OPTIMIZADA POR EDIFICIO CON SUS RESPECTIVAS 5 UFs
+# BASE DE DATOS GLOBAL CENTRALIZADA (CONTROL DE CONTEXTO REPOSITORIO)
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
-    # Definimos la lista fija de las 5 UFs requeridas
     lista_ufs = ["1A", "3J", "4K", "5M", "6P"]
-    
-    # Inicializamos la estructura de los 5 edificios solicitados de forma segura
     st.session_state.data_consorcios = {
         "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "gasto_base": 295000.0, "mora_uf": ["5M"]},
         "Larrea 435, CABA": {"reserva": 380000.0, "gasto_base": 115000.0, "mora_uf": ["3J", "6P"]},
@@ -86,18 +83,28 @@ if 'data_consorcios' not in st.session_state:
         "Guayaquil 399, CABA": {"reserva": 850000.0, "gasto_base": 515000.0, "mora_uf": ["4K"]}
     }
     
-    # Armamos dinámicamente las subtablas para evitar recortes de código por límite de caracteres
+    # Construcción automatizada de las variables y UFs específicas
     for nombre, datos in st.session_state.data_consorcios.items():
         datos["unidades"] = {uf: {"propietario": f"Propietario {uf}", "porcentaje": 0.20, "saldo": 12000.0 if uf in datos["mora_uf"] else 0.0} for uf in lista_ufs}
-        datos["libro_diario"] = [{"Fecha": "2026-09-10", "Concepto": "Gastos Centrales Auditados", "Monto": datos["gasto_base"], "Tipo": "Ordinario"}]
-        datos["trabajos_solicitados"] = [{"UF": "1A", "Rubro": "Plomería", "Detalle": "Filtración detectada en cañería principal", "Fecha": "2026-09-22"}]
-        datos["trabajos_en_proceso"] = [{"UF": "3J", "Rubro": "Albañilería", "Detalle": "Reparación de revoques en patio", "Proveedor": "Construcciones R&M"}]
-        datos["trabajos_pendientes"] = [{"UF": "5M", "Rubro": "Electricidad", "Detalle": "Revisión técnica de térmicas", "Motivo": "Espera materiales"}]
+        datos["libro_diario"] = [{"Fecha": "2026-09-10", "Concepto": "Gastos Centrales Generales", "Monto": datos["gasto_base"], "Tipo": "Ordinario"}]
+
+# Repositorio Histórico Global de Órdenes de Trabajo para permitir filtrado cruzado por Pantallas
+if 'ordenes_globales' not in st.session_state:
+    st.session_state.ordenes_globales = [
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Solicitado"},
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Albañilería", "Detalle": "Arreglo de revoques en patio", "Estado": "En Proceso"},
+        {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Solicitado"},
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Plomería", "Detalle": "Revisión de colector pluvial", "Estado": "Pendiente"},
+        {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Albañilería", "Detalle": "Pintura de cochera común", "Estado": "En Proceso"},
+        {"Edificio": "San Jose 1111, CABA", "UF": "5M", "Tipo de Trabajo": "Albañilería", "Detalle": "Fijación de baranda de balcón", "Estado": "Solicitado"},
+        {"Edificio": "Guayaquil 399, CABA", "UF": "4K", "Tipo de Trabajo": "Electricidad", "Detalle": "Instalación de tablero de cocheras", "Estado": "En Proceso"},
+        {"Edificio": "Guayaquil 399, CABA", "UF": "3J", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en losa radiante", "Estado": "Pendiente"}
+    ]
 
 PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL CON LOGO INTEGRADO VÍA ENLACE)
+# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -105,67 +112,64 @@ with st.sidebar:
     st.caption("AI Swarm ERP Administration")
     st.markdown("---")
     
-    # Selector Interactivo de Edificios Monitoreados
-    edificio_seleccionado = st.selectbox("Edificios Monitoreados", list(st.session_state.data_consorcios.keys()))
+    # Control de Navegación de Pantallas del Negocio
+    st.markdown("🎮 **Navegación del Sistema:**")
+    pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
+    
+    st.markdown("---")
+    # Selector Interactivo de Edificios (Aplica para la vista general)
+    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-# Extracción reactiva de los datos del edificio activo seleccionado
+# Extracción reactiva indexada
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 unidades_actuales = consorcio_actual["unidades"]
 libro_diario_actual = consorcio_actual["libro_diario"]
 
 # =====================================================================
-# DASHBOARD CENTRAL INTERACTIVO
+# PANTALLA 1: DASHBOARD GENERAL DEL EDIFICIO ACTIVO
 # =====================================================================
-st.title("🏢 Resilia_Condominios")
-st.markdown(f"Monitoreo corporativo activo sobre el consorcio de: **{edificio_seleccionado}**")
+if pantalla_activa == "🏠 Panel General por Edificio":
+    st.title("🏢 Resilia_Condominios")
+    st.markdown(f"Monitoreo activo sobre el consorcio: **{edificio_seleccionado}**")
 
-# CUATRO PANELES EJECUTIVOS TOTALMENTE EN DORADO PREMIUM
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    total_gastos = sum(x['Monto'] for x in libro_diario_actual)
-    st.metric(label="Total gastos del periodo", value=f"${total_gastos:,.2f}")
-with m2:
-    st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-with m3:
-    uf_mora = sum(1 for u in unidades_actuales.values() if u['saldo'] > 0)
-    st.metric(label="UF en Mora", value=str(uf_mora))
-with m4:
-    total_ot = len(consorcio_actual["trabajos_solicitados"]) + len(consorcio_actual["trabajos_en_proceso"]) + len(consorcio_actual["trabajos_pendientes"])
-    st.metric(label="Ordenes de trabajo", value=str(total_ot))
+    # MÓDULO DE INDICADORES DORADOS
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        total_gastos = sum(x['Monto'] for x in libro_diario_actual)
+        st.metric(label="Total gastos del periodo", value=f"${total_gastos:,.2f}")
+    with m2:
+        st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3:
+        uf_mora = sum(1 for u in unidades_actuales.values() if u['saldo'] > 0)
+        st.metric(label="UF en Mora", value=str(uf_mora))
+    with m4:
+        # Cuenta cuántas órdenes corresponden exclusivamente a este edificio activo
+        ot_edificio = sum(1 for o in st.session_state.ordenes_globales if o["Edificio"] == edificio_seleccionado)
+        st.metric(label="Ordenes de trabajo", value=str(ot_edificio))
 
-st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# CONFIGURACIÓN DE SOLAPAS PRINCIPALES (ENTORNO MULTICANAL VINCULADO)
-tab_atencion, tab_contable, tab_operaciones = st.tabs([
-    "💬 Centro de Atención Multicanal", 
-    "📊 Prorrateo, Finanzas y Libro Diario", 
-    "🔧 Logística Operativa y Proveedores"
-])
+    # SOLAPAS DEL CORE ADMINISTRATIVO
+    tab_atencion, tab_contable, tab_prov = st.tabs([
+        "💬 Centro de Atención Multicanal", 
+        "📊 Prorrateo, Finanzas y Libro Diario", 
+        "📋 Cartilla de Proveedores"
+    ])
 
-# ---------------------------------------------------------------------
-# SOLAPA 1: CENTRO DE ATENCIÓN MULTICANAL
-# ---------------------------------------------------------------------
-with tab_atencion:
-    st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
-    st.write("Simulá la entrada de un requerimiento. El menú desplegable muestra exclusivamente las 5 UFs (1A, 3J, 4K, 5M, 6P) de este edificio.")
-    
-    col_input, col_output = st.columns([1, 1.2])
-    with col_input:
-        st.markdown("### Consola de Entrada")
-        uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
-        canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
-        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-    with col_output:
-        st.markdown("### ⚙️ Trazabilidad de Decisiones")
-        if procesar:
-            msg_lower = mensaje_custom.lower()
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje interceptado vía <b>{canal_sel}</b> de la UF {uf_sel} (Propietario: {unidades_actuales[uf_sel]['propietario']}).</div>''', unsafe_allow_html=True)
-            
-            if "expensa" in msg_lower or "pago" in msg_lower or "debo" in msg_lower:
-                saldo = unidades_actuales[uf_sel]['saldo']
-                estado = "Deudor" if saldo > 0 else ("Al día" if saldo == 0 else "Saldo a Favor")
-                st.markdown(f'''<div class="agent-card agent-contable"><div class="agent-title">📈 Agente Contador</div>Auditoría de cuenta corriente procesada. Saldo UF {uf_sel}: <b>${abs(saldo):,.2f}</b> ({estado}).</div>''', unsafe_allow_html=True)
-            else:
-                st.markdown('''<div class="agent-card agent-operativo"><div class="agent-title">🔧 Agente Operativo</div>Incidencia técnica clasificada. Activando compulsa digital con la cartilla de prestadores homologados.</div>''', unsafe_allow_html=True)
+    with tab_atencion:
+        st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
+        col_input, col_output = st.columns([1, 1.2])
+        with col_input:
+            uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
+            canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
+            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+        with col_output:
+            st.markdown("### ⚙️ Trazabilidad de Decisiones")
+            if procesar:
+                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
+                st.success("Orden procesada correctamente por el ecosistema de IA.")
+
+    with tab_contable:
+
