@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 from datetime import datetime
+import io
 
 # =====================================================================
 # CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL AZUL METALIZADO Y DORADO)
@@ -34,22 +35,9 @@ st.markdown("""
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.2s;
         }
-        div[data-testid="stMetric"]:hover {
-            transform: translateY(-5px);
-        }
-        
-        /* Modificadores de color interno para el texto dentro del panel dorado */
-        div[data-testid="stMetric"] label { 
-            color: #0f172a !important; 
-            font-weight: 800 !important; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #0b192c !important; 
-            font-weight: 900 !important; 
-            font-size: 1.9rem !important;
-        }
+        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 1.9rem !important; }
 
         /* Solapas Principales */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -71,7 +59,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE EDIFICIOS (ESTRUCTURADA SIN BUCLES PROPENSOS A ERROR)
+# BASE DE DATOS GLOBAL DE EDIFICIOS Y URBROS DE EXCEL
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
     st.session_state.data_consorcios = {
@@ -107,17 +95,15 @@ if 'data_consorcios' not in st.session_state:
         }
     }
 
-# Repositorio Histórico de Órdenes de Trabajo
+# Repositorio Dinámico de Órdenes de Trabajo Persistente
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura de entrada", "Estado": "Trabajos en Proceso"},
         {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"},
-        {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Plomería", "Detalle": "Pintura de cochera común", "Estado": "Trabajos en Proceso"}
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
     ]
 
-# CARTILLA CON LOS DATOS DE TU EXCEL EXACTOS
 CARTILLA_PROVEEDORES = {
     "Cerrajería": [
         "Seleccione un prestador...",
@@ -154,7 +140,7 @@ CARTILLA_PROVEEDORES = {
 }
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO)
+# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO CON EXPORTADOR)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -167,9 +153,26 @@ with st.sidebar:
     
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
+    
+    st.markdown("---")
+    # BOTÓN EJECUTIVO EXPORTADOR EXCEL SOLICITADO
+    st.markdown("📥 **Reportería y Auditoría:**")
+    df_download = pd.DataFrame(st.session_state.ordenes_globales)
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df_download.to_excel(writer, index=False, sheet_name='Ordenes_Tecnicas')
+    buffer.seek(0)
+    
+    st.download_button(
+        label="📊 Descargar Historial OT (Excel)",
+        data=buffer,
+        file_name=f"Resilia_Reporte_OT_{datetime.now().strftime('%Y%m%d')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
+    )
+    st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-# Extracción de datos correspondientes al edificio seleccionado en tiempo real
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 unidades_actuales = consorcio_actual["unidades"]
 libro_diario_actual = consorcio_actual["libro_diario"]
@@ -179,9 +182,4 @@ libro_diario_actual = consorcio_actual["libro_diario"]
 # =====================================================================
 if pantalla_activa == "🏠 Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
-    st.markdown(f"Monitoreo activo sobre el consorcio: **{edificio_seleccionado}**")
-
-    # CUATRO INDICADORES DORADOS PREMIUM
-    m1, m2, m3, m4 = st.columns(4)
-    with m1:
 
