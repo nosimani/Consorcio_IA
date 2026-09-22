@@ -99,7 +99,33 @@ if 'ordenes_globales' not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "3J", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en losa radiante", "Estado": "Trabajos Pendientes"}
     ]
 
-PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
+# Cartilla Homologada con las 3 listas solicitadas de 5 prestadores cada una
+CARTILLA_PROVEEDORES = {
+    "Electricistas": [
+        "Seleccione un prestador...",
+        "⚡ Electricidad Voltio - Tel: 11-7777-8888 (Ing. Carlos Benítez)",
+        "⚡ Serviluz Express - Tel: 11-5555-9991 (Téc. Claudio Rossi)",
+        "⚡ Electro-San Telmo - Tel: 11-4444-2222 (Inst. Darío Gómez)",
+        "⚡ Destellos IA - Tel: 11-3333-7777 (Soporte de Tableros)",
+        "⚡ Lumina S.A. - Tel: 11-6666-4444 (Urgencias 24hs Consorcios)"
+    ],
+    "Plomeros": [
+        "Seleccione un prestador...",
+        "🚰 Plomería Gas-An - Tel: 11-4444-5555 (Mtro. Ángel López)",
+        "🚰 Destapaciones Express - Tel: 11-3333-9999 (Juan Carlos)",
+        "🚰 Hidro-Fix Palermo - Tel: 11-2222-8888 (Téc. Marcelo Díaz)",
+        "🚰 Sanitarios Norte - Tel: 11-8888-1111 (Columnas y Colectores)",
+        "🚰 AquaForce CABA - Tel: 11-7777-3333 (Bombas de Agua y Presión)"
+    ],
+    "Gasistas": [
+        "Seleccione un prestador...",
+        "🔥 Gasistas Matriculados Almagro - Tel: 11-2222-3333 (Mat. 45211)",
+        "🔥 Sigas Soluciones - Tel: 11-6666-7777 (Pruebas de Hermeticidad)",
+        "🔥 Artefactos Gas Hogar - Tel: 11-5555-4444 (Instalador Matriculado)",
+        "🔥 Metrogas Certificados - Tel: 11-9999-8888 (Ing. Daniel Rossi)",
+        "🔥 TermoControl Técnico - Tel: 11-3333-2222 (Calderas Centrales)"
+    ]
+}
 
 # =====================================================================
 # PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO)
@@ -146,32 +172,12 @@ if pantalla_activa == "🏠 Panel General por Edificio":
     tab_atencion, tab_contable, tab_prov = st.tabs([
         "💬 Centro de Atención Multicanal", 
         "📊 Prorrateo, Finanzas y Libro Diario", 
-        "📋 Cartilla de Proveedores"
+        "📋 Cartilla de Proveedores Desplegable"
     ])
 
     with tab_atencion:
         st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
-        col_input, col_output = st.columns([1, 1.2])
-        with col_input:
-            uf_sel = st.selectbox("Unidad Funcional Emisora", list(unidades_actuales.keys()))
-            canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value="Tengo una filtración en el baño, pierde un caño de agua.")
-            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-        with col_output:
-            st.markdown("### ⚙️ Trazabilidad de Decisiones")
-            if procesar:
-                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-                st.success("Orden procesada correctamente por el ecosistema de IA.")
 
-    with tab_contable:
-        st.subheader("📊 Libro Diario del Consorcio")
-        st.dataframe(pd.DataFrame(libro_diario_actual), use_container_width=True, hide_index=True)
-
-    with tab_prov:
-        st.subheader("📋 Prestadores e Ingenierías de Suministro Homologados")
-        st.table(pd.DataFrame(PROVEEDORES["plomeria"]))
-
-# =====================================================================
 
 
 
