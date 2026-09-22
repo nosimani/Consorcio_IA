@@ -105,13 +105,24 @@ if 'trabajos_pendientes' not in st.session_state:
 
 PROVEEDORES = {"plomeria": [{"nombre": "Plomería Gas-An", "tel": "1144445555"}]}
 
-# PANEL LATERAL CON EL LOGO REAL CORPORATIVO
+# PANEL LATERAL CON EL LOGO REAL CORPORATIVO Y LA NUEVA LISTA DE EDIFICIOS VINCULADOS
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Administration")
     st.markdown("---")
-    consorcio_act = st.selectbox("Edificio Monitoreado", ["Av. Corrientes 1234, CABA"])
+    
+    # Menú ampliado con los nuevos 5 edificios solicitados
+    consorcio_act = st.selectbox(
+        "Edificios Monitoreados", 
+        [
+            "Av. Corrientes 1234, CABA", 
+            "Larrea 435, CABA", 
+            "Montevideo 891, CABA", 
+            "San Jose 1111, CABA", 
+            "Guayaquil 399, CABA"
+        ]
+    )
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
 # TÍTULO PRINCIPAL
@@ -129,7 +140,7 @@ with m3:
     st.metric(label="UF en Mora", value=str(uf_morosas))
 with m4:
     total_ot = len(st.session_state.trabajos_solicitados) + len(st.session_state.trabajos_en_proceso) + len(st.session_state.trabajos_pendientes)
-    st.metric(label="Ordenes de trabajo", value=str(total_ot))
+    st.metric(label="Ordenes de trabajo", value=str(len(st.session_state.trabajos_solicitados)))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -161,7 +172,7 @@ with tab_contable:
 with tab_operaciones:
     st.subheader("🔧 Control de Mantenimiento y Cartilla de Servicios")
     
-    # NUEVA ARQUITECTURA DE SOLAPAS CELESTES REQUERIDAS
+    # ARQUITECTURA DE SOLAPAS CELESTES REQUERIDAS
     st.markdown('<div class="celeste-tabs">', unsafe_allow_html=True)
     subtab_solicitados, subtab_proceso, subtab_pendientes = st.tabs([
         "🔹 Trabajos Solicitados", 
@@ -175,7 +186,6 @@ with tab_operaciones:
         st.markdown("#### Historial de Requerimientos Entrantes (Clasificados por Rubro)")
         df_solicitados = pd.DataFrame(st.session_state.trabajos_solicitados)
         
-        # Filtros visuales interactivos por rubro para facilitar la navegación
         rubro_filtro_s = st.selectbox("Filtrar Solicitados por Especialidad:", ["Todos", "Plomería", "Albañilería", "Electricidad"], key="f_solicitados")
         if rubro_filtro_s != "Todos":
             df_display = df_solicitados[df_solicitados['Rubro'] == rubro_filtro_s]
@@ -189,12 +199,6 @@ with tab_operaciones:
         st.markdown("#### Reparaciones Técnicas en Ejecución Activa")
         df_proceso = pd.DataFrame(st.session_state.trabajos_en_proceso)
         
-        rubro_filtro_p = st.selectbox("Filtrar en Proceso por Especialidad:", ["Todos", "Plomería", "Albañilería", "Electricidad"], key="f_proceso")
-        if rubro_filtro_p != "Todos":
-            df_display_p = df_proceso[df_proceso['Rubro'] == rubro_filtro_p]
-        else:
-            df_display_p = df_proceso
-            
 
 
 
