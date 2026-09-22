@@ -4,43 +4,48 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL CORPORATIVO)
+# CONFIGURACIÓN PREMIUM DE LA INTERFAZ (LOOK & FEEL CORPO AZUL / CELESTE)
 # =====================================================================
 st.set_page_config(
-    page_title="ConsorcioIA - Enterprise Swarm OS",
+    page_title="Resilia_Condominios - Enterprise Swarm OS",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Avanzado para diseño ejecutivo de alto impacto
+# Inyección de CSS Avanzado para diseño corporativo azul y celeste de alto impacto
 st.markdown("""
     <style>
-        /* Fondo general de la plataforma */
+        /* Fondo general de la plataforma: Paleta Azul Institucional */
         .main {
-            background-color: #F1F5F9;
+            background-color: #0c2340;
         }
         
-        /* Tipografías institucionales */
+        /* Títulos e identificadores en Blanco/Celeste sobre el fondo azul */
         h1 {
-            color: #0F172A;
+            color: #FFFFFF;
             font-family: 'Inter', -apple-system, sans-serif;
             font-weight: 900;
             letter-spacing: -1px;
         }
         h2, h3 {
-            color: #1E3A8A;
+            color: #38bdf8;
             font-family: 'Inter', sans-serif;
             font-weight: 700;
         }
+        
+        /* Texto de ayuda/captions en gris claro para contraste */
+        .stMarkdown p {
+            color: #cbd5e1;
+        }
 
-        /* Tarjetas de Métricas Ejecutivas (Glassmorphism Oscuro) */
+        /* Paneles de Métricas Ejecutivas (Diseño Vidrio Premium) */
         div[data-testid="stMetric"] {
-            background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: white !important;
-            padding: 25px !important;
+            padding: 22px !important;
             border-radius: 16px !important;
-            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.2s;
         }
@@ -48,23 +53,24 @@ st.markdown("""
             transform: translateY(-5px);
         }
         div[data-testid="stMetric"] label {
-            color: #93C5FD !important;
-            font-weight: 600 !important;
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] {
             color: #FFFFFF !important;
             font-weight: 800 !important;
-            font-size: 2rem !important;
+            font-size: 1.8rem !important;
         }
 
-        /* Menú de Navegación por Solapas Avanzadas */
+        /* Estilo para las pestañas de navegación principales */
         .stTabs [data-baseweb="tab-list"] {
             gap: 12px;
-            background-color: #E2E8F0;
+            background-color: #1e293b;
             padding: 8px;
             border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .stTabs [data-baseweb="tab"] {
             background-color: transparent;
@@ -72,32 +78,48 @@ st.markdown("""
             padding: 12px 24px;
             border-radius: 8px;
             font-weight: 700;
-            color: #475569;
+            color: #94a3b8;
             transition: all 0.3s;
         }
         .stTabs [aria-selected="true"] {
-            background-color: #FFFFFF !important;
-            color: #1E3A8A !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: #0284c7 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilo específico para las SOLAPAS CELESTES de Órdenes de Trabajo */
+        .celeste-tabs [data-baseweb="tab-list"] {
+            background-color: #0f172a !important;
+            border: 1px solid #38bdf8 !important;
+        }
+        .celeste-tabs [data-baseweb="tab"] {
+            color: #bae6fd !important;
+        }
+        .celeste-tabs [aria-selected="true"] {
+            background-color: #38bdf8 !important;
+            color: #0f172a !important;
+            font-weight: 800 !important;
         }
 
         /* Reportes de la Inteligencia Artificial (Logs del Enjambre) */
         .agent-card {
-            background-color: #FFFFFF;
+            background-color: #1e293b;
             padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border-left: 6px solid #3B82F6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            border-left: 6px solid #38bdf8;
             margin-bottom: 18px;
+            color: #f1f5f9;
         }
-        .agent-legal { border-left-color: #EF4444; background: linear-gradient(to right, #FFF5F5, #FFFFFF); }
-        .agent-contable { border-left-color: #10B981; background: linear-gradient(to right, #F0FDF4, #FFFFFF); }
-        .agent-operativo { border-left-color: #F59E0B; background: linear-gradient(to right, #FFFBEB, #FFFFFF); }
+        .agent-card b { color: #38bdf8; }
+        .agent-legal { border-left-color: #ef4444; background: linear-gradient(to right, #2d1f1f, #1e293b); }
+        .agent-contable { border-left-color: #10b981; background: linear-gradient(to right, #192c24, #1e293b); }
+        .agent-operativo { border-left-color: #f59e0b; background: linear-gradient(to right, #2c2519, #1e293b); }
         
         .agent-title {
             font-size: 1.1rem;
             font-weight: 800;
-            color: #1E293B;
+            color: #ffffff;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -125,8 +147,12 @@ if 'unidades' not in st.session_state:
         "302": {"propietario": "Sofía Rossi", "porcentaje": 0.20, "saldo": -1500.0}
     }
 
+# Historial base de órdenes con estados distribuidos
 if 'reclamos' not in st.session_state:
-    st.session_state.reclamos = []
+    st.session_state.reclamos = [
+        {"UF": "102", "Detalle": "Reparación de filtración de cocina antigua", "Proveedor Asignado": "Plomería Gas-An", "Costo Cotizado": 14500.0, "Estado": "Finalizada"},
+        {"UF": "301", "Detalle": "Cambio de térmicas generales palier b", "Proveedor Asignado": "Electricidad Voltio", "Costo Cotizado": 19000.0, "Estado": "Activa"}
+    ]
 
 PROVEEDORES = {
     "plomeria": [
@@ -145,10 +171,9 @@ PROVEEDORES = {
 # PANEL LATERAL (SIDEBAR CON LOGO OFICIAL DE RESILIA AGENCY)
 # =====================================================================
 with st.sidebar:
-    # Integración directa del logo corporativo sin imágenes rotas
     st.image("https://imgbox.com", use_container_width=True)
-    st.title("ConsorcioIA")
-    st.caption("AI Swarm ERP para Administración")
+    st.title("Resilia_Condominios")
+    st.caption("AI Swarm ERP Administration")
     st.markdown("---")
     st.markdown("💡 **Variables de Entorno:**")
     consorcio_act = st.selectbox("Edificio Monitoreado", ["Av. Corrientes 1234, CABA", "Calle Florida 450, CABA"])
@@ -157,10 +182,10 @@ with st.sidebar:
 # =====================================================================
 # CUERPO PRINCIPAL / DASHBOARD CENTRAL
 # =====================================================================
-st.title("🏢 Sistema de Enjambre Multiagente Consorcial")
-st.markdown("Automatización integral de reclamos operativos, liquidación contable por coeficientes y auditoría legal.")
+st.title("🏢 Resilia_Condominios")
+st.markdown("Plataforma avanzada de inteligencia artificial para la gestión y automatización integral de la propiedad horizontal.")
 
-# Fila superior de Indicadores de Alto Impacto
+# PANELES / CUATRO TARJETAS INCLUYENDO "ORDENES DE TRABAJO"
 m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric(label="Total Gastos del Periodo", value=f"${sum(x['Monto'] for x in st.session_state.libro_diario):,.2f}")
@@ -170,22 +195,22 @@ with m3:
     uf_morosas = sum(1 for u in st.session_state.unidades.values() if u['saldo'] > 0)
     st.metric(label="UFs en Estado de Mora", value=str(uf_morosas))
 with m4:
-    st.metric(label="Órdenes de Trabajo Activas", value=str(len(st.session_state.reclamos)))
+    st.metric(label="Ordenes de Trabajo", value=str(len(st.session_state.reclamos)))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Estructura de Navegación por Solapas
+# Estructura de Navegación por Solapas Principales
 tab_atencion, tab_contable, tab_operaciones = st.tabs([
-    "💬 Centro de Atención Omnicanal", 
+    "💬 Centro de Atención Multicanal", 
     "📊 Prorrateo, Finanzas y Libro Diario", 
     "🔧 Logística Operativa y Proveedores"
 ])
 
 # ---------------------------------------------------------------------
-# SOLAPA 1: CENTRO DE ATENCIÓN OMNICANAL (RECLAMOS)
+# SOLAPA 1: CENTRO DE ATENCIÓN MULTICANAL
 # ---------------------------------------------------------------------
 with tab_atencion:
-    st.subheader("📥 Recepción Automatizada de Mensajes")
+    st.subheader("📥 Recepción Automatizada de Mensajes (Ecosistema Multicanal)")
     st.write("Simulá la entrada de un requerimiento para verificar el ruteo inteligente del enjambre.")
     
     col_input, col_output = st.columns([1, 1.2])
@@ -193,7 +218,7 @@ with tab_atencion:
     with col_input:
         st.markdown("### Consola de Entrada")
         uf_sel = st.selectbox("Unidad Funcional Emisora", list(st.session_state.unidades.keys()))
-        canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+        canal_sel = st.radio("Canal de Ingreso (Multicanal)", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
         
         mensaje_sugerido = st.selectbox("Mensajes Frecuentes:", [
             "Tengo una filtración en el baño, pierde un caño de agua.",
@@ -208,17 +233,5 @@ with tab_atencion:
     with col_output:
         st.markdown("### ⚙️ Trazabilidad de Decisiones Automatizadas (Logs)")
         if procesar:
-            msg_lower = mensaje_custom.lower()
-            
-            # 1. Ejecución del Agente de Front-Desk
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Atención (Front-Desk)</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel} ({st.session_state.unidades[uf_sel]['propietario']}). Clasificando intención...</div>''', unsafe_allow_html=True)
-            
-            # Ruteo Contable
-            if "expensa" in msg_lower or "pago" in msg_lower or "debo" in msg_lower:
-                saldo = st.session_state.unidades[uf_sel]['saldo']
-                estado = "Deudor" if saldo > 0 else ("Al día" if saldo == 0 else "Saldo a Favor")
-                st.markdown(f'''<div class="agent-card agent-contable"><div class="agent-title">📈 Agente Contador (Finanzas)</div>Consulta de cuenta procesada. Saldo actual de la UF: <b>${abs(saldo):,.2f}</b> ({estado}). Generando respuesta automática saliente...</div>''', unsafe_allow_html=True)
-                st.success(f"Respuesta enviada: Estimado copropietario, su saldo es de ${abs(saldo):,.2f} ({estado}).")
-            
-            # Ruteo Operativo de Mantenimiento
+
 
