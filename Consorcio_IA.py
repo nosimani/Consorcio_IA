@@ -7,128 +7,52 @@ from datetime import datetime
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ (CYBERPUNK CORPORATIVO)
 # =====================================================================
 st.set_page_config(
-    page_title="Resilia_Condominios - Swarm OS",
+    page_title="Resilia_Condominios",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Vanguardia Estética (Fondo Azul Metalizado Profundo, Neón y Oro)
+# Inyección de CSS de Vanguardia Estética (Fondo Metalizado Oscuro, Neón y Oro)
 st.markdown("""
     <style>
-        /* Fondo general de la plataforma - Azul Eléctrico de Medianoche */
-        .main { 
-            background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%);
-        }
-        
-        /* Tipografías institucionales estilizadas */
-        h1 { 
-            color: #ffffff; 
-            font-family: 'Inter', system-ui, sans-serif; 
-            font-weight: 900; 
-            letter-spacing: -1.5px;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-        }
-        h2, h3 { 
-            color: #38bdf8; 
-            font-family: 'Inter', sans-serif; 
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .stMarkdown p { color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
+        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1.5px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 800; }
+        .stMarkdown p { color: #e2e8f0; }
 
         /* Paneles de Métricas en Oro Líquido Flotante */
         div[data-testid="stMetric"] {
-            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
             border-radius: 20px !important;
             padding: 24px !important;
-            box-shadow: 0 15px 35px -5px rgba(180, 83, 9, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        div[data-testid="stMetric"]:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px -5px rgba(180, 83, 9, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-        }
-        div[data-testid="stMetric"] label { 
-            color: #071126 !important; 
-            font-weight: 900 !important; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem !important;
-        }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #071126 !important; 
-            font-weight: 950 !important; 
-            font-size: 2.2rem !important;
-            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
-        }
-
-        /* Menú de Solapas Estilo Neón */
-        .stTabs [data-baseweb="tab-list"] { 
-            gap: 15px; 
-            background-color: rgba(30, 41, 59, 0.7); 
-            padding: 10px; 
-            border-radius: 16px; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-        }
-        .stTabs [data-baseweb="tab"] { 
-            background-color: transparent; 
-            border: none !important; 
-            padding: 14px 28px; 
-            border-radius: 10px; 
-            font-weight: 800; 
-            color: #94a3b8; 
             transition: all 0.3s ease;
         }
-        .stTabs [data-baseweb="tab"]:hover {
-            color: #38bdf8;
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-        .stTabs [aria-selected="true"] { 
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-            color: #FFFFFF !important; 
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
-        }
+        div[data-testid="stMetric"]:hover { transform: translateY(-8px); }
+        div[data-testid="stMetric"] label { color: #071126 !important; font-weight: 900 !important; text-transform: uppercase; letter-spacing: 1px; }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #071126 !important; font-weight: 950 !important; font-size: 2.1rem !important; }
 
-        /* Solapas Celestes Secundarias (Glow Efímero) */
-        .celeste-tabs [data-baseweb="tab-list"] { 
-            background-color: #071126 !important; 
-            border: 1px solid #38bdf8 !important; 
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-        }
+        /* Menú de Solapas Estilo Neón */
+        .stTabs [data-baseweb="tab-list"] { gap: 15px; background-color: rgba(30, 41, 59, 0.7); padding: 10px; border-radius: 16px; backdrop-filter: blur(10px); }
+        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 14px 28px; border-radius: 10px; font-weight: 800; color: #94a3b8; transition: all 0.3s; }
+        .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+        /* Solapas Celestes Secundarias */
+        .celeste-tabs [data-baseweb="tab-list"] { background-color: #071126 !important; border: 1px solid #38bdf8 !important; }
         .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
-        .celeste-tabs [aria-selected="true"] { 
-            background: #38bdf8 !important; 
-            color: #071126 !important; 
-            font-weight: 900 !important; 
-        }
+        .celeste-tabs [aria-selected="true"] { background: #38bdf8 !important; color: #071126 !important; font-weight: 900 !important; }
 
-        /* Contenedores de Agentes Inteligentes con Respuestas */
-        .agent-card { 
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-            padding: 26px; 
-            border-radius: 20px; 
-            border-left: 6px solid #38bdf8; 
-            margin-bottom: 20px; 
-            color: #f1f5f9;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 1px rgba(255,255,255,0.1);
-        }
-        .agent-title { font-size: 1.15rem; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* Controles, Inputs y Tablas Integrados Estéticamente */
-        .stDataFrame, .stTable { 
-            background-color: rgba(30, 41, 59, 0.5); 
-            border-radius: 16px; 
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        /* Tarjetas de Agentes e Inputs */
+        .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 26px; border-radius: 20px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
+        .agent-title { font-size: 1.15rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# DATA ENGINE - CONTROL DINÁMICO REPOSITORIO
+# MOTOR DE DATOS OPTIMIZADO PARA PREVENIR ERRORES Y RECORTES
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
     st.session_state.data_consorcios = {
@@ -148,74 +72,68 @@ if 'ordenes_globales' not in st.session_state:
         {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Plomería", "Detalle": "Pintura de cochera común", "Estado": "Trabajos en Proceso"}
     ]
 
-# Cartilla unificada basada en los datos de tu Excel
 CARTILLA_PROVEEDORES = {
-    "Cerrajería": [
-        "Seleccione un prestador...",
-        "🔑 Llave - Tel: 111111111 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔑 Cerradura - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔑 Manojo - Tel: 333333333 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔑 Traba - Tel: 444444444 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔑 Pasador - Tel: 555555555 (CUIT: 2222222222) - Domicilio: xxx"
-    ],
-    "Electricidad": [
-        "Seleccione un prestador...",
-        "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
-        "⚡ Cablecito - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
-        "⚡ Patada - Tel: 333333333 (CUIT: 2222222222) - Domicilio: x",
-        "⚡ Cortocircuito - Tel: 444444444 (CUIT: 2222222222) - Domicilio: x",
-        "⚡ Disyuntor - Tel: 555555555 (CUIT: 2222222222) - Domicilio: x"
-    ],
-    "Gas": [
-        "Seleccione un prestador...",
-        "🔥 Pum - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
-        "🔥 Garrafa - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
-        "🔥 Hornalla - Tel: 111111111 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔥 Calefonete - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx",
-        "🔥 Estufeta - Tel: 333333333 (CUIT: 2222222222) - Domicilio: xxx"
-    ],
-    "Plomería": [
-        "Seleccione un prestador...",
-        "🚰 Caño - Tel: 444444444 (CUIT: 2222222222) - Domicilio: xxx",
-        "🚰 Cañito - Tel: 555555555 (CUIT: 2222222222) - Domicilio: xxx",
-        "🚰 Cañete - Tel: 666666666 (CUIT: 2222222222) - Domicilio: xxxx",
-        "🚰 Canilla - Tel: 777777777 (CUIT: 2222222222) - Domicilio: xxx",
-        "🚰 Rejilla - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx"
-    ]
+    "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333", "🔑 Traba - Tel: 444444444", "🔑 Pasador - Tel: 555555555"],
+    "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333", "⚡ Cortocircuito - Tel: 444444444", "⚡ Disyuntor - Tel: 555555555"],
+    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111", "🔥 Calefonete - Tel: 222222222", "🔥 Estufeta - Tel: 333333333"],
+    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666", "🚰 Canilla - Tel: 777777777", "🚰 Rejilla - Tel: 222222222"]
 }
 
 # =====================================================================
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO)
+# INTERFAZ LATERAL (SIDEBAR DE CONTROL)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios")
-    st.caption("AI Swarm ERP Platform v2.4")
+    st.caption("AI Swarm ERP Platform v2.5")
     st.markdown("---")
-    
-    st.markdown("🎮 **Navegación del Sistema:**")
     pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
-    
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
-    
     st.markdown("---")
-    st.markdown("📥 **Reportería y Auditoría:**")
-    df_download = pd.DataFrame(st.session_state.ordenes_globales)
-    csv_data = df_download.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📊 Descargar Historial OT (CSV)",
-        data=csv_data,
-        file_name=f"Reporte_Resilia.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+    csv_data = pd.DataFrame(st.session_state.ordenes_globales).to_csv(index=False).encode('utf-8')
+    st.download_button(label="📊 Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 
 # =====================================================================
-# PANEL GENERAL POR EDIFICIO
+# PANTALLA 1: DASHBOARD GENERAL
 # =====================================================================
+if pantalla_activa == "🏠 Panel General por Edificio":
+    st.title("🏢 Resilia_Condominios")
+    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
 
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: st.metric(label="Total gastos del periodo", value=f"${consorcio_actual['gastos']:,.2f}")
+    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    tab_atencion, tab_contable, tab_prov = st.tabs(["💬 Centro de Atención Multicanal", "📊 Prorrateo, Finanzas y Libro Diario", "📋 Cartilla de Proveedores"])
+
+    with tab_atencion:
+        st.subheader("📥 Recepción Automatizada Multicanal")
+        col_input, col_output = st.columns([1, 1.2])
+        with col_input:
+            uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
+            canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Fletrónico"], horizontal=True)
+            tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
+            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
+            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+        with col_output:
+            st.markdown("### ⚙️ Trazabilidad de Decisiones")
+            if procesar:
+                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
+                costo_s = round(random.uniform(9000, 25000), 2)
+                est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
+                st.session_state.ordenes_globales.append({"Edificio": edificio_seleccionado, "UF": uf_sel, "Tipo de Trabajo": tipo_incidente, "Detalle": mensaje_custom, "Estado": est_asig})
+                st.markdown(f'''<div class="agent-card agent-operativo"><div class="agent-title">🔧 Agente Operativo</div>Incidencia técnica registrada. Costo estimado: <b>${costo_s:,.2f}</b>. Estado: <b>{est_asig}</b>.</div>''', unsafe_allow_html=True)
+                st.success("¡Base de datos sincronizada!")
+
+    with tab_contable:
+        st.subheader("📊 Libro Diario y Cuentas de Copropiedad")
+        col_t1, col_t2 = st.columns([1.3, 1])
+        with col_t1:
