@@ -98,7 +98,7 @@ with st.sidebar:
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros solicitados
+# Listados financieros solicitados con nombres e ítems específicos
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -151,4 +151,3 @@ if pantalla_activa == "🏠 Panel General por Edificio":
                 st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
                 costo_s = round(random.uniform(9000, 25000), 2)
                 est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
-                st.session_state.ordenes_globales.append({"Edificio": edificio_seleccionado, "UF": uf_sel, "Tipo de Trabajo": tipo_incidente, "Detalle": mensaje_custom, "Estado": est_asig})
