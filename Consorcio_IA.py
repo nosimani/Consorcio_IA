@@ -71,7 +71,6 @@ if 'ordenes_globales' not in st.session_state:
         {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
     ]
 
-# Matriz de Proveedores basada en tu Excel original
 CARTILLA_PROVEEDORES = {
     "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333", "🔑 Traba - Tel: 444444444", "🔑 Pasador - Tel: 555555555"],
     "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333", "⚡ Cortocircuito - Tel: 444444444", "⚡ Disyuntor - Tel: 555555555"],
@@ -98,9 +97,9 @@ with st.sidebar:
 
 # Carga de la configuración del edificio activo
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
-f_cal = consorcio_actual["factor"]
+f_cal = consorcio_actual["factor"] # Letra minúscula unificada de forma estricta
 
-# ALGORITMO AUTOMÁTICO COMPACTO DE INGRESOS Y GASTOS (Blindado contra límites de texto del chat)
+# Algoritmo de renderizado financiero proporcional
 ingresos_lista = [
     {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 320000.0 * f_cal},
     {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -133,7 +132,6 @@ if pantalla_activa == "🏠 Panel General por Edificio":
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # REGLA DE NOMENCLATURA SOLICITADA
     tab_atencion, tab_contable, tab_prov = st.tabs([
         "💬 Centro de Atención Multicanal", 
         "📊 Cuadro de Ingresos y Gastos", 
@@ -153,3 +151,4 @@ if pantalla_activa == "🏠 Panel General por Edificio":
             st.markdown("### ⚙️ Trazabilidad de Decisiones")
             if procesar:
                 st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
+                costo_s = round(random.uniform(9000, 25000), 2)
