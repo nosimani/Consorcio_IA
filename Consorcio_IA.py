@@ -52,15 +52,90 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE EDIFICIOS
+# CORE DE DATOS CONTABLES DEL SISTEMA POR EDIFICIO (INGRESOS Y GASTOS)
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
     st.session_state.data_consorcios = {
-        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "gastos": 295000.0, "mora": "1", "ots": "2"},
-        "Larrea 435, CABA": {"reserva": 380000.0, "gastos": 115000.0, "mora": "2", "ots": "1"},
-        "Montevideo 891, CABA": {"reserva": 620000.0, "gastos": 117000.0, "mora": "2", "ots": "1"},
-        "San Jose 1111, CABA": {"reserva": 290000.0, "gastos": 59000.0, "mora": "1", "ots": "1"},
-        "Guayaquil 399, CABA": {"reserva": 850000.0, "gastos": 515000.0, "mora": "1", "ots": "1"}
+        "Av. Corrientes 1234, CABA": {
+            "reserva": 450000.0, "mora": "1", "ots": "2",
+            "ingresos": [
+                {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 320000.0},
+                {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 85000.0},
+                {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 14000.0}
+            ],
+            "gastos": [
+                {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 45000.0},
+                {"Concepto": "Honorarios de Administración", "Monto": 35000.0},
+                {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 250000.0},
+                {"Concepto": "Compra de artículos de limpieza", "Monto": 12000.0},
+                {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 18000.0},
+                {"Concepto": "Otros gastos generales y bancarios", "Monto": 7000.0}
+            ]
+        },
+        "Larrea 435, CABA": {
+            "reserva": 380000.0, "mora": "2", "ots": "1",
+            "ingresos": [
+                {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 190000.0},
+                {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 0.0},
+                {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 9500.0}
+            ],
+            "gastos": [
+                {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 35000.0},
+                {"Concepto": "Honorarios de Administración", "Monto": 28000.0},
+                {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 0.0}, # Personal tercerizado
+                {"Concepto": "Compra de artículos de limpieza", "Monto": 14000.0},
+                {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 22000.0},
+                {"Concepto": "Otros gastos generales y bancarios", "Monto": 5500.0}
+            ]
+        },
+        "Montevideo 891, CABA": {
+            "reserva": 620000.0, "mora": "2", "ots": "1",
+            "ingresos": [
+                {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 280000.0},
+                {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 110000.0},
+                {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 21000.0}
+            ],
+            "gastos": [
+                {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 22000.0},
+                {"Concepto": "Honorarios de Administración", "Monto": 32000.0},
+                {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 230000.0},
+                {"Concepto": "Compra de artículos de limpieza", "Monto": 9000.0},
+                {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 16000.0},
+                {"Concepto": "Otros gastos generales y bancarios", "Monto": 8000.0}
+            ]
+        },
+        "San Jose 1111, CABA": {
+            "reserva": 290000.0, "mora": "1", "ots": "1",
+            "ingresos": [
+                {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 145000.0},
+                {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 45000.0},
+                {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 5000.0}
+            ],
+            "gastos": [
+                {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 41000.0},
+                {"Concepto": "Honorarios de Administración", "Monto": 25000.0},
+                {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 180000.0},
+                {"Concepto": "Compra de artículos de limpieza", "Monto": 6500.0},
+                {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 11500.0},
+                {"Concepto": "Otros gastos generales y bancarios", "Monto": 4000.0}
+            ]
+        },
+        "Guayaquil 399, CABA": {
+            "reserva": 850000.0, "mora": "1", "ots": "1",
+            "ingresos": [
+                {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 540000.0},
+                {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 160000.0},
+                {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 35000.0}
+            ],
+            "gastos": [
+                {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 65000.0},
+                {"Concepto": "Honorarios de Administración", "Monto": 48000.0},
+                {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 450000.0},
+                {"Concepto": "Compra de artículos de limpieza", "Monto": 24000.0},
+                {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 38000.0},
+                {"Concepto": "Otros gastos generales y bancarios", "Monto": 12000.0}
+            ]
+        }
     }
 
 if 'ordenes_globales' not in st.session_state:
@@ -75,65 +150,3 @@ if 'ordenes_globales' not in st.session_state:
 CARTILLA_PROVEEDORES = {
     "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333", "🔑 Traba - Tel: 444444444", "🔑 Pasador - Tel: 555555555"],
     "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333", "⚡ Cortocircuito - Tel: 444444444", "⚡ Disyuntor - Tel: 555555555"],
-    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111", "🔥 Calefonete - Tel: 222222222", "🔥 Estufeta - Tel: 333333333"],
-    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666", "🚰 Canilla - Tel: 777777777", "🚰 Rejilla - Tel: 222222222"]
-}
-
-# =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL)
-# =====================================================================
-with st.sidebar:
-    st.image("https://imgbox.com", use_container_width=True)
-    st.title("Resilia_Condominios")
-    st.caption("AI Swarm ERP Platform v2.5")
-    st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
-    st.markdown("---")
-    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
-    st.markdown("---")
-    csv_data = pd.DataFrame(st.session_state.ordenes_globales).to_csv(index=False).encode('utf-8')
-    st.download_button(label="📊 Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
-    st.markdown("---")
-    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
-
-consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
-
-# =====================================================================
-# PANTALLA 1: DASHBOARD GENERAL
-# =====================================================================
-if pantalla_activa == "🏠 Panel General por Edificio":
-    st.title("🏢 Resilia_Condominios")
-    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
-
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${consorcio_actual['gastos']:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    tab_atencion, tab_contable, tab_prov = st.tabs(["💬 Centro de Atención Multicanal", "📊 Prorrateo, Finanzas y Libro Diario", "📋 Cartilla de Proveedores"])
-
-    with tab_atencion:
-        st.subheader("📥 Recepción Automatizada Multicanal")
-        col_input, col_output = st.columns([1, 1.2])
-        with col_input:
-            uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
-            canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-            tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
-            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
-            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-        with col_output:
-            st.markdown("### ⚙️ Trazabilidad de Decisiones")
-            if procesar:
-                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-                costo_s = round(random.uniform(9000, 25000), 2)
-                est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
-                st.session_state.ordenes_globales.append({"Edificio": edificio_seleccionado, "UF": uf_sel, "Tipo de Trabajo": tipo_incidente, "Detalle": mensaje_custom, "Estado": est_asig})
-                st.markdown(f'''<div class="agent-card agent-operativo"><div class="agent-title">🔧 Agente Operativo</div>Incidencia técnica registrada. Costo estimado: <b>${costo_s:,.2f}</b>. Estado: <b>{est_asig}</b>.</div>''', unsafe_allow_html=True)
-                st.success("¡Base de datos sincronizada!")
-
-    with tab_contable:
-        st.subheader("📊 Libro Diario y Cuentas de Copropiedad")
-        st.markdown("#### Historial de Gastos Centrales Auditados")
-        df_g = pd.DataFrame([{"Fecha": "2026-09-10", "Concepto": "Gastos Centrales Generales", "Monto": consorcio_actual['gastos'], "Tipo": "Ordinario"}])
