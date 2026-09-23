@@ -98,19 +98,19 @@ with st.sidebar:
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Lógica financiera reactiva
+# Listados financieros solicitados
 ingresos_lista = [
-    {"Ingresos": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto ($)": 320000.0 * f_cal},
-    {"Ingresos": "Alquileres de Locales Comerciales PB", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
-    {"Ingresos": "Intereses por colocaciones a Plazo Fijo", "Monto ($)": 14000.0 * f_cal}
+    {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
+    {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
+    {"Ingresos": "intereses por colocaciones a plazo fijo", "Monto ($)": 14000.0 * f_cal}
 ]
 gastos_lista = [
-    {"Gastos": "Gastos por Reparaciones e Infraestructura", "Monto ($)": 45000.0 * f_cal},
-    {"Gastos": "Honorarios de Administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "Sueldo de Encargado + Cargas SUTERH", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
-    {"Gastos": "Compra de artículos de limpieza", "Monto ($)": 12000.0 * f_cal},
-    {"Gastos": "Pagos de luz (Edesur/Edenor Central)", "Monto ($)": 18000.0 * f_cal},
-    {"Gastos": "Otros gastos generales", "Monto ($)": 7000.0 * f_cal}
+    {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
+    {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
+    {"Gastos": "sueldo de encargado", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
+    {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
+    {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
+    {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
 ]
 
 # =====================================================================
@@ -151,3 +151,4 @@ if pantalla_activa == "🏠 Panel General por Edificio":
                 st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
                 costo_s = round(random.uniform(9000, 25000), 2)
                 est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
+                st.session_state.ordenes_globales.append({"Edificio": edificio_seleccionado, "UF": uf_sel, "Tipo de Trabajo": tipo_incidente, "Detalle": mensaje_custom, "Estado": est_asig})
