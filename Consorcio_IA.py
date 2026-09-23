@@ -4,194 +4,151 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (UI/UX FUTURISTA AZUL METALIZADO Y ORO)
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (CYBERPUNK CORPORATIVO)
 # =====================================================================
 st.set_page_config(
-    page_title="Resilia Condominios - Enterprise Swarm OS",
+    page_title="Resilia_Condominios - Swarm OS",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Estilización avanzada mediante inyección de CSS de Alta Gama (Cyberpunk-Executive Style)
+# Inyección de CSS de Vanguardia Estética (Fondo Azul Metalizado Profundo, Neón y Oro)
 st.markdown("""
     <style>
-        /* Desactivar márgenes nativos para un layout inmersivo */
-        .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-        
-        /* Fondo General de la Plataforma: Azul Metalizado Premium Oscuro */
+        /* Fondo general de la plataforma - Azul Eléctrico de Medianoche */
         .main { 
-            background: radial-gradient(circle at 50% 10%, #112240 0%, #060d1a 100%) !important;
+            background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%);
         }
         
-        /* Tipografías e Impacto de Títulos con Gradientes Luminosos */
-        h1 {
-            background: linear-gradient(90deg, #FFFFFF 0%, #38bdf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: 'Inter', -apple-system, sans-serif;
-            font-weight: 900 !important;
-            letter-spacing: -1.5px !important;
-            padding-bottom: 10px;
+        /* Tipografías institucionales estilizadas */
+        h1 { 
+            color: #ffffff; 
+            font-family: 'Inter', system-ui, sans-serif; 
+            font-weight: 900; 
+            letter-spacing: -1.5px;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
         h2, h3 { 
-            color: #38bdf8 !important; 
+            color: #38bdf8; 
             font-family: 'Inter', sans-serif; 
-            font-weight: 800 !important;
+            font-weight: 800;
             letter-spacing: -0.5px;
         }
-        .stMarkdown p { color: #94a3b8 !important; font-size: 1.05rem; }
+        .stMarkdown p { color: #e2e8f0; font-family: 'Inter', sans-serif; }
 
-        /* Paneles de Métricas Holográficos en Oro Real y Brillo Neón */
+        /* Paneles de Métricas en Oro Líquido Flotante */
         div[data-testid="stMetric"] {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(170, 124, 17, 0.05) 100%) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            padding: 24px !important;
+            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
             border-radius: 20px !important;
-            box-shadow: 0 8px 32px 0 rgba(214, 175, 55, 0.08), inset 0 0 0 1px rgba(214, 175, 55, 0.2) !important;
-            border: none !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 24px !important;
+            box-shadow: 0 15px 35px -5px rgba(180, 83, 9, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        div[data-testid="stMetric"]:hover { 
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 12px 40px 0 rgba(214, 175, 55, 0.18), inset 0 0 0 1.5px rgba(214, 175, 55, 0.4) !important;
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px -5px rgba(180, 83, 9, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
         }
         div[data-testid="stMetric"] label { 
-            color: #fef08a !important; 
-            font-weight: 700 !important; 
-            text-transform: uppercase; 
+            color: #071126 !important; 
+            font-weight: 900 !important; 
+            text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.85rem !important;
         }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #FFFFFF !important; 
-            font-weight: 900 !important; 
+            color: #071126 !important; 
+            font-weight: 950 !important; 
             font-size: 2.2rem !important;
-            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
         }
 
-        /* Estilización Estética para Solapas Principales en Acero Pulido */
+        /* Menú de Solapas Estilo Neón */
         .stTabs [data-baseweb="tab-list"] { 
-            gap: 10px; 
+            gap: 15px; 
             background-color: rgba(30, 41, 59, 0.7); 
-            padding: 8px; 
+            padding: 10px; 
             border-radius: 16px; 
             border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
         }
         .stTabs [data-baseweb="tab"] { 
             background-color: transparent; 
             border: none !important; 
             padding: 14px 28px; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            color: #64748b; 
-            transition: all 0.25s ease;
+            border-radius: 10px; 
+            font-weight: 800; 
+            color: #94a3b8; 
+            transition: all 0.3s ease;
+        }
+        .stTabs [data-baseweb="tab"]:hover {
+            color: #38bdf8;
+            background-color: rgba(255, 255, 255, 0.02);
         }
         .stTabs [aria-selected="true"] { 
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; 
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
             color: #FFFFFF !important; 
-            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        /* Solapas Celestes Secundarias para Órdenes de Trabajo */
+        /* Solapas Celestes Secundarias (Glow Efímero) */
         .celeste-tabs [data-baseweb="tab-list"] { 
-            background-color: rgba(15, 23, 42, 0.8) !important; 
-            border: 1px solid rgba(56, 189, 248, 0.3) !important; 
+            background-color: #071126 !important; 
+            border: 1px solid #38bdf8 !important; 
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
-        .celeste-tabs [data-baseweb="tab"] { color: #7dd3fc !important; }
+        .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
         .celeste-tabs [aria-selected="true"] { 
-            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%) !important; 
-            color: #0f172a !important; 
-            font-weight: 800 !important; 
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+            background: #38bdf8 !important; 
+            color: #071126 !important; 
+            font-weight: 900 !important; 
         }
 
-        /* Tarjetas de Contenedores de Agentes Inteligentes */
+        /* Contenedores de Agentes Inteligentes con Respuestas */
         .agent-card { 
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
-            padding: 24px; 
-            border-radius: 18px; 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            padding: 26px; 
+            border-radius: 20px; 
             border-left: 6px solid #38bdf8; 
             margin-bottom: 20px; 
-            color: #e2e8f0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            border-top: 1px solid rgba(255,255,255,0.03);
+            color: #f1f5f9;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 1px rgba(255,255,255,0.1);
         }
-        .agent-title { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 6px; letter-spacing: 0.3px; }
+        .agent-title { font-size: 1.15rem; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Contenedores de Tablas Interactivas Estilizadas */
+        /* Controles, Inputs y Tablas Integrados Estéticamente */
         .stDataFrame, .stTable { 
-            background-color: rgba(30, 41, 59, 0.4); 
+            background-color: rgba(30, 41, 59, 0.5); 
             border-radius: 16px; 
-            padding: 8px; 
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-        
-        /* Diseño Personalizado de Controles de Formularios */
-        .stButton>button {
-            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
-            color: #0f172a !important;
-            font-weight: 800 !important;
-            border-radius: 14px !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.25) !important;
-            transition: all 0.25s ease !important;
-        }
-        .stButton>button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 25px rgba(56, 189, 248, 0.45) !important;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE EDIFICIOS Y RUBROS DE EXCEL
+# DATA ENGINE - CONTROL DINÁMICO REPOSITORIO
 # =====================================================================
 if 'data_consorcios' not in st.session_state:
     st.session_state.data_consorcios = {
-        "Av. Corrientes 1234, CABA": {
-            "reserva": 450000.0,
-            "libro_diario": [{"Fecha": "2026-09-01", "Concepto": "Abono Ascensores S.A.", "Monto": 45000.0, "Tipo": "Ordinario"}],
-            "unidades": ["1A", "3J", "4K", "5M", "6P"],
-            "saldos": {"1A": 1500.0, "3J": 0.0, "4K": -500.0, "5M": 12000.0, "6P": 0.0}
-        },
-        "Larrea 435, CABA": {
-            "reserva": 380000.0,
-            "libro_diario": [{"Fecha": "2026-09-02", "Concepto": "Abono Empresa de Limpieza", "Monto": 80000.0, "Tipo": "Ordinario"}],
-            "unidades": ["1A", "3J", "4K", "5M", "6P"],
-            "saldos": {"1A": 0.0, "3J": 8500.0, "4K": 0.0, "5M": -1200.0, "6P": 4300.0}
-        },
-        "Montevideo 891, CABA": {
-            "reserva": 620000.0,
-            "libro_diario": [{"Fecha": "2026-09-04", "Concepto": "Mantenimiento de Portón Eléctrico", "Monto": 22000.0, "Tipo": "Ordinario"}],
-            "unidades": ["1A", "3J", "4K", "5M", "6P"],
-            "saldos": {"1A": -300.0, "3J": 0.0, "4K": 15000.0, "5M": 0.0, "6P": 9100.0}
-        },
-        "San Jose 1111, CABA": {
-            "reserva": 290000.0,
-            "libro_diario": [{"Fecha": "2026-09-03", "Concepto": "Service Técnico Bombas de Agua", "Monto": 41000.0, "Tipo": "Ordinario"}],
-            "unidades": ["1A", "3J", "4K", "5M", "6P"],
-            "saldos": {"1A": 0.0, "3J": 0.0, "4K": -2500.0, "5M": 34000.0, "6P": 0.0}
-        },
-        "Guayaquil 399, CABA": {
-            "reserva": 850000.0,
-            "libro_diario": [{"Fecha": "2026-09-01", "Concepto": "Abono Servicio Grupo Electrógeno", "Monto": 65000.0, "Tipo": "Ordinario"}],
-            "unidades": ["1A", "3J", "4K", "5M", "6P"],
-            "saldos": {"1A": -50000.0, "3J": 0.0, "4K": 12000.0, "5M": 0.0, "6P": 0.0}
-        }
+        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "gastos": 295000.0, "mora": "1", "ots": "2"},
+        "Larrea 435, CABA": {"reserva": 380000.0, "gastos": 115000.0, "mora": "2", "ots": "1"},
+        "Montevideo 891, CABA": {"reserva": 620000.0, "gastos": 117000.0, "mora": "2", "ots": "1"},
+        "San Jose 1111, CABA": {"reserva": 290000.0, "gastos": 59000.0, "mora": "1", "ots": "1"},
+        "Guayaquil 399, CABA": {"reserva": 850000.0, "gastos": 515000.0, "mora": "1", "ots": "1"}
     }
 
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura de entrada", "Estado": "Trabajos en Proceso"},
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura", "Estado": "Trabajos en Proceso"},
         {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
         {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"},
         {"Edificio": "Montevideo 891, CABA", "UF": "4K", "Tipo de Trabajo": "Plomería", "Detalle": "Pintura de cochera común", "Estado": "Trabajos en Proceso"}
     ]
 
+# Cartilla unificada basada en los datos de tu Excel
 CARTILLA_PROVEEDORES = {
     "Cerrajería": [
         "Seleccione un prestador...",
@@ -206,3 +163,59 @@ CARTILLA_PROVEEDORES = {
         "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
         "⚡ Cablecito - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
         "⚡ Patada - Tel: 333333333 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Cortocircuito - Tel: 444444444 (CUIT: 2222222222) - Domicilio: x",
+        "⚡ Disyuntor - Tel: 555555555 (CUIT: 2222222222) - Domicilio: x"
+    ],
+    "Gas": [
+        "Seleccione un prestador...",
+        "🔥 Pum - Tel: 666666666 (CUIT: 2222222222) - Domicilio: x",
+        "🔥 Garrafa - Tel: 777777777 (CUIT: 2222222222) - Domicilio: x",
+        "🔥 Hornalla - Tel: 111111111 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔥 Calefonete - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx",
+        "🔥 Estufeta - Tel: 333333333 (CUIT: 2222222222) - Domicilio: xxx"
+    ],
+    "Plomería": [
+        "Seleccione un prestador...",
+        "🚰 Caño - Tel: 444444444 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Cañito - Tel: 555555555 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Cañete - Tel: 666666666 (CUIT: 2222222222) - Domicilio: xxxx",
+        "🚰 Canilla - Tel: 777777777 (CUIT: 2222222222) - Domicilio: xxx",
+        "🚰 Rejilla - Tel: 222222222 (CUIT: 2222222222) - Domicilio: xxx"
+    ]
+}
+
+# =====================================================================
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO)
+# =====================================================================
+with st.sidebar:
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios")
+    st.caption("AI Swarm ERP Platform v2.4")
+    st.markdown("---")
+    
+    st.markdown("🎮 **Navegación del Sistema:**")
+    pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
+    
+    st.markdown("---")
+    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
+    
+    st.markdown("---")
+    st.markdown("📥 **Reportería y Auditoría:**")
+    df_download = pd.DataFrame(st.session_state.ordenes_globales)
+    csv_data = df_download.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📊 Descargar Historial OT (CSV)",
+        data=csv_data,
+        file_name=f"Reporte_Resilia.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+    st.markdown("---")
+    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
+
+consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
+
+# =====================================================================
+# PANEL GENERAL POR EDIFICIO
+# =====================================================================
+
