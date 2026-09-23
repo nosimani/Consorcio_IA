@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro y paneles dorados
+# Inyección de CSS para fondo azul metalizado oscuro y paneles dorados
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -47,7 +47,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# ESTRUCTURA DE VALORES FIJOS POR EDIFICIO
+# BASE DE DATOS GLOBAL DE CONDOMINIOS Estática
 # =====================================================================
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "ots": "2"},
@@ -64,7 +64,6 @@ CARTILLA_PROVEEDORES = {
     "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666"]
 }
 
-# Repositorio Base de Órdenes de Trabajo para evitar fallas de renderizado
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
@@ -88,11 +87,10 @@ with st.sidebar:
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-# Extracción de factores directos del diccionario estático (Cero dependencia de Session_State viejo)
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Generación forzada en cada ciclo de ejecución (Mismo requerimiento explícito)
+# Listados financieros generados de forma robusta
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -141,10 +139,9 @@ if pantalla_activa == "Panel General por Edificio":
             st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
             st.success("¡Base de datos sincronizada!")
 
-    # CÓDIGO NATIVO SIMPLIFICADO: DIBUJO OBLIGATORIO DE TABLAS SIN COLUMNAS ANIDADAS
     with tab_contable:
         st.subheader("📊 Cuadro de Ingresos y Gastos")
-        st.markdown(f"Flujo de caja inmediato auditado para el edificio: **{edificio_seleccionado}**")
+        st.markdown(f"Flujo de caja dinámico para el edificio: **{edificio_seleccionado}**")
         
         st.markdown("### 📥 Flujo de Ingresos Percibidos")
         st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
@@ -163,6 +160,11 @@ if pantalla_activa == "Panel General por Edificio":
         st.selectbox("🚰 Plomería e Ingeniería Hidráulica:", CARTILLA_PROVEEDORES["Plomería"])
 
 # =====================================================================
-# PANTALLA 2: MÓDULO EXCLUSIVO DE ORDENES DE TRABAJO
+# PANTALLA 2: MÓDULO EXCLUSIVO DE ORDENES DE TRABAJO (LINEAL SIN COMPILADORES)
 # =====================================================================
 else:
+    st.title("🔧 Centro del Control Técnico Operativo")
+    st.markdown("Filtrado de incidentes en tiempo real de todos los edificios.")
+    df_global = pd.DataFrame(st.session_state.ordenes_globales)
+    st.dataframe(df_global, use_container_width=True, hide_index=True)
+
