@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit st
 import pandas as pd
 import random
 from datetime import datetime
@@ -104,7 +104,7 @@ DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Plomería", "Proveedor": "Rejilla", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"}
 ]
 
-# NUEVA TABLA INTEGRADA FIJA DE ÓRDENES DE TRABAJO (SOLICITADA POR CAPTURA DE PANTALLA)
+# MATRIZ HISTÓRICA INTEGRADA DE ÓRDENES DE TRABAJO SOLICITADA VÍA CAPTURA
 TABLA_SOLICITADA_OT = [
     {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
     {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
@@ -113,7 +113,6 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# Inicialización segura en Session State para simulación multicanal reactiva
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
@@ -121,7 +120,7 @@ if 'ordenes_globales' not in st.session_state:
     ]
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO CON TU LOGO)
+# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -140,7 +139,7 @@ with st.sidebar:
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros dinámicos
+# Listados financieros generados de forma robusta
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -148,3 +147,4 @@ ingresos_lista = [
 ]
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
+    {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
