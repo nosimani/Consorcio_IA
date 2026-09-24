@@ -37,15 +37,16 @@ ESTADISTICAS_EDIFICIOS = {
     "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1"}
 }
 
-DATOS_EXCEL_PROVEEDORES = [
-    {"Rubro": "Cerrajería", "Proveedor": "Llave", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
-    {"Rubro": "Cerrajería", "Proveedor": "Cerradura", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
-    {"Rubro": "Electricidad", "Proveedor": "El Fusible", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
-    {"Rubro": "Electricidad", "Proveedor": "Cablecito", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "x"},
-    {"Rubro": "Gas", "Proveedor": "Pum", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
-    {"Rubro": "Gas", "Proveedor": "Calefonete", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
-    {"Rubro": "Plomería", "Proveedor": "Caño", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "xxx"},
-    {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"}
+# LISTADO FICTICIO COMPLETO Y EXCLUSIVO REQUERIDO POR EL USUARIO SEPARADO POR RUBROS
+DATOS_CARTILLA_PROVEEDORES = [
+    {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
+    {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
+    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
+    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes y Cerraduras Pro", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA Oeste"},
+    {"Rubro": "Albañilería", "Prestador": "🧱 Constructora San José", "CUIT": "30-88547612-5", "Teléfono": "11-5541-2369", "Zona de Atención": "Toda CABA"},
+    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
 TABLA_SOLICITADA_OT = [
@@ -69,7 +70,6 @@ with st.sidebar:
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
     
-    # REQUERIMIENTO 3: BOTÓN DE RESETEO EXCLUSIVO DEL HISTORIAL DE PRUEBAS IA
     st.markdown("<br><br>", unsafe_allow_html=True)
     if st.button("⚠️ Resetear Historial Simulador IA", use_container_width=True):
         st.session_state.ordenes_simuladas = []
@@ -115,7 +115,7 @@ if pantalla_activa == "Panel General por Edificio":
         uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
         canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
         tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
-        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se desperfectó {tipo_incidente.lower()} en la UF {uf_sel}.")
+        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se desperfectó {tipo_incidente.lower()} en la UF {uf_sel}.", key="atencion_text")
         if st.button("🚀 Desplegar Enjambre de IA", use_container_width=True):
             st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b>.</div>''', unsafe_allow_html=True)
             costo_s = round(random.uniform(9000, 25000), 2)
@@ -131,9 +131,3 @@ if pantalla_activa == "Panel General por Edificio":
         st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
         
         st.markdown("### 📤 Flujo de Gastos Devengados")
-        st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-        st.info(f"**Total Gastos:** ${total_g_calc:,.2f}")
-        
-        # REQUERIMIENTO 1: ALGORITMO DE LIQUIDACIÓN PRORRATEADA EQUITATIVA (20% CADA UF)
-        st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20%)")
-        cuota_uf = total_g_calc / 5.0
