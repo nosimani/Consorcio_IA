@@ -26,7 +26,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Base de datos e intereses estables
 if "tasas_mora" not in st.session_state:
     st.session_state.tasas_mora = {"Av. Corrientes 1234, CABA": 4.5, "Larrea 435, CABA": 5.0, "Montevideo 891, CABA": 6.2, "San Jose 1111, CABA": 3.8, "Guayaquil 399, CABA": 7.5}
 
@@ -69,12 +68,17 @@ with st.sidebar:
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
+    
+    # REQUERIMIENTO 3: BOTÓN DE RESETEO EXCLUSIVO DEL HISTORIAL DE PRUEBAS IA
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("⚠️ Resetear Historial Simulador IA", use_container_width=True):
+        st.session_state.ordenes_simuladas = []
+        st.rerun()
 
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = st.session_state.tasas_mora[edificio_seleccionado]
 
-# Construcción segura de listas financieras
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -125,13 +129,11 @@ if pantalla_activa == "Panel General por Edificio":
         
         st.markdown("### 📥 Flujo de Ingresos Percibidos")
         st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-        st.info(f"**Total Ingresos:** ${total_i_calc:,.2f}")
         
         st.markdown("### 📤 Flujo de Gastos Devengados")
         st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
         st.info(f"**Total Gastos:** ${total_g_calc:,.2f}")
         
-        st.markdown("---")
-        if balance_neto >= 0: st.success(f"💰 **SUPERÁVIT:** Remanente positivo de caja: **${balance_neto:,.2f}**")
-        else: st.error(f"⚠️ **DÉFICIT:** Saldo negativo en caja: **${balance_neto:,.2f}**")
-            
+        # REQUERIMIENTO 1: ALGORITMO DE LIQUIDACIÓN PRORRATEADA EQUITATIVA (20% CADA UF)
+        st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20%)")
+        cuota_uf = total_g_calc / 5.0
