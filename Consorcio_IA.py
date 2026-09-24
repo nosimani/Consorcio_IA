@@ -3,7 +3,9 @@ import pandas as pd
 import random
 from datetime import datetime
 
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ
+# =====================================================================
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (LETRAS ULTRA AGRANDADAS)
+# =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
     page_icon="🏢",
@@ -11,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
+# Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -52,7 +54,7 @@ ESTADISTICAS_EDIFICIOS = {
     "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1"}
 }
 
-# BASE DE DATA FIJA DE PROVEEDORES FICTICIOS SOLICITADA POR RUBROS
+# BASE DE DATA FIJA DE PROVEEDORES FICTICIOS SOLICITADA POR RUBROS (PLOMEROS, ELECTRICISTAS, CERRAJEROS, ALBAÑILES)
 DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
     {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
@@ -73,7 +75,6 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# Inicialización segura de la persistencia de simulación
 if 'ordenes_simuladas' not in st.session_state: 
     st.session_state.ordenes_simuladas = []
 if "tasas_mora_manual" not in st.session_state:
@@ -144,5 +145,3 @@ if pantalla_activa == "Panel General por Edificio":
             st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
             costo_s = round(random.uniform(9000, 25000), 2)
             
-            # GUARDADO SANEADO COMO TEXTO PLANO SEGURO (CERO MATRICES ANIDADAS)
-            st.session_state.ordenes_simuladas.append({
