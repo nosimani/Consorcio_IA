@@ -52,7 +52,7 @@ st.markdown("""
             transition: transform 0.2s;
         }
         div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
-        div[data-testid="stMetric] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
 
         /* Menú de Solapas Estilo Neón */
@@ -92,15 +92,28 @@ ESTADISTICAS_EDIFICIOS = {
     "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1"}
 }
 
+# MATRIZ COMPLETA DE PRESTADORES DEL EXCEL RESTAURADA AL 100%
 DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Cerrajería", "Proveedor": "Llave", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
     {"Rubro": "Cerrajería", "Proveedor": "Cerradura", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Manojo", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Traba", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Pasador", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "xxx"},
     {"Rubro": "Electricidad", "Proveedor": "El Fusible", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
     {"Rubro": "Electricidad", "Proveedor": "Cablecito", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Patada", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Cortocircuito", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Disyuntor", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "x"},
     {"Rubro": "Gas", "Proveedor": "Pum", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
+    {"Rubro": "Gas", "Proveedor": "Garrafa", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "x"},
+    {"Rubro": "Gas", "Proveedor": "Hornalla", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
     {"Rubro": "Gas", "Proveedor": "Calefonete", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
+    {"Rubro": "Gas", "Proveedor": "Estufeta", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "xxx"},
     {"Rubro": "Plomería", "Proveedor": "Caño", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "xxx"},
-    {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"}
+    {"Rubro": "Plomería", "Proveedor": "Cañito", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Cañete", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "xxxx"},
+    {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Rejilla", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"}
 ]
 
 # TABLA FIJA DE CONTROL ÓRDENES DE TRABAJO SOLICITADA VÍA CAPTURA
@@ -144,35 +157,3 @@ gastos_lista = [
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
     {"Gastos": "sueldo de encargado", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
     {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
-    {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
-    {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
-]
-
-total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
-total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
-balance_neto = total_i_calc - total_g_calc
-
-# =====================================================================
-# PANTALLA 1: DASHBOARD GENERAL
-# =====================================================================
-if pantalla_activa == "Panel General por Edificio":
-    st.title("🏢 Resilia_Condominios")
-    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
-
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(TABLA_SOLICITADA_OT) + len(st.session_state.ordenes_simuladas)))
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    tab_atencion, tab_contable, tab_prov = st.tabs([
-        "Centro de Atencion Multicanal", 
-        "Cuadro de Ingresos y Gastos", 
-        "Cartilla de Proveedores"
-    ])
-
-    with tab_atencion:
-        st.subheader("📥 Recepción Automatizada Multicanal")
-        uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
