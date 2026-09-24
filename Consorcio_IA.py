@@ -52,7 +52,7 @@ st.markdown("""
             transition: transform 0.2s;
         }
         div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
+        div[data-testid="stMetric] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
 
         /* Menú de Solapas Estilo Neón */
@@ -103,7 +103,7 @@ DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"}
 ]
 
-# TABLA FIJA DE CONTROL ÓRDENES DE TRABAJO (SOLICITADA POR CAPTURA)
+# TABLA FIJA DE CONTROL ÓRDENES DE TRABAJO SOLICITADA VÍA CAPTURA
 TABLA_SOLICITADA_OT = [
     {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
     {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
@@ -131,10 +131,9 @@ with st.sidebar:
 
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
-
 tasa_act = st.session_state.tasas_mora[edificio_seleccionado]
 
-# Listados financieros generados con cálculo dinámico
+# Listados financieros generados de forma robusta
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -176,5 +175,4 @@ if pantalla_activa == "Panel General por Edificio":
 
     with tab_atencion:
         st.subheader("📥 Recepción Automatizada Multicanal")
-        col_input, col_output = st.columns([1, 1.2])
-        with col_input:
+        uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
