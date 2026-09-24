@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import random
-from datetime import datetime
 
 # =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ (LETRAS ULTRA AGRANDADAS)
@@ -55,24 +53,6 @@ st.markdown("""
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
 
-        /* Estilos de Botones de Menú Premium */
-        .stButton button {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-            border: 1px solid #38bdf8 !important;
-            color: #ffffff !important;
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
-            padding: 12px 24px !important;
-            border-radius: 12px !important;
-            transition: all 0.3s !important;
-        }
-        .stButton button:hover {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important;
-            border-color: #ffffff !important;
-        }
-
-        /* Tarjetas de Agentes e Inputs */
         .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
         .agent-title { font-size: 1.3rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
@@ -119,7 +99,7 @@ with st.sidebar:
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Vista:", ["Panel General por Edificio", "Abrir Ordenes de Trabajo"], index=0)
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -148,16 +128,10 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# Inicializador de sub-vistas fijas obligatorias
-if "sub_menu" not in st.session_state:
-    st.session_state.sub_menu = "Centro de Atencion Multicanal"
-
-# =====================================================================
-# VISTA 1: DASHBOARD GENERAL DEL EDIFICIO
-# =====================================================================
-if pantalla_activa == "Panel General por Edificio":
-    st.title("🏢 Resilia_Condominios")
-    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
+# RENDERING DIRECTO Y SECUENCIAL COMPLETO PARA EVITAR CONGELAMIENTOS EN PANTALLA
+if pantalla_activa == "📋 Dashboard y Contabilidad":
+    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
+    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
@@ -165,8 +139,24 @@ if pantalla_activa == "Panel General por Edificio":
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
     with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
     
-    # MENÚ DE CONTROL DE BOTONES COMPILADO E INMUNE AL APAGÓN DE SOLAPAS CSS
-    c_b1, c_b2, c_b3 = st.columns(3)
-    with c_b1:
+    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE OBLIGATORIO
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+    
+    st.markdown("### 📥 Flujo de Ingresos Percibidos")
+    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.markdown("### 📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20% OBLIGATORIO
+    st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
+    cuota_uf = total_g_calc / 5.0
+    prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
+    st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
+    
+    st.markdown("---")
+    if balance_neto >= 0:
