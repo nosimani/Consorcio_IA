@@ -19,7 +19,7 @@ st.markdown("""
             background: #000000 !important;
         }
         
-        /* SOLUCIÓN AL LATERAL: Forzar letras visibles en el Sidebar */
+        /* Forzar letras enteramente visibles en el Sidebar Izquierdo */
         [data-testid="stSidebar"], [data-testid="stSidebar"] div, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
             color: #ffffff !important;
             font-size: 1.2rem !important;
@@ -57,17 +57,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# MANEJO DE ESTADO DE SESIÓN PARA EL IMPACTO EN VIVO DE WHATSAPP (SIN ALTERAR LA BASE ESTÁTICA)
-if "historico_ot" not in st.session_state:
-    st.session_state.historico_ot = [
-        {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
-        {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
-        {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26"},
-        {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26"},
-        {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
-    ]
-
-# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA (Tasas de Interés s/ Reglamento)
+# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "tasa": 4.5, "ots": "5"},
     "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "tasa": 5.0, "ots": "5"},
@@ -88,16 +78,17 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL
-TABLA_SOLICITADA_OT = [
-    {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
-    {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
-    {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26"},
-    {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26"},
-    {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
-]
+# INICIALIZACIÓN DINÁMICA DE ÓRDENES DE TRABAJO CON ESTADOS ASIGNADOS (REALIZADO, EN PROCESO, PRESUPUESTADO)
+if "historico_ot" not in st.session_state:
+    st.session_state.historico_ot = [
+        {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
+        {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
+        {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
+        {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
+        {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
+    ]
 
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON VISIBILIDAD MEJORADA)
+# INTERFAZ LATERAL DE CONTROL CORPORATIVO
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -113,7 +104,7 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# Listados financieros estructurados
+# Listados financieros estructurados dinámicos s/ factor
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -132,7 +123,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD (Coeficientes variables por Unidad Funcional)
+# REGLA ESTRUCTURAL DE COPROPIEDAD (Metraje Variable s/ Código Civil y Comercial)
 unidades_reglamento = [
     {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
     {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
@@ -141,11 +132,14 @@ unidades_reglamento = [
     {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
 ]
 
-# PANTALLA 1: DASHBOARD Y CONTABILIDAD
+# ==========================================
+# MÓDULO 1: DASHBOARD Y CONTABILIDAD
+# ==========================================
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("🏢 Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
+    # MÉTRIQUES FLOTANTES DORADAS
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
@@ -153,8 +147,21 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     with m4: st.metric(label="Ordenes de trabajo", value=str(len(st.session_state.historico_ot)))
 
     st.markdown("---")
-    
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
     st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.markdown("### 📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    st.markdown("---")
+    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
+    st.markdown(f"Cálculos auditados con una **Tasa Punitoria Activa Mensual del {tasa_act}%** s/ Reglamento de Copropiedad:")
+    
+    prorrateo_raw = []
+    prorrateo_calculado = []
+    for u in unidades_reglamento:
+        expensa_pura = total_g_calc * u["Coeficiente"]
