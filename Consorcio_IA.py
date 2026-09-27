@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
@@ -9,10 +10,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
+# Inyección de CSS para forzar el fondo NEGRO ABSOLUTO, paneles dorados y letra gigante
 st.markdown("""
     <style>
-        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
+        /* Fondo Negro Absoluto en toda la aplicación */
+        .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
+            background-color: #000000 !important; 
+            background: #000000 !important;
+        }
+        
         h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
@@ -30,16 +36,28 @@ st.markdown("""
             background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
             border-radius: 20px !important;
             padding: 22px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+        
+        /* Contenedor de tablas adaptado al fondo negro */
+        .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8); border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
     </style>
 """, unsafe_allow_html=True)
 
-# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA
+# MANEJO DE ESTADO DE SESIÓN PARA EL IMPACTO EN VIVO DE WHATSAPP (SIN ALTERAR LA BASE ESTÁTICA)
+if "historico_ot" not in st.session_state:
+    st.session_state.historico_ot = [
+        {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
+        {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
+        {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26"},
+        {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26"},
+        {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
+    ]
+
+# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA (Tasas de Interés s/ Reglamento)
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "tasa": 4.5, "ots": "5"},
     "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "tasa": 5.0, "ots": "5"},
@@ -104,7 +122,16 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
+# REGLA ESTRUCTURAL DE COPROPIEDAD (Coeficientes variables por Unidad Funcional)
+unidades_reglamento = [
+    {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
+    {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
+    {"UF": "UF 03", "Piso": "2° A", "Coeficiente": 0.18, "Deuda_Base": 220000.0 if consorcio_actual["mora"] == "2" else 0.0},
+    {"UF": "UF 04", "Piso": "2° B", "Coeficiente": 0.12, "Deuda_Base": 0.0},
+    {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
+]
+
+# EJECUCIÓN TOTALMENTE LINEAL COMPILADA
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("🏢 Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
@@ -113,11 +140,10 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
+    with m4: st.metric(label="Ordenes de trabajo", value=str(len(st.session_state.historico_ot)))
 
     st.markdown("---")
     
-    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
@@ -128,38 +154,5 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20%
-    st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
-    cuota_uf = total_g_calc / 5.0
-    prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
-    st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
-    
+    # SECCIÓN DE LIQUIDACIÓN DE EXPENSAS AVANZADA (COEFICIENTES + MORA AUTOMÁTICA)
     st.markdown("---")
-    
-    # EVALUACIÓN DE BALANCE SANEADA SIN TABULACIONES SINTÁCTICAS PELIGROSAS
-    st.markdown("### 📈 Balance de Ejecución Mensual Neto")
-    st.markdown(f"**Saldo Neto de Caja:** ${balance_neto:,.2f}")
-    
-    # SECCIÓN 3: GRÁFICO COMPARATIVO DORADO
-    st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
-    df_chart = pd.DataFrame({"Flujo Financiero": ["Ingresos Totales", "Gastos Totales"], "Monto Acumulado ($)": [total_i_calc, total_g_calc]})
-    st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
-
-    st.markdown("---")
-    
-    # SECCIÓN 4: CARTILLA DE PROVEEDORES FICTICIOS COMPLETA
-    st.header("📋 Cartilla Homologada de Proveedores")
-    st.markdown("Nómina de prestadores ficticios autorizados (Plomeros, Electricistas, Cerrajeros, Albañiles):")
-    st.dataframe(pd.DataFrame(DATOS_CARTILLA_PROVEEDORES), use_container_width=True, hide_index=True)
-
-# VISTA 2: ORDENES DE TRABAJO ORDENADAS DE MAYOR A MENOR COSTO
-else:
-    st.title("🔧 Centro del Control Técnico Operativo")
-    st.markdown("Trazabilidad presupuestaria avanzada de incidentes ordenada por costo de mayor a menor.")
-    
-    def parsear_monto_limpio(val):
-        try: return float(str(val).replace('$', '').replace('.', '').replace('-', '').replace(' ', '').strip())
-        except: return 0.0
-
-    df_total_ot = pd.DataFrame(TABLA_SOLICITADA_OT)
-    
