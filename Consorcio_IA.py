@@ -10,13 +10,23 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo NEGRO ABSOLUTO, paneles dorados y letra gigante
+# Inyección de CSS para forzar fondo NEGRO ABSOLUTO, paneles dorados y visibilidad del lateral
 st.markdown("""
     <style>
         /* Fondo Negro Absoluto en toda la aplicación */
         .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
             background-color: #000000 !important; 
             background: #000000 !important;
+        }
+        
+        /* SOLUCIÓN AL LATERAL: Forzar letras visibles en el Sidebar */
+        [data-testid="stSidebar"], [data-testid="stSidebar"] div, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+            color: #ffffff !important;
+            font-size: 1.2rem !important;
+        }
+        [data-testid="stSidebar"] p {
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
         }
         
         h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
@@ -87,7 +97,7 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON VISIBILIDAD MEJORADA)
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -103,7 +113,7 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# Listados financieros estructurados con nombres solicitados en letra gigante
+# Listados financieros estructurados
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -131,7 +141,7 @@ unidades_reglamento = [
     {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
 ]
 
-# EJECUCIÓN TOTALMENTE LINEAL COMPILADA
+# PANTALLA 1: DASHBOARD Y CONTABILIDAD
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("🏢 Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
@@ -148,11 +158,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
     st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-    
-    st.markdown("### 📤 Flujo de Gastos Devengados")
-    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-    
-    # SECCIÓN DE LIQUIDACIÓN DE EXPENSAS AVANZADA (COEFICIENTES + MORA AUTOMÁTICA)
-    st.markdown("---")
