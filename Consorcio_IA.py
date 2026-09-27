@@ -104,25 +104,26 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# LÓGICA SALARIAL SUTERH PREPRECISADA (Bruto estimado s/ Neto solicitado)
-neto_encargado = 1500000.0 * f_cal
-bruto_estimado = neto_encargado / 0.805  # Deducción inversa de aportes del 19.5%
-aportes_suterh = bruto_estimado * 0.195
-contribuciones_patronales = bruto_estimado * 0.255
+# ====== CALCULOS FIJOS DEL ENCARGADO SUTERH REQUERIDOS ======
+neto_encargado = 1500000.0
+# Cálculos de Aportes (19.5%) y Contribuciones (25.5%) s/ Bruto Referencial
+bruto_referencial = neto_encargado / 0.805
+aportes_suterh = bruto_referencial * 0.195
+contribuciones_patronales = bruto_referencial * 0.255
+total_cargas_sociales = aportes_suterh + contribuciones_patronales
 
-# Listados financieros estructurados dinámicos
+# Listados financieros estructurados dinámicos s/ factor del edificio seleccionado
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
     {"Ingresos": "intereses por colocacion a plazo fijo", "Monto ($)": 14000.0 * f_cal * (tasa_act / 5.0)}
 ]
 
-# Inclusión de los renglones específicos del SUTERH solicitados de forma equitativa
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
     {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
-    {"Gastos": "cargas sociales suterh (aportes 19.5% + contrib. 25.5%)", "Monto ($)": aportes_suterh + contribuciones_patronales},
+    {"Gastos": "Cargas Sociales SUTERH (Aportes y Contribuciones)", "Monto ($)": total_cargas_sociales},
     {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
     {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
