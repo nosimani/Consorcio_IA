@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Estable (Solo para colores de fondo y fuentes gigantes, sin romper bloques interactivos)
+# Inyección de CSS corregida (Sin comillas conflictivas que dejen la pantalla en negro)
 st.markdown("""
     <style>
         /* Fondo Negro Absoluto en toda la aplicación */
@@ -54,6 +54,15 @@ st.markdown("""
         
         /* Contenedor de tablas adaptado al fondo negro */
         .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8); border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
+
+        /* Tarjetas de Unidades Funcionales */
+        .card-uf {
+            background-color: #1a202c;
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -78,7 +87,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES ESTÁTICAS CORREGIDAS
+# INICIALIZACIÓN DINÁMICA DE ÓRDENES DE TRABAJO CON ESTADOS MAPONEDOS CON LAS DIRECCIONES EXACTAS
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -88,13 +97,13 @@ if "historico_ot" not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
     ]
 
-# INTERFAZ LATERAL DE CONTROL CORPORATIVO (Sin la palabra Campo)
+# INTERFAZ LATERAL DE CONTROL CORPORATIVO
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo"], index=0)
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -161,4 +170,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
     st.markdown("---")
-    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
