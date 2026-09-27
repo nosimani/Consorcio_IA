@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Alta Visibilidad (Corregido para legibilidad absoluta sobre fondo negro)
+# Inyección de CSS de Alta Visibilidad (Garantiza contraste absoluto s/ fondo negro)
 st.markdown("""
     <style>
         /* Fondo Negro Absolute en toda la aplicación */
@@ -29,12 +29,12 @@ st.markdown("""
             font-weight: 700 !important;
         }
         
-        /* SOLUCIÓN AL CONTRASTE DE TÍTULOS: Forzar color blanco y azul con brillo */
+        /* Contraste estricto para títulos principales */
         h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
         h2 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2.2rem !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         h3 { color: #ffffff !important; font-family: sans-serif; font-weight: 700; font-size: 1.8rem !important; }
         
-        /* Textos generales de la aplicación */
+        /* Textos informativos de párrafos y etiquetas */
         .stMarkdown p, p, label, .stRadio label, span { 
             color: #ffffff !important; 
             font-size: 1.3rem !important; 
@@ -86,7 +86,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES COINCIDENTES
+# INICIALIZACIÓN DE ÓRDENES DE TRABAJO CON LAS DIRECCIONES COINCIDENTES
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -156,13 +156,16 @@ ots_edificio_activo = [ot for ot in st.session_state.historico_ot if ot["Edifici
 # MÓDULO 1: DASHBOARD Y CONTABILIDAD
 # ==========================================
 if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
-    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
-
-    # MÉTRICAS FLOTANTES DORADAS
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
-
+    st.markdown("---")
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+    
+    st.subheader("📥 Flujo de Ingresos Percibidos")
+    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.subheader("📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    st.markdown("---")
+    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
