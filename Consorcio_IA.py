@@ -78,7 +78,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES ESTÁTICAS CORREGIDAS
+# INICIALIZACIÓN DE ÓRDENES DE TRABAJO CON LAS DIRECCIONES CORREGIDAS EN FORMATO EXACTO
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -88,7 +88,7 @@ if "historico_ot" not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
     ]
 
-# INTERFAZ LATERAL DE CONTROL CORPORATIVO (Sin la palabra Campo)
+# INTERFAZ LATERAL DE CONTROL CORPORATIVO
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -104,16 +104,25 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
+# LÓGICA SALARIAL SUTERH PREPRECISADA (Bruto estimado s/ Neto solicitado)
+neto_encargado = 1500000.0 * f_cal
+bruto_estimado = neto_encargado / 0.805  # Deducción inversa de aportes del 19.5%
+aportes_suterh = bruto_estimado * 0.195
+contribuciones_patronales = bruto_estimado * 0.255
+
 # Listados financieros estructurados dinámicos
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
     {"Ingresos": "intereses por colocacion a plazo fijo", "Monto ($)": 14000.0 * f_cal * (tasa_act / 5.0)}
 ]
+
+# Inclusión de los renglones específicos del SUTERH solicitados de forma equitativa
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "sueldo de encargado", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
+    {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
+    {"Gastos": "cargas sociales suterh (aportes 19.5% + contrib. 25.5%)", "Monto ($)": aportes_suterh + contribuciones_patronales},
     {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
     {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
@@ -155,12 +164,4 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
     st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-    
-    st.markdown("### 📤 Flujo de Gastos Devengados")
-    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-    
-    st.markdown("---")
-    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
-    st.markdown(f"Cálculos auditados con una **Tasa Punitoria Activa Mensual del {tasa_act}%** s/ Reglamento de Copropiedad:")
     
