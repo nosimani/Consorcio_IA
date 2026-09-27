@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Estable (Para colores de fondo, letras gigantes y paneles dorados)
+# Inyección de CSS de Alta Visibilidad (Corregido para legibilidad absoluta sobre fondo negro)
 st.markdown("""
     <style>
         /* Fondo Negro Absolute en toda la aplicación */
@@ -29,9 +29,17 @@ st.markdown("""
             font-weight: 700 !important;
         }
         
-        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        /* SOLUCIÓN AL CONTRASTE DE TÍTULOS: Forzar color blanco y azul con brillo */
+        h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
+        h2 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2.2rem !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        h3 { color: #ffffff !important; font-family: sans-serif; font-weight: 700; font-size: 1.8rem !important; }
+        
+        /* Textos generales de la aplicación */
+        .stMarkdown p, p, label, .stRadio label, span { 
+            color: #ffffff !important; 
+            font-size: 1.3rem !important; 
+            line-height: 1.6 !important; 
+        }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
@@ -53,7 +61,7 @@ st.markdown("""
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
         
         /* Contenedor de tablas adaptado al fondo negro */
-        .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8); border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
+        .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8) !important; border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -78,7 +86,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO CON LAS DIRECCIONES CORREGIDAS EN FORMATO EXACTO
+# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES COINCIDENTES
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -104,15 +112,14 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# ====== CALCULOS FIJOS DEL ENCARGADO SUTERH REQUERIDOS ======
+# ====== CÁLCULOS SALARIALES SUTERH OBLIGATORIOS EXIGIDOS ======
 neto_encargado = 1500000.0
-# Cálculos de Aportes (19.5%) y Contribuciones (25.5%) s/ Bruto Referencial
 bruto_referencial = neto_encargado / 0.805
 aportes_suterh = bruto_referencial * 0.195
 contribuciones_patronales = bruto_referencial * 0.255
 total_cargas_sociales = aportes_suterh + contribuciones_patronales
 
-# Listados financieros estructurados dinámicos s/ factor del edificio seleccionado
+# Listados financieros estructurados
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -123,7 +130,7 @@ gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
     {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
-    {"Gastos": "Cargas Sociales SUTERH (Aportes y Contribuciones)", "Monto ($)": total_cargas_sociales},
+    {"Gastos": "Cargas Sociales SUTERH (Aportes 19.5% y Contribuciones 25.5%)", "Monto ($)": total_cargas_sociales},
     {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
     {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
@@ -156,13 +163,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
     with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
-    st.markdown("---")
-    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-    
-    st.markdown("### 📥 Flujo de Ingresos Percibidos")
-    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-    
