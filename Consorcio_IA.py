@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS corregida (Sin comillas conflictivas que dejen la pantalla en negro)
+# Inyección de CSS para forzar fondo NEGRO ABSOLUTO, paneles dorados y visibilidad del lateral
 st.markdown("""
     <style>
         /* Fondo Negro Absoluto en toda la aplicación */
@@ -55,13 +55,13 @@ st.markdown("""
         /* Contenedor de tablas adaptado al fondo negro */
         .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8); border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
 
-        /* Tarjetas de Unidades Funcionales */
+        /* Cuadros/Tarjetas para las Unidades Funcionales en Campo */
         .card-uf {
-            background-color: #1a202c;
+            background: rgba(30, 41, 59, 0.7);
             border: 2px solid #38bdf8;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -87,7 +87,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DINÁMICA DE ÓRDENES DE TRABAJO CON ESTADOS MAPONEDOS CON LAS DIRECCIONES EXACTAS
+# INICIALIZACIÓN DINÁMICA DE ÓRDENES DE TRABAJO CON ESTADOS ASIGNADOS MAPPED CON LA BASE ESTÁTICA
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -113,7 +113,7 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# Listados financieros estructurados dinámicos
+# Listados financieros estructurados dinámicos s/ factor
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -132,7 +132,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD
+# REGLA ESTRUCTURAL DE COPROPIEDAD (Metraje Variable s/ Código Civil y Comercial)
 unidades_reglamento = [
     {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
     {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
@@ -167,6 +167,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     
     st.markdown("### 📤 Flujo de Gastos Devengados")
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-    
-    st.markdown("---")
