@@ -10,10 +10,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Estable (Solo para colores de fondo y fuentes gigantes, sin romper bloques interactivos)
+# Inyección de CSS Estable (Para colores de fondo, letras gigantes y paneles dorados)
 st.markdown("""
     <style>
-        /* Fondo Negro Absoluto en toda la aplicación */
+        /* Fondo Negro Absolute en toda la aplicación */
         .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
             background-color: #000000 !important; 
             background: #000000 !important;
@@ -162,3 +162,5 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
+    st.markdown(f"Cálculos auditados con una **Tasa Punitoria Activa Mensual del {tasa_act}%** s/ Reglamento de Copropiedad:")
+    
