@@ -96,13 +96,11 @@ if "historico_ot" not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
     ]
 
-# INTERFAZ LATERAL DE CONTROL CORPORATIVO
+# INTERFAZ LATERAL DE CONTROL CORPORATIVO UNIFICADA
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
-    st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -119,7 +117,7 @@ aportes_suterh = bruto_referencial * 0.195
 contribuciones_patronales = bruto_referencial * 0.255
 total_cargas_sociales = aportes_suterh + contribuciones_patronales
 
-# Listados financieros estructurados con los NUEVOS valores fijos solicitados
+# Listados financieros estructurados con los valores fijos requeridos
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 5320000.0},
     {"Ingresos": "alquileres de locales", "Monto ($)": 3000000.0},
@@ -152,19 +150,20 @@ unidades_reglamento = [
 # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas y contadores
 ots_edificio_activo = [ot for ot in st.session_state.historico_ot if ot["Edificio"] == edificio_seleccionado]
 
-# ==========================================
-# MÓDULO 1: DASHBOARD Y CONTABILIDAD
-# ==========================================
-if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
-    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
+# =========================================================================================
+# VISTA GENERAL COMPLETA, CONTINUA Y MAESTRA (TODO SE MUESTRA AL MISMO TIEMPO EN LA WEB)
+# =========================================================================================
+st.title("🏢 Resilia_Condominios - Panel de Control Integral")
+st.markdown(f"Consorcio de Propiedad Horizontal Activo: **{edificio_seleccionado}**")
 
-    # MÉTRICAS FLOTANTES DORADAS
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
+# 1. PANELES DE MÉTRICAS SUPERIORES
+m1, m2, m3, m4 = st.columns(4)
+with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
+with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
+with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
-    st.markdown("---")
-    
+st.markdown("---")
+
+# 2. CUADRO DE INGRESOS Y GASTOS MÁSTER
+st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
