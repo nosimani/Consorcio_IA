@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
+# Inyección de CSS para forzar el fondo azul metalizado oscuro y paneles dorados
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -39,12 +39,7 @@ st.markdown("""
         .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; }
         .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
-        /* Solapas Celestes Secundarias */
-        .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-        .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
-        .celeste-tabs [aria-selected="true"] { background: #38bdf8 !important; color: #0f172a !important; font-weight: 800 !important; }
-
-        /* Tarjetas de Agentes e Inputs */
+        /* Tarjetas de Agentes */
         .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
         .agent-title { font-size: 1.1rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
@@ -52,31 +47,29 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE CONDOMINIOS
+# ESTRUCTURA DE VALORES FIJOS POR EDIFICIO
 # =====================================================================
-if 'data_consorcios' not in st.session_state:
-    st.session_state.data_consorcios = {
-        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "ots": "2"},
-        "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "ots": "1"},
-        "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2", "ots": "1"},
-        "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1", "ots": "1"},
-        "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "ots": "1"}
-    }
+ESTADISTICAS_EDIFICIOS = {
+    "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "ots": "2"},
+    "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "ots": "1"},
+    "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2", "ots": "1"},
+    "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1", "ots": "1"},
+    "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "ots": "1"}
+}
 
+CARTILLA_PROVEEDORES = {
+    "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333"],
+    "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333"],
+    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111"],
+    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666"]
+}
+
+# Repositorio Base de Órdenes de Trabajo para evitar fallas de renderizado
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura", "Estado": "Trabajos en Proceso"},
-        {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
-        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
+        {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"}
     ]
-
-CARTILLA_PROVEEDORES = {
-    "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333", "🔑 Traba - Tel: 444444444", "🔑 Pasador - Tel: 555555555"],
-    "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333", "⚡ Cortocircuito - Tel: 444444444", "⚡ Disyuntor - Tel: 555555555"],
-    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111", "🔥 Calefonete - Tel: 222222222", "🔥 Estufeta - Tel: 333333333"],
-    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666", "🚰 Canilla - Tel: 777777777", "🚰 Rejilla - Tel: 222222222"]
-}
 
 # =====================================================================
 # PANEL LATERAL (SIDEBAR DE CONTROL)
@@ -88,17 +81,18 @@ with st.sidebar:
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Vista:", ["Panel General por Edificio", "Abrir Ordenes de Trabajo"], index=0)
     st.markdown("---")
-    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
+    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
     csv_data = pd.DataFrame(st.session_state.ordenes_globales).to_csv(index=False).encode('utf-8')
     st.download_button(label="Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
+# Extracción de factores directos del diccionario estático (Cero dependencia de Session_State viejo)
+consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros solicitados
+# Generación forzada en cada ciclo de ejecución (Mismo requerimiento explícito)
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -130,7 +124,6 @@ if pantalla_activa == "Panel General por Edificio":
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # SOLAPAS CON TEXTO PLANO (BLINDADO CONTRA ERRORES DE CACHÉ DE STREAMLIT)
     tab_atencion, tab_contable, tab_prov = st.tabs([
         "Centro de Atencion Multicanal", 
         "Cuadro de Ingresos y Gastos", 
@@ -139,16 +132,37 @@ if pantalla_activa == "Panel General por Edificio":
 
     with tab_atencion:
         st.subheader("📥 Recepción Automatizada Multicanal")
-        col_input, col_output = st.columns([1, 1.2])
-        with col_input:
-            uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
-            canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-            tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
-            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
-            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-        with col_output:
-            st.markdown("### ⚙️ Trazabilidad de Decisiones")
-            if procesar:
-                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-                costo_s = round(random.uniform(9000, 25000), 2)
-                est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
+        uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
+        canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+        tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
+        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
+        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+        if procesar:
+            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
+            st.success("¡Base de datos sincronizada!")
+
+    # CÓDIGO NATIVO SIMPLIFICADO: DIBUJO OBLIGATORIO DE TABLAS SIN COLUMNAS ANIDADAS
+    with tab_contable:
+        st.subheader("📊 Cuadro de Ingresos y Gastos")
+        st.markdown(f"Flujo de caja inmediato auditado para el edificio: **{edificio_seleccionado}**")
+        
+        st.markdown("### 📥 Flujo de Ingresos Percibidos")
+        st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+        total_i = sum(x['Monto ($)'] for x in ingresos_lista)
+        st.info(f"**Total Ingresos Registrados:** ${total_i:,.2f}")
+        
+        st.markdown("### 📤 Flujo de Gastos Devengados")
+        st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+        st.info(f"**Total Gastos Registrados:** ${total_g:,.2f}")
+
+    with tab_prov:
+        st.subheader("📋 Cartilla Homologada Desplegable")
+        st.selectbox("🔑 Cerrajería:", CARTILLA_PROVEEDORES["Cerrajería"])
+        st.selectbox("⚡ Electricidad Matriculada:", CARTILLA_PROVEEDORES["Electricidad"])
+        st.selectbox("🔥 Suministro de Gas:", CARTILLA_PROVEEDORES["Gas"])
+        st.selectbox("🚰 Plomería e Ingeniería Hidráulica:", CARTILLA_PROVEEDORES["Plomería"])
+
+# =====================================================================
+# PANTALLA 2: MÓDULO EXCLUSIVO DE ORDENES DE TRABAJO
+# =====================================================================
+else:
