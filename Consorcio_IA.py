@@ -87,6 +87,7 @@ with st.sidebar:
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
+    # RADIO SANEADO: CONTROL TOTAL DE FLUJO EN PANTALLA
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
@@ -116,9 +117,11 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
+# =====================================================================
+# CONDICIONAL 1: MÓDULO DE CONTABILIDAD PRINCIPAL
+# =====================================================================
 if pantalla_activa == "📋 Dashboard y Contabilidad":
-    # LINEAL: INYECCIÓN MÁGICA DEL GIF ANIMADO CON ALTA COBERTURA EN PIXELES
+    # Banner GIF animado premium en alta resolución
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
@@ -131,9 +134,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
 
     st.markdown("---")
     
-    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-    
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
     st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
@@ -142,7 +143,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20%
     st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
     cuota_uf = total_g_calc / 5.0
     prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
@@ -152,12 +152,10 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.markdown("### 📈 Balance de Ejecución Mensual Neto")
     st.markdown(f"**Saldo Neto de Caja:** ${balance_neto:,.2f}")
     
-    # SECCIÓN 3: GRÁFICO COMPARATIVO DORADO
     st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
     df_chart = pd.DataFrame({"Flujo Financiero": ["Ingresos Totales", "Gastos Totales"], "Monto Acumulado ($)": [total_i_calc, total_g_calc]})
     st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
 
     st.markdown("---")
-    
-    # SECCIÓN 4: CARTILLA DE PROVEEDORES FICTICIOS COMPLETA
     st.header("📋 Cartilla Homologada de Proveedores")
+    st.markdown("Nómina de prestadores ficticios autorizados (Plomeros, Electricistas, Cerrajeros, Albañiles):")
