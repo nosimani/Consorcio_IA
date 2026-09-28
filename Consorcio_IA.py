@@ -6,7 +6,8 @@ import pandas as pd
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
-    page_icon="",
+    page_icon="https://imgbox.com",
+    layout="wide"
 )
 
 # Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
