@@ -95,23 +95,22 @@ with st.sidebar:
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-# Carga de la configuración del edificio activo
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
-f_cal = consorcio_actual["factor"] # Letra minúscula unificada de forma estricta
+f_cal = consorcio_actual["factor"]
 
-# Algoritmo de renderizado financiero proporcional
+# Lógica financiera reactiva
 ingresos_lista = [
-    {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 320000.0 * f_cal},
-    {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
-    {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 14000.0 * f_cal}
+    {"Ingresos": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto ($)": 320000.0 * f_cal},
+    {"Ingresos": "Alquileres de Locales Comerciales PB", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
+    {"Ingresos": "Intereses por colocaciones a Plazo Fijo", "Monto ($)": 14000.0 * f_cal}
 ]
 gastos_lista = [
-    {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 45000.0 * f_cal},
-    {"Concepto": "Honorarios de Administración", "Monto": 35000.0 * f_cal},
-    {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
-    {"Concepto": "Compra de artículos de limpieza", "Monto": 12000.0 * f_cal},
-    {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 18000.0 * f_cal},
-    {"Concepto": "Otros gastos generales y bancarios", "Monto": 7000.0 * f_cal}
+    {"Gastos": "Gastos por Reparaciones e Infraestructura", "Monto ($)": 45000.0 * f_cal},
+    {"Gastos": "Honorarios de Administración", "Monto ($)": 35000.0 * f_cal},
+    {"Gastos": "Sueldo de Encargado + Cargas SUTERH", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
+    {"Gastos": "Compra de artículos de limpieza", "Monto ($)": 12000.0 * f_cal},
+    {"Gastos": "Pagos de luz (Edesur/Edenor Central)", "Monto ($)": 18000.0 * f_cal},
+    {"Gastos": "Otros gastos generales", "Monto ($)": 7000.0 * f_cal}
 ]
 
 # =====================================================================
@@ -121,10 +120,9 @@ if pantalla_activa == "🏠 Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
 
-    # MÉTRICAS EN DORADO
     m1, m2, m3, m4 = st.columns(4)
     with m1: 
-        total_g = sum(x['Monto'] for x in gastos_lista)
+        total_g = sum(x['Monto ($)'] for x in gastos_lista)
         st.metric(label="Total gastos del periodo", value=f"${total_g:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
@@ -152,3 +150,4 @@ if pantalla_activa == "🏠 Panel General por Edificio":
             if procesar:
                 st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
                 costo_s = round(random.uniform(9000, 25000), 2)
+                est_asig = "Trabajos Pendientes" if costo_s > 20000.0 else "Trabajos Solicitados"
