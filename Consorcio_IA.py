@@ -70,7 +70,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# PERSISTENCIA Y MOTOR DE CONFIGURACIÓN DE INTERESES POR EDIFICIO
+# CONFIGURACIÓN PERSISTENTE DE INTERESES POR EDIFICIO
 # =====================================================================
 if "tasas_mora" not in st.session_state:
     st.session_state.tasas_mora = {
@@ -82,7 +82,7 @@ if "tasas_mora" not in st.session_state:
     }
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE CONDOMINIOS
+# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA
 # =====================================================================
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1"},
@@ -103,6 +103,7 @@ DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"}
 ]
 
+# TABLA FIJA DE CONTROL ÓRDENES DE TRABAJO (SOLICITADA POR CAPTURA)
 TABLA_SOLICITADA_OT = [
     {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
     {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
@@ -111,12 +112,8 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# PERSISTENCIA REQUERIMIENTO 1: ENJAMBRE DE IA CONEXIÓN OPERATIVA REAL
-if 'ordenes_globales' not in st.session_state:
-    st.session_state.ordenes_globales = [
-        {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
-        {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"}
-    ]
+if 'ordenes_simuladas' not in st.session_state:
+    st.session_state.ordenes_simuladas = []
 
 # =====================================================================
 # PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
@@ -135,11 +132,9 @@ with st.sidebar:
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# REQUERIMIENTO 3: CONTROLADOR DINÁMICO DE INTERESES / MORA PERSONALIZADA
-st.session_state.tasas_mora[edificio_seleccionado] = consorcio_actual.get("tasa_mora_manual", st.session_state.tasas_mora[edificio_seleccionado])
-
-# Listados financieros generados con cálculo dinámico del factor e intereses de mora directos
 tasa_act = st.session_state.tasas_mora[edificio_seleccionado]
+
+# Listados financieros generados con cálculo dinámico
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -168,3 +163,18 @@ if pantalla_activa == "Panel General por Edificio":
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m4: st.metric(label="Ordenes de trabajo", value=str(len(TABLA_SOLICITADA_OT) + len(st.session_state.ordenes_simuladas)))
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    tab_atencion, tab_contable, tab_prov = st.tabs([
+        "Centro de Atencion Multicanal", 
+        "Cuadro de Ingresos y Gastos", 
+        "Cartilla de Proveedores"
+    ])
+
+    with tab_atencion:
+        st.subheader("📥 Recepción Automatizada Multicanal")
+        col_input, col_output = st.columns([1, 1.2])
+        with col_input:
