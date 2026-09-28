@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (CYBERPUNK CORPORATIVO)
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro y paneles dorados
+# Inyección de CSS de Vanguardia Estética (Fondo Metalizado Oscuro, Neón y Oro)
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -21,7 +21,7 @@ st.markdown("""
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
         .stMarkdown p { color: #e2e8f0; }
 
-        /* Paneles de Métricas en Dorado Premium */
+        /* Paneles de Métricas en Oro Líquido Flotante */
         div[data-testid="stMetric"] {
             background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
             border-radius: 20px !important;
@@ -39,7 +39,7 @@ st.markdown("""
         .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; }
         .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
-        /* Tarjetas de Agentes */
+        /* Tarjetas de Agentes e Inputs */
         .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
         .agent-title { font-size: 1.1rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
@@ -47,7 +47,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# BASE DE DATOS GLOBAL DE CONDOMINIOS Estática
+# BASE DE DATOS GLOBAL DE CONDOMINIOS
 # =====================================================================
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "ots": "2"},
@@ -105,7 +105,6 @@ gastos_lista = [
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
 ]
 
-# Totales para cálculos y gráficos
 total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
@@ -146,26 +145,27 @@ if pantalla_activa == "Panel General por Edificio":
         st.subheader("📊 Cuadro de Ingresos y Gastos")
         st.markdown(f"Flujo de caja dinámico para el edificio: **{edificio_seleccionado}**")
         
-        c_izq, c_der = st.columns(2)
-        with c_izq:
-            st.markdown("### 📥 Flujo de Ingresos Percibidos")
-            st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-            st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-            
-        with c_der:
-            st.markdown("### 📤 Flujo de Gastos Devengados")
-            st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-            st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-            
-        st.markdown("---")
+        st.markdown("### 📥 Flujo de Ingresos Percibidos")
+        st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+        st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
         
-        # 🟢 MÓDULO AUTOMÁTICO SOLICITADO: CÁLCULO DE GANANCIA NETA DESTACADO
+        st.markdown("### 📤 Flujo de Gastos Devengados")
+        st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+        st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+        
+        st.markdown("---")
         st.markdown("### 📈 Balance de Ejecución Mensual Neto")
         if balance_neto >= 0:
             st.success(f"💰 **SUPERÁVIT CONSORCIAL DETECTADO:** El remanente neto positivo de caja es de **${balance_neto:,.2f}**")
         else:
             st.error(f"⚠️ **DÉFICIT FINANCIERO DETECTADO:** El saldo remanente negativo en caja es de **${balance_neto:,.2f}**")
             
-        # 📊 MÓDULO SOLICITADO: GRÁFICO DE BARRAS INTERACTIVO COLOR DORADO
         st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
         df_chart = pd.DataFrame({
+            "Flujo Financiero": ["Ingresos Totales", "Gastos Totales"],
+            "Monto Acumulado ($)": [total_i_calc, total_g_calc]
+        })
+        st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
+
+    with tab_prov:
+        st.subheader("📋 Cartilla Homologada Desplegable")
