@@ -65,7 +65,6 @@ st.markdown("""
         .agent-title { font-size: 1.3rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
         
-        /* Mensajes de información y alertas más grandes */
         .stAlert div { font-size: 1.3rem !important; }
     </style>
 """, unsafe_allow_html=True)
@@ -81,7 +80,7 @@ ESTADISTICAS_EDIFICIOS = {
     "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "ots": "1"}
 }
 
-# MATRIZ ESTRUCTURADA DE TU EXCEL ORIGINAL CON TODOS LOS PRESTADORES REALES
+# MATRIZ HISTÓRICA COMPLETA DE PRESTADORES DEL EXCEL RESTAURADA
 DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Cerrajería", "Proveedor": "Llave", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
     {"Rubro": "Cerrajería", "Proveedor": "Cerradura", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
@@ -105,6 +104,16 @@ DATOS_EXCEL_PROVEEDORES = [
     {"Rubro": "Plomería", "Proveedor": "Rejilla", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"}
 ]
 
+# NUEVA TABLA INTEGRADA FIJA DE ÓRDENES DE TRABAJO (SOLICITADA POR CAPTURA DE PANTALLA)
+TABLA_SOLICITADA_OT = [
+    {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
+    {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
+    {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26"},
+    {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26"},
+    {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
+]
+
+# Inicialización segura en Session State para simulación multicanal reactiva
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
@@ -112,7 +121,7 @@ if 'ordenes_globales' not in st.session_state:
     ]
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
+# PANEL LATERAL (SIDEBAR DE CONTROL AUTOMATIZADO CON TU LOGO)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -131,7 +140,7 @@ with st.sidebar:
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros generados de forma robusta
+# Listados financieros dinámicos
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -139,22 +148,3 @@ ingresos_lista = [
 ]
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
-    {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "sueldo de encargado", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
-    {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
-    {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
-    {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
-]
-
-total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
-total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
-balance_neto = total_i_calc - total_g_calc
-
-# =====================================================================
-# PANTALLA 1: DASHBOARD GENERAL
-# =====================================================================
-if pantalla_activa == "Panel General por Edificio":
-    st.title("🏢 Resilia_Condominios")
-    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
-
-    m1, m2, m3, m4 = st.columns(4)
