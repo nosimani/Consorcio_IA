@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # =====================================================================
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (CYBERPUNK CORPORATIVO)
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Vanguardia Estética (Fondo Metalizado Oscuro, Neón y Oro)
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y sub-solapas celestes
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -21,7 +21,7 @@ st.markdown("""
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
         .stMarkdown p { color: #e2e8f0; }
 
-        /* Paneles de Métricas en Oro Líquido Flotante */
+        /* Paneles de Métricas en Dorado Premium */
         div[data-testid="stMetric"] {
             background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
             border-radius: 20px !important;
@@ -40,7 +40,7 @@ st.markdown("""
         .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
         /* Solapas Celestes Secundarias */
-        .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; }
+        .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
         .celeste-tabs [aria-selected="true"] { background: #38bdf8 !important; color: #0f172a !important; font-weight: 800 !important; }
 
@@ -86,19 +86,19 @@ with st.sidebar:
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
+    pantalla_activa = st.radio("Seleccione Vista:", ["Panel General por Edificio", "Abrir Ordenes de Trabajo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
     st.markdown("---")
     csv_data = pd.DataFrame(st.session_state.ordenes_globales).to_csv(index=False).encode('utf-8')
-    st.download_button(label="📊 Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
+    st.download_button(label="Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
 consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros solicitados con nombres e ítems específicos
+# Listados financieros solicitados
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -116,7 +116,7 @@ gastos_lista = [
 # =====================================================================
 # PANTALLA 1: DASHBOARD GENERAL
 # =====================================================================
-if pantalla_activa == "🏠 Panel General por Edificio":
+if pantalla_activa == "Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
 
@@ -130,10 +130,11 @@ if pantalla_activa == "🏠 Panel General por Edificio":
 
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # SOLAPAS CON TEXTO PLANO (BLINDADO CONTRA ERRORES DE CACHÉ DE STREAMLIT)
     tab_atencion, tab_contable, tab_prov = st.tabs([
-        "💬 Centro de Atención Multicanal", 
-        "📊 Cuadro de Ingresos y Gastos", 
-        "📋 Cartilla de Proveedores"
+        "Centro de Atencion Multicanal", 
+        "Cuadro de Ingresos y Gastos", 
+        "Cartilla de Proveedores"
     ])
 
     with tab_atencion:
