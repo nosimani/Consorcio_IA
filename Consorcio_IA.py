@@ -13,7 +13,7 @@ st.subheader("Consultoría de Propiedad Horizontal y Automatización Contable-Le
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
-    st.warning("⚠️ Falta configurar la GEMINI_API_KEY in los Secrets de la App.")
+    st.warning("⚠️ Falta configurar la GEMINI_API_KEY en los Secrets de la App.")
 
 # Formulario en la web para ingresar el reclamo del propietario
 st.write("### 📩 Mesa de Entradas Digital (Reclamos de Propietarios)")
@@ -28,34 +28,19 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
     else:
         with st.spinner("El enjambre está operando..."):
             try:
-                # Inicializar el modelo estable
-                model = genai.GenerativeModel('gemini-pro')
+                # Forzar el modelo base estable en producción (sin rutas beta)
+                model = genai.GenerativeModel('models/gemini-pro')
 
                 # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
-                prompt_atencion = f"""
-                Sos el Agente Especialista en Atención al Copropietario de una administración en Argentina.
-                Tu meta es analizar el mensaje del vecino, extraer la UF, el rubro técnico (Plomería, Electricidad, Gas, Ascensores) y la urgencia.
-                Mensaje del vecino: "{mensaje_vecino}"
-                Devuelve un informe estructurado con UF, Rubro, Nivel de Urgencia y un saludo empático de respuesta.
-                """
+                prompt_atencion = f"Sos el Agente Especialista en Atención al Copropietario de una administración en Argentina. Tu meta es analizar el mensaje del vecino, extraer la UF, el rubro técnico (Plomería, Electricidad, Gas, Ascensores) y la urgencia. Mensaje del vecino: '{mensaje_vecino}'. Devuelve un informe estructurado con UF, Rubro, Nivel de Urgencia y un saludo empático de respuesta."
                 respuesta_atencion = model.generate_content(prompt_atencion).text
 
                 # --- AGENTE 2: LEGAL Y COMPLIANCE CONTABLE ---
-                prompt_legal = f"""
-                Sos el Agente Auditor Legal y Contador de Propiedad Horizontal en Argentina.
-                Basándote en el siguiente informe de mantenimiento:
-                "{respuesta_atencion}"
-                Aplica el Código Civil y Comercial de la Nación (Art. 2041, 2042 y 2067) y determina si el gasto corresponde al Consorcio (bien común/cañería interna) o al Propietario (bien privado/gasto exclusivo). Indica si se imputará en Expensas Ordinarias o Extraordinarias de forma resumida en un párrafo contundente.
-                """
+                prompt_legal = f"Sos el Agente Auditor Legal y Contador de Propiedad Horizontal en Argentina. Basándote en el siguiente informe de mantenimiento: '{respuesta_atencion}'. Aplica el Código Civil y Comercial de la Nación (Art. 2041, 2042 y 2067) y determina si el gasto corresponde al Consorcio (bien común/cañería interna) o al Propietario (bien privado/gasto exclusivo). Indica si se imputará en Expensas Ordinarias o Extraordinarias de forma resumida en un párrafo contundente."
                 respuesta_legal = model.generate_content(prompt_legal).text
 
                 # --- AGENTE 3: COORDINADOR DE PROVEEDORES ---
-                prompt_proveedores = f"""
-                Sos el Agente Coordinador de Mantenimiento y Gremios Matriculados.
-                Tomando en cuenta la resolución legal:
-                "{respuesta_legal}"
-                Si corresponde al consorcio, redacta un mensaje formal e institucional por WhatsApp/Mail dirigido a un prestador matriculado del rubro detectado para solicitarle presupuesto urgente y visita técnica a la locación. Si no corresponde, redacta una respuesta formal denegando el servicio al propietario con fundamentos.
-                """
+                prompt_proveedores = f"Sos el Agente Coordinador de Mantenimiento y Gremios Matriculados. Tomando en cuenta la resolución legal: '{respuesta_legal}'. Si corresponde al consorcio, redacta un mensaje formal e institucional por WhatsApp/Mail dirigido a un prestador matriculado del rubro detectado para solicitarle presupuesto urgente y visita técnica a la locación. Si no corresponde, redacta una respuesta formal denegando el servicio al propietario con fundamentos."
                 respuesta_proveedores = model.generate_content(prompt_proveedores).text
 
                 # --- RENDERIZADO VISUAL EN LA APP ---
