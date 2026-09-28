@@ -123,7 +123,7 @@ balance_neto = total_i_calc - total_g_calc
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     # Banner GIF animado premium en alta resolución
     st.image("https://imgbox.com", use_container_width=True)
-    st.title("RESILIA_AGENCY_CONDOMINIOS")
+    st.title("Panel Principal")
 
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
