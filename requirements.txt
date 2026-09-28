@@ -1,6 +1,2 @@
 streamlit
-pydantic>=2.4.2
-pydantic-settings
-crewai==0.102.0
-chromadb==0.5.5
-
+crewai==0.83.0
