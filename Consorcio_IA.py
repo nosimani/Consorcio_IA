@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
 
-# =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
-# =====================================================================
-    # Tu imagen nocturna Cyberpunk de la ciudad en alta definición
-    st.image("https://imgbox.com", use_container_width=True)
-    st.title("Resilia_Condominios - Panel de Control Principal")
+st.set_page_config(
+    page_title="Resilia_Condominios",
+    page_icon="https://imgbox.com",
+    layout="wide"
+)
 
-# Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -16,7 +16,7 @@ st.markdown("""
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
-        /* MODIFICADOR: Título de la barra lateral achicado y estilizado en degradado dorado y rojo */
+        /* Título de la barra lateral achicado y estilizado en degradado dorado y rojo */
         [data-testid="stSidebar"] h1 {
             font-size: 1.35rem !important;
             font-weight: 900 !important;
@@ -81,10 +81,10 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL LOCAL FÉNIX)
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO FÉNIX LOCAL)
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
-    st.title("Resil_IA Condominios")
+    st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
@@ -118,7 +118,9 @@ balance_neto = total_i_calc - total_g_calc
 
 # EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
 if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
+    # LINEAL: SE ACABA DE INYECTAR TU CIUDAD VIOLETA NOCTURNA CON REGLAS DE INDENTACIÓN PERFECTAS
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
@@ -147,8 +149,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
     
     st.markdown("---")
-    
-    # EVALUACIÓN DE BALANCE SANEADA SIN TABULACIONES SINTÁCTICAS PELIGROSAS
     st.markdown("### 📈 Balance de Ejecución Mensual Neto")
     st.markdown(f"**Saldo Neto de Caja:** ${balance_neto:,.2f}")
     
