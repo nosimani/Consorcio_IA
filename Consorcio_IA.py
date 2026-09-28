@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
-# =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
     page_icon="https://imgbox.com",
@@ -83,11 +81,14 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# INTERFAZ LATERAL FIXED CON LINK SEGURO EN LA NUBE PARA EL LOGO FÉNIX RESILIA
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO FÉNIX LOCAL)
 with st.sidebar:
-    st.image("https://imgbox.com", use_container_width=True)
+    st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
+    st.markdown("---")
+    # RADIO SANEADO: CONTROL TOTAL DE FLUJO EN PANTALLA
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -116,49 +117,45 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# ARCHITECTURA PLANA ABSOLUTA: DESPLIEGUE EN CASCADA CONTINUA PARA EVITAR TRABAS DE MENÚS
-st.image("https://imgbox.com", use_container_width=True)
-st.title("Resilia_Condominios - Panel de Control Principal")
-st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
+# =====================================================================
+# CONDICIONAL 1: MÓDULO DE CONTABILIDAD PRINCIPAL
+# =====================================================================
+if pantalla_activa == "📋 Dashboard y Contabilidad":
+    # Banner GIF animado premium en alta resolución
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios - Panel de Control Principal")
+    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
-m1, m2, m3, m4 = st.columns(4)
-with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
+    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
 
-st.markdown("---")
-
-# SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
-st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-
-st.markdown("### 📥 Flujo de Ingresos Percibidos")
-st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-
-st.markdown("### 📤 Flujo de Gastos Devengados")
-st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-
-# SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20%
-st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
-cuota_uf = total_g_calc / 5.0
-prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
-st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
-
-st.markdown("---")
-st.markdown("### 📈 Balance de Ejecución Mensual Neto")
-if balance_neto >= 0:
-    st.success(f"💰 **SUPERÁVIT CONSORCIAL DETECTADO:** El remanente neto positivo de caja es de **${balance_neto:,.2f}**")
-else:
-    st.error(f"⚠️ **DÉFICIT FINANCIERO DETECTADO:** El saldo remanente negativo en caja es de **${balance_neto:,.2f}**")
+    st.markdown("---")
     
-# SECCIÓN 3: GRÁFICO COMPARATIVO DORADO
-st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
-df_chart = pd.DataFrame({"Flujo Financiero": ["Ingresos Totales", "Gastos Totales"], "Monto Acumulado ($)": [total_i_calc, total_g_calc]})
-st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+    st.markdown("### 📥 Flujo de Ingresos Percibidos")
+    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.markdown("### 📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
+    cuota_uf = total_g_calc / 5.0
+    prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
+    st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
+    
+    st.markdown("---")
+    st.markdown("### 📈 Balance de Ejecución Mensual Neto")
+    st.markdown(f"**Saldo Neto de Caja:** ${balance_neto:,.2f}")
+    
+    st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
+    df_chart = pd.DataFrame({"Flujo Financiero": ["Ingresos Totales", "Gastos Totales"], "Monto Acumulado ($)": [total_i_calc, total_g_calc]})
+    st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
 
-st.markdown("---")
-
-# SECCIÓN 4: CARTILLA DE PROVEEDORES FICTICIOS COMPLETA
-st.header("📋 Cartilla Homologada de Proveedores")
+    st.markdown("---")
+    st.header("📋 Cartilla Homologada de Proveedores")
+    st.markdown("Nómina de prestadores ficticios autorizados (Plomeros, Electricistas, Cerrajeros, Albañiles):")
