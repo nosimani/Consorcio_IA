@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 
+# =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
+# =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
     page_icon="🏢",
@@ -9,13 +11,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
+# Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        
+        /* MODIFICADOR: Título de la barra lateral achicado y estilizado en degradado dorado y rojo */
+        [data-testid="stSidebar"] h1 {
+            font-size: 1.35rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            background: linear-gradient(135deg, #d4af37 0%, #ff4d4d 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            letter-spacing: 0.5px !important;
+            margin-top: -5px !important;
+            text-shadow: none !important;
+        }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
@@ -69,10 +84,10 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL LOCAL FÉNIX)
 with st.sidebar:
-    st.image("https://imgbox.com", use_container_width=True)
-    st.title("Resilia_Agency_Condominios")
+    st.image("Resilia.jfif", use_container_width=True)
+    st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
@@ -149,17 +164,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     
     # SECCIÓN 4: CARTILLA DE PROVEEDORES FICTICIOS COMPLETA
     st.header("📋 Cartilla Homologada de Proveedores")
-    st.markdown("Nómina de prestadores ficticios autorizados (Plomeros, Electricistas, Cerrajeros, Albañiles):")
-    st.dataframe(pd.DataFrame(DATOS_CARTILLA_PROVEEDORES), use_container_width=True, hide_index=True)
-
-# VISTA 2: ORDENES DE TRABAJO ORDENADAS DE MAYOR A MENOR COSTO
-else:
-    st.title("🔧 Centro del Control Técnico Operativo")
-    st.markdown("Trazabilidad presupuestaria avanzada de incidentes ordenada por costo de mayor a menor.")
-    
-    def parsear_monto_limpio(val):
-        try: return float(str(val).replace('$', '').replace('.', '').replace('-', '').replace(' ', '').strip())
-        except: return 0.0
-
-    df_total_ot = pd.DataFrame(TABLA_SOLICITADA_OT)
-    
