@@ -136,9 +136,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# =====================================================================
-# VISTA 1: DASHBOARD GENERAL DEL EDIFICIO
-# =====================================================================
+# ARCHITECTURA INTEGRAL: RENDERIZADO GLOBAL POR PANTALLA SELECCIONADA
 if pantalla_activa == "Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
@@ -150,6 +148,8 @@ if pantalla_activa == "Panel General por Edificio":
     with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
 
     st.markdown("<br>", unsafe_allow_html=True)
+    
+    # CRÍTICO: RENDERIZADO LINEAL COMPLETO DE LAS SOLAPAS DEL DASHBOARD PRINCIPAL
     tab_atencion, tab_contable, tab_prov = st.tabs(["Centro de Atencion Multicanal", "Cuadro de Ingresos y Gastos", "Cartilla de Proveedores"])
 
     with tab_atencion:
