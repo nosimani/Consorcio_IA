@@ -57,7 +57,7 @@ st.markdown("""
 
         /* Menú de Solapas Estilo Neón */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; }
-        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 14px 28px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; font-size: 1.3rem !important; }
+        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; font-size: 1.3rem !important; }
         .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
         /* Tarjetas de Agentes e Inputs */
@@ -81,12 +81,29 @@ ESTADISTICAS_EDIFICIOS = {
     "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "ots": "1"}
 }
 
-CARTILLA_PROVEEDORES = {
-    "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333"],
-    "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333"],
-    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111"],
-    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666"]
-}
+# MATRIZ ESTRUCTURADA DE TU EXCEL ORIGINAL CON TODOS LOS PRESTADORES REALES
+DATOS_EXCEL_PROVEEDORES = [
+    {"Rubro": "Cerrajería", "Proveedor": "Llave", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Cerradura", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Manojo", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Traba", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "xxx"},
+    {"Rubro": "Cerrajería", "Proveedor": "Pasador", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "xxx"},
+    {"Rubro": "Electricidad", "Proveedor": "El Fusible", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Cablecito", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Patada", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Cortocircuito", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "x"},
+    {"Rubro": "Electricidad", "Proveedor": "Disyuntor", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "x"},
+    {"Rubro": "Gas", "Proveedor": "Pum", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "x"},
+    {"Rubro": "Gas", "Proveedor": "Garrafa", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "x"},
+    {"Rubro": "Gas", "Proveedor": "Hornalla", "CUIT": "2222222222", "Teléfono": "111111111", "Domicilio": "xxx"},
+    {"Rubro": "Gas", "Proveedor": "Calefonete", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"},
+    {"Rubro": "Gas", "Proveedor": "Estufeta", "CUIT": "2222222222", "Teléfono": "333333333", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Caño", "CUIT": "2222222222", "Teléfono": "444444444", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Cañito", "CUIT": "2222222222", "Teléfono": "555555555", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Cañete", "CUIT": "2222222222", "Teléfono": "666666666", "Domicilio": "xxxx"},
+    {"Rubro": "Plomería", "Proveedor": "Canilla", "CUIT": "2222222222", "Teléfono": "777777777", "Domicilio": "xxx"},
+    {"Rubro": "Plomería", "Proveedor": "Rejilla", "CUIT": "2222222222", "Teléfono": "222222222", "Domicilio": "xxx"}
+]
 
 if 'ordenes_globales' not in st.session_state:
     st.session_state.ordenes_globales = [
@@ -95,7 +112,7 @@ if 'ordenes_globales' not in st.session_state:
     ]
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL)
+# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -114,7 +131,7 @@ with st.sidebar:
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 
-# Listados financieros solicitados con los nombres e ítems requeridos
+# Listados financieros generados de forma robusta
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -141,34 +158,3 @@ if pantalla_activa == "Panel General por Edificio":
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    tab_atencion, tab_contable, tab_prov = st.tabs([
-        "Centro de Atencion Multicanal", 
-        "Cuadro de Ingresos y Gastos", 
-        "Cartilla de Proveedores"
-    ])
-
-    with tab_atencion:
-        st.subheader("📥 Recepción Automatizada Multicanal")
-        uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
-        canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-        tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
-        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
-        procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
-        if procesar:
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-            st.success("¡Base de datos sincronizada!")
-
-    with tab_contable:
-        st.subheader("📊 Cuadro de Ingresos y Gastos")
-        st.markdown(f"Flujo de caja dinámico para el edificio: **{edificio_seleccionado}**")
-        
-        st.markdown("### 📥 Flujo de Ingresos Percibidos")
-        df_inc = pd.DataFrame(ingresos_lista)
-        st.dataframe(df_inc, use_container_width=True, hide_index=True)
