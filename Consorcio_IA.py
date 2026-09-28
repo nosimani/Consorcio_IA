@@ -6,9 +6,7 @@ import pandas as pd
 # =====================================================================
 st.set_page_config(
     page_title="Resilia_Condominios",
-    page_icon="https://www.google.com/imgres?q=icono%20de%20varios%20edificios%20de%20una%20ciudad&imgurl=https%3A%2F%2Fpng.pngtree.com%2Fpng-clipart%2F20241127%2Foriginal%2Fpngtree-colorful-city-building-silhouettes-png-image_17326625.png&imgrefurl=https%3A%2F%2Fes.pngtree.com%2Ffreepng%2Fcolorful-city-building-silhouettes_17326625.html&docid=Tkd1ajkod-B05M&tbnid=jTUW9-KQaUURFM&vet=12ahUKEwjE1Izc-JGXAxXyH7kGHWtVK1AQnPAOegQIRxAA..i&w=2500&h=2500&hcb=2&ved=2ahUKEwjE1Izc-JGXAxXyH7kGHWtVK1AQnPAOegQIRxAA",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_icon="https://imgbox.com",
 )
 
 # Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
