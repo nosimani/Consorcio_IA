@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# =====================================================================
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (LETRAS ULTRA AGRANDADAS)
-# =====================================================================
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
     page_title="Resilia_Condominios",
     page_icon="🏢",
@@ -11,34 +9,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2.2rem !important; }
-        h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 1.9rem !important; }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
-        /* Agrandamos el texto general de la aplicación */
-        .stMarkdown p, p, label, .stRadio label { 
-            color: #e2e8f0; 
-            font-size: 1.3rem !important; 
-            line-height: 1.6 !important;
-        }
-
-        /* FORCE TOTAL: Agrandamos la letra de las descripciones internas de las tablas a tamaño GIGANTE */
+        /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
             font-size: 1.5rem !important; 
             font-weight: 600 !important;
             color: #ffffff !important;
         }
-        
-        /* Modificador para los encabezados de columnas de las tablas */
-        th, .stDataFrame th div {
-            font-weight: 800 !important;
-            color: #38bdf8 !important;
-            font-size: 1.4rem !important;
-        }
+        th, .stDataFrame th div { font-weight: 800 !important; color: #38bdf8 !important; font-size: 1.4rem !important; }
 
         /* Paneles de Métricas en Oro Líquido Flotante */
         div[data-testid="stMetric"] {
@@ -47,21 +32,14 @@ st.markdown("""
             padding: 22px !important;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            transition: transform 0.2s;
         }
-        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-
-        .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
-        .agent-title { font-size: 1.3rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
-# =====================================================================
 # BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA
-# =====================================================================
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "tasa": 4.5, "ots": "5"},
     "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "tasa": 5.0, "ots": "5"},
@@ -91,9 +69,7 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-# =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
-# =====================================================================
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -128,7 +104,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# RENDERING DIRECTO Y SECUENCIAL COMPLETO PARA EVITAR CONGELAMIENTOS EN PANTALLA
+# EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("🏢 Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
@@ -141,7 +117,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
 
     st.markdown("---")
     
-    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE OBLIGATORIO
+    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
@@ -152,11 +128,38 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20% OBLIGATORIO
+    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA CUOTA PARTE AL 20%
     st.markdown("### 🧮 Liquidación Prorrateada por Departamento (Cuota Parte 20% Equitativo)")
     cuota_uf = total_g_calc / 5.0
     prorrateo_data = [{"Unidad Funcional": uf, "Concepto Liquidación": "Expensas Base Prorrateadas (20%)", "Total a Pagar ($)": f"$ {cuota_uf:,.2f}"} for uf in ["1A", "3J", "4K", "5M", "6P"]]
     st.dataframe(pd.DataFrame(prorrateo_data), use_container_width=True, hide_index=True)
     
     st.markdown("---")
-    if balance_neto >= 0:
+    
+    # EVALUACIÓN DE BALANCE SANEADA SIN TABULACIONES SINTÁCTICAS PELIGROSAS
+    st.markdown("### 📈 Balance de Ejecución Mensual Neto")
+    st.markdown(f"**Saldo Neto de Caja:** ${balance_neto:,.2f}")
+    
+    # SECCIÓN 3: GRÁFICO COMPARATIVO DORADO
+    st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
+    df_chart = pd.DataFrame({"Flujo Financiero": ["Ingresos Totales", "Gastos Totales"], "Monto Acumulado ($)": [total_i_calc, total_g_calc]})
+    st.bar_chart(data=df_chart, x="Flujo Financiero", y="Monto Acumulado ($)")
+
+    st.markdown("---")
+    
+    # SECCIÓN 4: CARTILLA DE PROVEEDORES FICTICIOS COMPLETA
+    st.header("📋 Cartilla Homologada de Proveedores")
+    st.markdown("Nómina de prestadores ficticios autorizados (Plomeros, Electricistas, Cerrajeros, Albañiles):")
+    st.dataframe(pd.DataFrame(DATOS_CARTILLA_PROVEEDORES), use_container_width=True, hide_index=True)
+
+# VISTA 2: ORDENES DE TRABAJO ORDENADAS DE MAYOR A MENOR COSTO
+else:
+    st.title("🔧 Centro del Control Técnico Operativo")
+    st.markdown("Trazabilidad presupuestaria avanzada de incidentes ordenada por costo de mayor a menor.")
+    
+    def parsear_monto_limpio(val):
+        try: return float(str(val).replace('$', '').replace('.', '').replace('-', '').replace(' ', '').strip())
+        except: return 0.0
+
+    df_total_ot = pd.DataFrame(TABLA_SOLICITADA_OT)
+    
