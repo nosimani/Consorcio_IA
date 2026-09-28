@@ -3,7 +3,7 @@ import pandas as pd
 
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
-    page_title="Resilia_Condominios",
+    page_title="Resil_IA Condominios",
     page_icon="https://imgbox.com",
     layout="wide"
 )
