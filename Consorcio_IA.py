@@ -1,147 +1,89 @@
 # -*- coding: utf-8 -*-
-"""
-Sistema Multiagente de Administración de Consorcios (PH-AI Swarm)
-Cumple con el Código Civil y Comercial de la Nación (Ley 26.994) y Ley 941.
-"""
-
-import json
+import streamlit as st
+import os
 import random
-from datetime import datetime
+from crewai import Agent, Crew, Process, Task
 
-class LLMEngine:
-    """Simula la lógica de clasificación por IA (NLP) para procesar los mensajes del enjambre."""
-    @staticmethod
-    def procesar(rol: str, prompt: str) -> dict:
-        if "RECLAMO" in prompt.upper() or "FILTRACIÓN" in prompt.upper() or "AGUA" in prompt.upper():
-            return {
-                "categoria": "mantenimiento",
-                "rubro": "plomería" if any(x in prompt.lower() for x in ["agua", "caño", "techo", "baño"]) else "electricidad",
-                "gravedad": "alta" if "urgente" in prompt.lower() or "terrible" in prompt.lower() else "media",
-                "descripcion": "Incidente crítico reportado por el propietario."
-            }
-        return {"categoria": "general", "accion": "atencion_humana"}
+# Configuración de página de Streamlit
+st.set_page_config(page_title="Consorcio IA - Multiagente", layout="wide")
 
-class AgenteBase:
-    def __init__(self, nombre: str, especialidad: str):
-        self.nombre = nombre
-        self.especialidad = especialidad
+st.title("🏢 Consorcio IA: Sistema Multiagente de Administración")
+st.subheader("Consultoría de Propiedad Horizontal Automatizada")
 
-    def registrar_log(self, mensaje: str):
-        print(f"[{self.nombre} - {self.especialidad}]: {mensaje}")
+# Tomar la API Key de los Secrets de Streamlit de forma segura
+if "GEMINI_API_KEY" in st.secrets:
+    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+    os.environ["OPENAI_API_BASE"] = "https://googleapis.com"
+    os.environ["OPENAI_MODEL_NAME"] = "gemini-1.5-flash"
+    os.environ["OPENAI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+else:
+    st.warning("⚠️ Falta configurar la GEMINI_API_KEY en los Secrets de la App.")
 
-class AgenteLegalContable(AgenteBase):
-    """Audita las liquidaciones según el Art. 2067 del CCyC (Obligaciones del Administrador)."""
-    def __init__(self):
-        super().__init__("Agente_LegalContable", "Derecho de Propiedad Horizontal y Contabilidad Federal")
+# Formulario en la web para ingresar el reclamo del propietario
+st.write("### 📩 Mesa de Entradas Digital (Reclamos de Propietarios)")
+mensaje_vecino = st.text_area(
+    "Ingresá el mensaje del propietario o consorcista:",
+    value="Hola, soy Juan de la UF 4B de Corrientes 1500. Estoy desesperado, me está saliendo agua a lo pavote de la pared del baño y me está arruinando el parqué. ¡Mandame a alguien urgente porque se me inunda el departamento!"
+)
 
-    def verificar_cumplimiento_normativo(self, liquidacion: dict) -> bool:
-        self.registrar_log("Verificando consistencia de Fondos de Reserva y aportes de seguridad social...")
-        if liquidacion.get("fondo_reserva", 0) <= 0:
-            self.registrar_log("Alerta Legal: Se omitió el Fondo de Reserva obligatorio por asamblea.")
-        if not liquidacion.get("cargas_sociales_pagas", True):
-            self.registrar_log("Falta Grave: Retención indebida de aportes previsionales del encargado.")
-            return False
-        return True
-
-    def liquidar_expensas(self, consorcio: dict, gastos: list) -> dict:
-        self.registrar_log(f"Calculando expensas para: {consorcio['nombre']}.")
-        total_gastos = sum(g['monto'] for g in gastos)
-        fondo_reserva = total_gastos * 0.10  # Previsión estándar de contingencia
-        
-        liquidacion_final = {
-            "periodo": "09-2026",
-            "total_gastos_A": total_gastos,
-            "fondo_reserva": fondo_reserva,
-            "total_a_recaudar": total_gastos + fondo_reserva,
-            "cargas_sociales_pagas": True,
-            "distribucion_unidades": {}
-        }
-
-        for uf, data in consorcio["unidades"].items():
-            cuota_parte = liquidacion_final["total_a_recaudar"] * data["porcentual"]
-            liquidacion_final["distribucion_unidades"][uf] = round(cuota_parte, 2)
+if st.button("🚀 Ejecutar Enjambre de Agentes"):
+    if "GEMINI_API_KEY" not in st.secrets:
+        st.error("No se puede iniciar el enjambre sin la API Key configurada.")
+    else:
+        with st.spinner("Los agentes están debatiendo y resolviendo el caso técnico/legal..."):
             
-        return liquidacion_final
+            # DEFINICIÓN DE AGENTES
+            agente_atencion = Agent(
+                role="Especialista en Atención al Copropietario",
+                goal="Recibir mensajes de propietarios de edificios en Argentina, empatizar, extraer la UF y determinar la urgencia técnica.",
+                backstory="Sos asistente virtual de un consorcio en Buenos Aires. Clasificás rubros (Plomería, Gas, Electricidad, Ascensores) y urgencias.",
+                verbose=True, allow_delegation=False
+            )
 
-class AgenteAtencionPropietario(AgenteBase):
-    """Gestiona los canales de comunicación y notifica saldos/estados de reclamos."""
-    def __init__(self):
-        super().__init__("Agente_AtencionPropietario", "Atención al Copropietario e Ingesta de Datos")
+            agente_legal_contable = Agent(
+                role="Auditor Legal y Contador de Propiedad Horizontal",
+                goal="Garantizar que cualquier gasto cumpla con el Art. 2067 del CCyC y la Ley 941 de CABA.",
+                backstory="Abogado y contador experto en consorcios. Determinás si el gasto le corresponde al consorcio (bienes comunes) o al propietario.",
+                verbose=True, allow_delegation=False
+            )
 
-    def recibir_mensaje(self, propietario: str, uf: str, mensaje: str) -> dict:
-        self.registrar_log(f"Mensaje de {propietario} (UF: {uf}): '{mensaje}'")
-        analisis = LLMEngine.procesar("Atencion", mensaje)
-        return {"propietario": propietario, "uf": uf, "analisis": analisis}
+            agente_proveedores = Agent(
+                role="Coordinador de Mantenimiento y Gremios",
+                goal="Simular la compulsa de precios y redactar un correo formal de solicitud de presupuesto a los proveedores matriculados.",
+                backstory="Conocés plomeros, electricistas y techistas matriculados de la zona. Creás órdenes de inspección técnicas de urgencia.",
+                verbose=True, allow_delegation=False
+            )
 
-    def enviar_notificacion(self, destinatario: str, mensaje: str):
-        print(f"   >>> [SMS/WhatsApp Enviado a {destinatario}]: {mensaje}")
+            # DEFINICIÓN DE TAREAS
+            tarea_analisis = Task(
+                description=f"Analizá el siguiente mensaje: '{mensaje_vecino}'. Identificá la UF, el rubro y la urgencia.",
+                expected_output="Informe breve con: UF, Rubro, Nivel de Urgencia y respuesta empática para el vecino.",
+                agent=agente_atencion
+            )
 
-class AgenteProveedoresMantenimiento(AgenteBase):
-    """Interactúa automátizadamente con el ecosistema de gremios matriculados."""
-    def __init__(self):
-        super().__init__("Agente_Proveedores", "Bolsa de Trabajo y Compulsa de Precios")
-        self.proveedores = {
-            "plomería": [
-                {"nombre": "Plomería San Martín S.R.L.", "matricula": "M-12345", "mail": "contacto@sanmartin.com"},
-                {"nombre": "Destapaciones Delta", "matricula": "M-9876", "mail": "delta@gmail.com"}
-            ]
-        }
+            tarea_legal = Task(
+                description="Tomá el informe y determiná si el consorcio debe hacerse cargo (Art. 2041/2042 CCyC) o si es un gasto privado.",
+                expected_output="Dictamen legal y contable de 1 párrafo indicando obligación e imputación en expensas ordinarias.",
+                agent=agente_legal_contable
+            )
 
-    def solicitar_cotizaciones(self, rubro: str, detalle: str) -> list:
-        self.registrar_log(f"Abriendo licitación automática para el rubro: {rubro}")
-        cotizaciones = []
-        for p in self.proveedores.get(rubro, []):
-            precio_estimado = round(random.uniform(15000, 35000), 2)
-            cotizaciones.append({"proveedor": p["nombre"], "matricula": p["matricula"], "precio": precio_estimado})
-        return cotizaciones
+            tarea_proveedor = Task(
+                description="Generá una orden de trabajo formal dirigida a un plomero o especialista matriculado para resolver el siniestro.",
+                expected_output="Plantilla de comunicación formal para el proveedor detallando el problema.",
+                agent=agente_proveedores
+            )
 
-class OrchestratorConsorcio:
-    """Core Engine: Vincula y hace interactuar los agentes entre sí en tiempo real (Swarm Paradigm)."""
-    def __init__(self):
-        self.legal = AgenteLegalContable()
-        self.atencion = AgenteAtencionPropietario()
-        self.proveedores = AgenteProveedoresMantenimiento()
-        self.consorcio_db = {
-            "nombre": "Consorcio Av. Corrientes 1500, CABA",
-            "unidades": {
-                "1A": {"propietario": "Carlos Gómez", "porcentual": 0.40},
-                "1B": {"propietario": "Ana Milone", "porcentual": 0.60}
-            }
-        }
-        self.gastos_mes = [
-            {"concepto": "Abono Ascensores S.A.", "monto": 90000},
-            {"concepto": "Sueldo Encargado SUTERH", "monto": 420000}
-        ]
+            # ORQUESTACIÓN
+            enjambre = Crew(
+                agents=[agente_atencion, agente_legal_contable, agente_proveedores],
+                tasks=[tarea_analisis, tarea_legal, tarea_proveedor],
+                process=Process.sequential, verbose=True
+            )
 
-    def procesar_incidente(self, propietario: str, uf: str, mensaje: str):
-        ticket = self.atencion.recibir_mensaje(propietario, uf, mensaje)
-        analisis = ticket["analisis"]
-        
-        if analisis.get("categoria") == "mantenimiento":
-            rubro = analisis.get("rubro")
-            cotizaciones = self.proveedores.solicitar_cotizaciones(rubro, mensaje)
+            # Ejecutar y capturar salida
+            resultado = enjambre.kickoff()
             
-            if cotizaciones:
-                ganador = min(cotizaciones, key=lambda x: x["precio"])
-                print(f"--> [Orquestador]: Adjudicación automática a {ganador['proveedor']} por ${ganador['precio']}.")
-                
-                self.atencion.enviar_notificacion(
-                    propietario, 
-                    f"Tu reclamo de {rubro} fue aprobado. El especialista {ganador['proveedor']} (Mat: {ganador['matricula']}) coordinará la visita técnica."
-                )
-                self.gastos_mes.append({"concepto": f"Reparación {rubro} - UF {uf}", "monto": ganador["precio"]})
-
-    def emitir_periodo(self):
-        liquidacion = self.legal.liquidar_expensas(self.consorcio_db, self.gastos_mes)
-        if self.legal.verificar_cumplimiento_normativo(liquidacion):
-            print("\n================== EXPENSAS EMITIDAS ==================")
-            for uf, monto in liquidacion["distribucion_unidades"].items():
-                prop = self.consorcio_db["unidades"][uf]["propietario"]
-                self.atencion.enviar_notificacion(prop, f"Expensas listas Periodo 09-2026. Importe: ${monto}")
-
-if __name__ == "__main__":
-    sistema = OrchestratorConsorcio()
-    # Simulación de reclamo entrante por canal digital
-    sistema.procesar_incidente("Carlos Gómez", "1A", "Urgente, se rompió un caño en el baño y tengo una filtración terrible!")
-    # Simulación de cierre contable automatizado
-    sistema.emitir_periodo()
+            # Mostrar resultados de forma ordenada en la interfaz web
+            st.success("¡Resolución del Enjambre de Agentes completada!")
+            st.write("### 📋 Dictamen y Acciones Automatizadas del Sistema:")
+            st.markdown(resultado)
