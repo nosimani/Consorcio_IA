@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS para fondo azul metalizado oscuro y paneles dorados
+# Inyección de CSS para forzar el fondo azul metalizado oscuro y paneles dorados
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -71,7 +71,7 @@ if 'ordenes_globales' not in st.session_state:
     ]
 
 # =====================================================================
-# PANEL LATERAL (SIDEBAR DE CONTROL)
+# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
 # =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
@@ -105,6 +105,11 @@ gastos_lista = [
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
 ]
 
+# Totales para cálculos y gráficos
+total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
+total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
+balance_neto = total_i_calc - total_g_calc
+
 # =====================================================================
 # PANTALLA 1: DASHBOARD GENERAL
 # =====================================================================
@@ -113,9 +118,7 @@ if pantalla_activa == "Panel General por Edificio":
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
-    with m1: 
-        total_g = sum(x['Monto ($)'] for x in gastos_lista)
-        st.metric(label="Total gastos del periodo", value=f"${total_g:,.2f}")
+    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
     with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
@@ -143,27 +146,26 @@ if pantalla_activa == "Panel General por Edificio":
         st.subheader("📊 Cuadro de Ingresos y Gastos")
         st.markdown(f"Flujo de caja dinámico para el edificio: **{edificio_seleccionado}**")
         
-        st.markdown("### 📥 Flujo de Ingresos Percibidos")
-        st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-        total_i = sum(x['Monto ($)'] for x in ingresos_lista)
-        st.info(f"**Total Ingresos Registrados:** ${total_i:,.2f}")
+        c_izq, c_der = st.columns(2)
+        with c_izq:
+            st.markdown("### 📥 Flujo de Ingresos Percibidos")
+            st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+            st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+            
+        with c_der:
+            st.markdown("### 📤 Flujo de Gastos Devengados")
+            st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+            st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+            
+        st.markdown("---")
         
-        st.markdown("### 📤 Flujo de Gastos Devengados")
-        st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-        st.info(f"**Total Gastos Registrados:** ${total_g:,.2f}")
-
-    with tab_prov:
-        st.subheader("📋 Cartilla Homologada Desplegable")
-        st.selectbox("🔑 Cerrajería:", CARTILLA_PROVEEDORES["Cerrajería"])
-        st.selectbox("⚡ Electricidad Matriculada:", CARTILLA_PROVEEDORES["Electricidad"])
-        st.selectbox("🔥 Suministro de Gas:", CARTILLA_PROVEEDORES["Gas"])
-        st.selectbox("🚰 Plomería e Ingeniería Hidráulica:", CARTILLA_PROVEEDORES["Plomería"])
-
-# =====================================================================
-# PANTALLA 2: MÓDULO EXCLUSIVO DE ORDENES DE TRABAJO (LINEAL SIN COMPILADORES)
-# =====================================================================
-else:
-    st.title("🔧 Centro del Control Técnico Operativo")
-    st.markdown("Filtrado de incidentes en tiempo real de todos los edificios.")
-    df_global = pd.DataFrame(st.session_state.ordenes_globales)
-    st.dataframe(df_global, use_container_width=True, hide_index=True)
+        # 🟢 MÓDULO AUTOMÁTICO SOLICITADO: CÁLCULO DE GANANCIA NETA DESTACADO
+        st.markdown("### 📈 Balance de Ejecución Mensual Neto")
+        if balance_neto >= 0:
+            st.success(f"💰 **SUPERÁVIT CONSORCIAL DETECTADO:** El remanente neto positivo de caja es de **${balance_neto:,.2f}**")
+        else:
+            st.error(f"⚠️ **DÉFICIT FINANCIERO DETECTADO:** El saldo remanente negativo en caja es de **${balance_neto:,.2f}**")
+            
+        # 📊 MÓDULO SOLICITADO: GRÁFICO DE BARRAS INTERACTIVO COLOR DORADO
+        st.markdown("### 📊 Gráfico Comparativo Analítico (Balance de Caja)")
+        df_chart = pd.DataFrame({
