@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 import streamlit as st
 import os
-import random
-from crewai import Agent, Crew, Process, Task
+import google.generativeai as genai
 
 # Configuración de página de Streamlit
-st.set_page_config(page_title="Consorcio IA - Multiagente", layout="wide")
+st.set_page_config(page_title="Consorcio IA - Enjambre Nativo", layout="wide")
 
 st.title("🏢 Consorcio IA: Sistema Multiagente de Administración")
-st.subheader("Consultoría de Propiedad Horizontal Automatizada")
+st.subheader("Consultoría de Propiedad Horizontal y Automatización Contable-Legal")
 
-# Tomar la API Key de los Secrets de Streamlit de forma segura
+# Validar API Key desde los Secrets de Streamlit
 if "GEMINI_API_KEY" in st.secrets:
-    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
-    os.environ["OPENAI_API_BASE"] = "https://googleapis.com"
-    os.environ["OPENAI_MODEL_NAME"] = "gemini-1.5-flash"
-    os.environ["OPENAI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
     st.warning("⚠️ Falta configurar la GEMINI_API_KEY en los Secrets de la App.")
 
@@ -30,60 +26,54 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
     if "GEMINI_API_KEY" not in st.secrets:
         st.error("No se puede iniciar el enjambre sin la API Key configurada.")
     else:
-        with st.spinner("Los agentes están debatiendo y resolviendo el caso técnico/legal..."):
-            
-            # DEFINICIÓN DE AGENTES
-            agente_atencion = Agent(
-                role="Especialista en Atención al Copropietario",
-                goal="Recibir mensajes de propietarios de edificios en Argentina, empatizar, extraer la UF y determinar la urgencia técnica.",
-                backstory="Sos asistente virtual de un consorcio en Buenos Aires. Clasificás rubros (Plomería, Gas, Electricidad, Ascensores) y urgencias.",
-                verbose=True, allow_delegation=False
-            )
+        with st.spinner("El enjambre está operando..."):
+            try:
+                # Inicializar el modelo base gratuito y potente
+                model = genai.GenerativeModel('gemini-1.5-flash')
 
-            agente_legal_contable = Agent(
-                role="Auditor Legal y Contador de Propiedad Horizontal",
-                goal="Garantizar que cualquier gasto cumpla con el Art. 2067 del CCyC y la Ley 941 de CABA.",
-                backstory="Abogado y contador experto en consorcios. Determinás si el gasto le corresponde al consorcio (bienes comunes) o al propietario.",
-                verbose=True, allow_delegation=False
-            )
+                # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
+                prompt_atencion = f"""
+                Sos el Agente Especialista en Atención al Copropietario de una administración en Argentina.
+                Tu meta es analizar el mensaje del vecino, extraer la UF, el rubro técnico (Plomería, Electricidad, Gas, Ascensores) y la urgencia.
+                Mensaje del vecino: "{mensaje_vecino}"
+                Devuelve un informe estructurado con UF, Rubro, Nivel de Urgencia y un saludo empático de respuesta.
+                """
+                respuesta_atencion = model.generate_content(prompt_atencion).text
 
-            agente_proveedores = Agent(
-                role="Coordinador de Mantenimiento y Gremios",
-                goal="Simular la compulsa de precios y redactar un correo formal de solicitud de presupuesto a los proveedores matriculados.",
-                backstory="Conocés plomeros, electricistas y techistas matriculados de la zona. Creás órdenes de inspección técnicas de urgencia.",
-                verbose=True, allow_delegation=False
-            )
+                # --- AGENTE 2: LEGAL Y COMPLIANCE CONTABLE ---
+                prompt_legal = f"""
+                Sos el Agente Auditor Legal y Contador de Propiedad Horizontal en Argentina.
+                Basándote en el siguiente informe de mantenimiento:
+                "{respuesta_atencion}"
+                Aplica el Código Civil y Comercial de la Nación (Art. 2041, 2042 y 2067) y determina si el gasto corresponde al Consorcio (bien común/cañería interna) o al Propietario (bien privado/gasto exclusivo). Indica si se imputará en Expensas Ordinarias o Extraordinarias de forma resumida en un párrafo contundente.
+                """
+                respuesta_legal = model.generate_content(prompt_legal).text
 
-            # DEFINICIÓN DE TAREAS
-            tarea_analisis = Task(
-                description=f"Analizá el siguiente mensaje: '{mensaje_vecino}'. Identificá la UF, el rubro y la urgencia.",
-                expected_output="Informe breve con: UF, Rubro, Nivel de Urgencia y respuesta empática para el vecino.",
-                agent=agente_atencion
-            )
+                # --- AGENTE 3: COORDINADOR DE PROVEEDORES ---
+                prompt_proveedores = f"""
+                Sos el Agente Coordinador de Mantenimiento y Gremios Matriculados.
+                Tomando en cuenta la resolución legal:
+                "{respuesta_legal}"
+                Si corresponde al consorcio, redacta un mensaje formal e institucional por WhatsApp/Mail dirigido a un prestador matriculado del rubro detectado para solicitarle presupuesto urgente y visita técnica a la locación. Si no corresponde, redacta una respuesta formal denegando el servicio al propietario con fundamentos.
+                """
+                respuesta_proveedores = model.generate_content(prompt_proveedores).text
 
-            tarea_legal = Task(
-                description="Tomá el informe y determiná si el consorcio debe hacerse cargo (Art. 2041/2042 CCyC) o si es un gasto privado.",
-                expected_output="Dictamen legal y contable de 1 párrafo indicando obligación e imputación en expensas ordinarias.",
-                agent=agente_legal_contable
-            )
+                # --- RENDERIZADO VISUAL EN LA APP ---
+                st.success("¡Procesamiento del enjambre completado de forma segura!")
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.info("👤 **Agente Atención**")
+                    st.write(respuesta_atencion)
+                    
+                with col2:
+                    st.warning("⚖️ **Agente Legal/Contable**")
+                    st.write(respuesta_legal)
+                    
+                with col3:
+                    st.success("🛠️ **Agente Proveedores**")
+                    st.write(respuesta_proveedores)
 
-            tarea_proveedor = Task(
-                description="Generá una orden de trabajo formal dirigida a un plomero o especialista matriculado para resolver el siniestro.",
-                expected_output="Plantilla de comunicación formal para el proveedor detallando el problema.",
-                agent=agente_proveedores
-            )
-
-            # ORQUESTACIÓN
-            enjambre = Crew(
-                agents=[agente_atencion, agente_legal_contable, agente_proveedores],
-                tasks=[tarea_analisis, tarea_legal, tarea_proveedor],
-                process=Process.sequential, verbose=True
-            )
-
-            # Ejecutar y capturar salida
-            resultado = enjambre.kickoff()
-            
-            # Mostrar resultados de forma ordenada en la interfaz web
-            st.success("¡Resolución del Enjambre de Agentes completada!")
-            st.write("### 📋 Dictamen y Acciones Automatizadas del Sistema:")
-            st.markdown(resultado)
+            except Exception as e:
+                st.error(f"Error en la ejecución de los agentes: {e}")
