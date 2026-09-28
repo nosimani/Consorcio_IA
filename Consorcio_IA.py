@@ -28,8 +28,8 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
     else:
         with st.spinner("El enjambre está operando..."):
             try:
-                # Forzar el modelo base estable en producción (sin rutas beta)
-                model = genai.GenerativeModel('models/gemini-pro')
+                # Inicializar el modelo con el nombre correcto de producción global
+                model = genai.GenerativeModel('gemini-1.5-flash')
 
                 # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
                 prompt_atencion = f"Sos el Agente Especialista en Atención al Copropietario de una administración en Argentina. Tu meta es analizar el mensaje del vecino, extraer la UF, el rubro técnico (Plomería, Electricidad, Gas, Ascensores) y la urgencia. Mensaje del vecino: '{mensaje_vecino}'. Devuelve un informe estructurado con UF, Rubro, Nivel de Urgencia y un saludo empático de respuesta."
