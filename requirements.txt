@@ -1,2 +1,4 @@
 streamlit
+setuptools
 crewai==0.83.0
+
