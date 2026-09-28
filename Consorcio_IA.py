@@ -13,7 +13,7 @@ st.subheader("Consultoría de Propiedad Horizontal y Automatización Contable-Le
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
-    st.warning("⚠️ Falta configurar la GEMINI_API_KEY en los Secrets de la App.")
+    st.warning("⚠️ Falta configurar la GEMINI_API_KEY in los Secrets de la App.")
 
 # Formulario en la web para ingresar el reclamo del propietario
 st.write("### 📩 Mesa de Entradas Digital (Reclamos de Propietarios)")
@@ -28,8 +28,8 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
     else:
         with st.spinner("El enjambre está operando..."):
             try:
-                # Inicializar el modelo base gratuito y potente
-               model = genai.GenerativeModel('gemini-pro')
+                # Inicializar el modelo estable
+                model = genai.GenerativeModel('gemini-pro')
 
                 # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
                 prompt_atencion = f"""
