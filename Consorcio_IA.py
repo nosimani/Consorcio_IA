@@ -1,147 +1,154 @@
-# -*- coding: utf-8 -*-
-"""
-Sistema Multiagente de Administración de Consorcios (PH-AI Swarm)
-Cumple con el Código Civil y Comercial de la Nación (Ley 26.994) y Ley 941.
-"""
-
-import json
+import streamlit as st
+import pandas as pd
 import random
 from datetime import datetime
 
-class LLMEngine:
-    """Simula la lógica de clasificación por IA (NLP) para procesar los mensajes del enjambre."""
-    @staticmethod
-    def procesar(rol: str, prompt: str) -> dict:
-        if "RECLAMO" in prompt.upper() or "FILTRACIÓN" in prompt.upper() or "AGUA" in prompt.upper():
-            return {
-                "categoria": "mantenimiento",
-                "rubro": "plomería" if any(x in prompt.lower() for x in ["agua", "caño", "techo", "baño"]) else "electricidad",
-                "gravedad": "alta" if "urgente" in prompt.lower() or "terrible" in prompt.lower() else "media",
-                "descripcion": "Incidente crítico reportado por el propietario."
-            }
-        return {"categoria": "general", "accion": "atencion_humana"}
+# =====================================================================
+# CONFIGURACIÓN HIGH-END DE LA INTERFAZ (CYBERPUNK CORPORATIVO)
+# =====================================================================
+st.set_page_config(
+    page_title="Resilia_Condominios",
+    page_icon="🏢",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-class AgenteBase:
-    def __init__(self, nombre: str, especialidad: str):
-        self.nombre = nombre
-        self.especialidad = especialidad
+# Inyección de CSS de Vanguardia Estética (Fondo Metalizado Oscuro, Neón y Oro)
+st.markdown("""
+    <style>
+        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
+        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; }
+        .stMarkdown p { color: #e2e8f0; }
 
-    def registrar_log(self, mensaje: str):
-        print(f"[{self.nombre} - {self.especialidad}]: {mensaje}")
-
-class AgenteLegalContable(AgenteBase):
-    """Audita las liquidaciones según el Art. 2067 del CCyC (Obligaciones del Administrador)."""
-    def __init__(self):
-        super().__init__("Agente_LegalContable", "Derecho de Propiedad Horizontal y Contabilidad Federal")
-
-    def verificar_cumplimiento_normativo(self, liquidacion: dict) -> bool:
-        self.registrar_log("Verificando consistencia de Fondos de Reserva y aportes de seguridad social...")
-        if liquidacion.get("fondo_reserva", 0) <= 0:
-            self.registrar_log("Alerta Legal: Se omitió el Fondo de Reserva obligatorio por asamblea.")
-        if not liquidacion.get("cargas_sociales_pagas", True):
-            self.registrar_log("Falta Grave: Retención indebida de aportes previsionales del encargado.")
-            return False
-        return True
-
-    def liquidar_expensas(self, consorcio: dict, gastos: list) -> dict:
-        self.registrar_log(f"Calculando expensas para: {consorcio['nombre']}.")
-        total_gastos = sum(g['monto'] for g in gastos)
-        fondo_reserva = total_gastos * 0.10  # Previsión estándar de contingencia
-        
-        liquidacion_final = {
-            "periodo": "09-2026",
-            "total_gastos_A": total_gastos,
-            "fondo_reserva": fondo_reserva,
-            "total_a_recaudar": total_gastos + fondo_reserva,
-            "cargas_sociales_pagas": True,
-            "distribucion_unidades": {}
+        /* Paneles de Métricas en Oro Líquido Flotante */
+        div[data-testid="stMetric"] {
+            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
+            border-radius: 20px !important;
+            padding: 22px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            transition: transform 0.2s;
         }
+        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 1.9rem !important; }
 
-        for uf, data in consorcio["unidades"].items():
-            cuota_parte = liquidacion_final["total_a_recaudar"] * data["porcentual"]
-            liquidacion_final["distribucion_unidades"][uf] = round(cuota_parte, 2)
-            
-        return liquidacion_final
+        /* Menú de Solapas Estilo Neón */
+        .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; }
+        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 12px 24px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; }
+        .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
-class AgenteAtencionPropietario(AgenteBase):
-    """Gestiona los canales de comunicación y notifica saldos/estados de reclamos."""
-    def __init__(self):
-        super().__init__("Agente_AtencionPropietario", "Atención al Copropietario e Ingesta de Datos")
+        /* Solapas Celestes Secundarias */
+        .celeste-tabs [data-baseweb="tab-list"] { background-color: #0f172a !important; border: 1px solid #38bdf8 !important; }
+        .celeste-tabs [data-baseweb="tab"] { color: #bae6fd !important; }
+        .celeste-tabs [aria-selected="true"] { background: #38bdf8 !important; color: #0f172a !important; font-weight: 800 !important; }
 
-    def recibir_mensaje(self, propietario: str, uf: str, mensaje: str) -> dict:
-        self.registrar_log(f"Mensaje de {propietario} (UF: {uf}): '{mensaje}'")
-        analisis = LLMEngine.procesar("Atencion", mensaje)
-        return {"propietario": propietario, "uf": uf, "analisis": analisis}
+        /* Tarjetas de Agentes e Inputs */
+        .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
+        .agent-title { font-size: 1.1rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+    </style>
+""", unsafe_allow_html=True)
 
-    def enviar_notificacion(self, destinatario: str, mensaje: str):
-        print(f"   >>> [SMS/WhatsApp Enviado a {destinatario}]: {mensaje}")
+# =====================================================================
+# BASE DE DATOS GLOBAL DE CONDOMINIOS
+# =====================================================================
+if 'data_consorcios' not in st.session_state:
+    st.session_state.data_consorcios = {
+        "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "ots": "2"},
+        "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "ots": "1"},
+        "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2", "ots": "1"},
+        "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1", "ots": "1"},
+        "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "ots": "1"}
+    }
 
-class AgenteProveedoresMantenimiento(AgenteBase):
-    """Interactúa automátizadamente con el ecosistema de gremios matriculados."""
-    def __init__(self):
-        super().__init__("Agente_Proveedores", "Bolsa de Trabajo y Compulsa de Precios")
-        self.proveedores = {
-            "plomería": [
-                {"nombre": "Plomería San Martín S.R.L.", "matricula": "M-12345", "mail": "contacto@sanmartin.com"},
-                {"nombre": "Destapaciones Delta", "matricula": "M-9876", "mail": "delta@gmail.com"}
-            ]
-        }
+if 'ordenes_globales' not in st.session_state:
+    st.session_state.ordenes_globales = [
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "1A", "Tipo de Trabajo": "Plomería", "Detalle": "Filtración en caño central de agua", "Estado": "Trabajos Solicitados"},
+        {"Edificio": "Av. Corrientes 1234, CABA", "UF": "3J", "Tipo de Trabajo": "Cerrajería", "Detalle": "Cambio de combinación cerradura", "Estado": "Trabajos en Proceso"},
+        {"Edificio": "Larrea 435, CABA", "UF": "3J", "Tipo de Trabajo": "Electricidad", "Detalle": "Falla de fase en disyuntor", "Estado": "Trabajos Solicitados"},
+        {"Edificio": "Larrea 435, CABA", "UF": "6P", "Tipo de Trabajo": "Gas", "Detalle": "Revisión técnica de estufa reglamentaria", "Estado": "Trabajos Pendientes"}
+    ]
 
-    def solicitar_cotizaciones(self, rubro: str, detalle: str) -> list:
-        self.registrar_log(f"Abriendo licitación automática para el rubro: {rubro}")
-        cotizaciones = []
-        for p in self.proveedores.get(rubro, []):
-            precio_estimado = round(random.uniform(15000, 35000), 2)
-            cotizaciones.append({"proveedor": p["nombre"], "matricula": p["matricula"], "precio": precio_estimado})
-        return cotizaciones
+CARTILLA_PROVEEDORES = {
+    "Cerrajería": ["Seleccione un prestador...", "🔑 Llave - Tel: 111111111 (CUIT: 2222222222)", "🔑 Cerradura - Tel: 222222222", "🔑 Manojo - Tel: 333333333", "🔑 Traba - Tel: 444444444", "🔑 Pasador - Tel: 555555555"],
+    "Electricidad": ["Seleccione un prestador...", "⚡ El Fusible - Tel: 666666666 (CUIT: 2222222222)", "⚡ Cablecito - Tel: 777777777", "⚡ Patada - Tel: 333333333", "⚡ Cortocircuito - Tel: 444444444", "⚡ Disyuntor - Tel: 555555555"],
+    "Gas": ["Seleccione un prestador...", "🔥 Pum - Tel: 666666666 (CUIT: 2222222222)", "🔥 Garrafa - Tel: 777777777", "🔥 Hornalla - Tel: 111111111", "🔥 Calefonete - Tel: 222222222", "🔥 Estufeta - Tel: 333333333"],
+    "Plomería": ["Seleccione un prestador...", "🚰 Caño - Tel: 444444444 (CUIT: 2222222222)", "🚰 Cañito - Tel: 555555555", "🚰 Cañete - Tel: 666666666", "🚰 Canilla - Tel: 777777777", "🚰 Rejilla - Tel: 222222222"]
+}
 
-class OrchestratorConsorcio:
-    """Core Engine: Vincula y hace interactuar los agentes entre sí en tiempo real (Swarm Paradigm)."""
-    def __init__(self):
-        self.legal = AgenteLegalContable()
-        self.atencion = AgenteAtencionPropietario()
-        self.proveedores = AgenteProveedoresMantenimiento()
-        self.consorcio_db = {
-            "nombre": "Consorcio Av. Corrientes 1500, CABA",
-            "unidades": {
-                "1A": {"propietario": "Carlos Gómez", "porcentual": 0.40},
-                "1B": {"propietario": "Ana Milone", "porcentual": 0.60}
-            }
-        }
-        self.gastos_mes = [
-            {"concepto": "Abono Ascensores S.A.", "monto": 90000},
-            {"concepto": "Sueldo Encargado SUTERH", "monto": 420000}
-        ]
+# =====================================================================
+# PANEL LATERAL (SIDEBAR DE CONTROL)
+# =====================================================================
+with st.sidebar:
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios")
+    st.caption("AI Swarm ERP Platform v2.6")
+    st.markdown("---")
+    pantalla_activa = st.radio("Seleccione Vista:", ["🏠 Panel General por Edificio", "🛠️ Abrir Órdenes de Trabajo"], index=0)
+    st.markdown("---")
+    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(st.session_state.data_consorcios.keys()))
+    st.markdown("---")
+    csv_data = pd.DataFrame(st.session_state.ordenes_globales).to_csv(index=False).encode('utf-8')
+    st.download_button(label="📊 Descargar Historial OT (CSV)", data=csv_data, file_name=f"Reporte_Resilia.csv", mime="text/csv", use_container_width=True)
+    st.markdown("---")
+    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
 
-    def procesar_incidente(self, propietario: str, uf: str, mensaje: str):
-        ticket = self.atencion.recibir_mensaje(propietario, uf, mensaje)
-        analisis = ticket["analisis"]
-        
-        if analisis.get("categoria") == "mantenimiento":
-            rubro = analisis.get("rubro")
-            cotizaciones = self.proveedores.solicitar_cotizaciones(rubro, mensaje)
-            
-            if cotizaciones:
-                ganador = min(cotizaciones, key=lambda x: x["precio"])
-                print(f"--> [Orquestador]: Adjudicación automática a {ganador['proveedor']} por ${ganador['precio']}.")
-                
-                self.atencion.enviar_notificacion(
-                    propietario, 
-                    f"Tu reclamo de {rubro} fue aprobado. El especialista {ganador['proveedor']} (Mat: {ganador['matricula']}) coordinará la visita técnica."
-                )
-                self.gastos_mes.append({"concepto": f"Reparación {rubro} - UF {uf}", "monto": ganador["precio"]})
+# Carga de la configuración del edificio activo
+consorcio_actual = st.session_state.data_consorcios[edificio_seleccionado]
+f_cal = consorcio_actual["factor"] # Letra minúscula unificada de forma estricta
 
-    def emitir_periodo(self):
-        liquidacion = self.legal.liquidar_expensas(self.consorcio_db, self.gastos_mes)
-        if self.legal.verificar_cumplimiento_normativo(liquidacion):
-            print("\n================== EXPENSAS EMITIDAS ==================")
-            for uf, monto in liquidacion["distribucion_unidades"].items():
-                prop = self.consorcio_db["unidades"][uf]["propietario"]
-                self.atencion.enviar_notificacion(prop, f"Expensas listas Periodo 09-2026. Importe: ${monto}")
+# Algoritmo de renderizado financiero proporcional
+ingresos_lista = [
+    {"Concepto": "Cobro de Expensas Ordinarias/Extraordinarias", "Monto": 320000.0 * f_cal},
+    {"Concepto": "Alquileres de Locales Comerciales PB", "Monto": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
+    {"Concepto": "Intereses por colocaciones a Plazo Fijo", "Monto": 14000.0 * f_cal}
+]
+gastos_lista = [
+    {"Concepto": "Gastos por Reparaciones e Infraestructura", "Monto": 45000.0 * f_cal},
+    {"Concepto": "Honorarios de Administración", "Monto": 35000.0 * f_cal},
+    {"Concepto": "Sueldo de Encargado + Cargas SUTERH", "Monto": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
+    {"Concepto": "Compra de artículos de limpieza", "Monto": 12000.0 * f_cal},
+    {"Concepto": "Pagos de luz (Edesur/Edenor Central)", "Monto": 18000.0 * f_cal},
+    {"Concepto": "Otros gastos generales y bancarios", "Monto": 7000.0 * f_cal}
+]
 
-if __name__ == "__main__":
-    sistema = OrchestratorConsorcio()
-    # Simulación de reclamo entrante por canal digital
-    sistema.procesar_incidente("Carlos Gómez", "1A", "Urgente, se rompió un caño en el baño y tengo una filtración terrible!")
-    # Simulación de cierre contable automatizado
-    sistema.emitir_periodo()
+# =====================================================================
+# PANTALLA 1: DASHBOARD GENERAL
+# =====================================================================
+if pantalla_activa == "🏠 Panel General por Edificio":
+    st.title("🏢 Resilia_Condominios")
+    st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
+
+    # MÉTRICAS EN DORADO
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: 
+        total_g = sum(x['Monto'] for x in gastos_lista)
+        st.metric(label="Total gastos del periodo", value=f"${total_g:,.2f}")
+    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    tab_atencion, tab_contable, tab_prov = st.tabs([
+        "💬 Centro de Atención Multicanal", 
+        "📊 Cuadro de Ingresos y Gastos", 
+        "📋 Cartilla de Proveedores"
+    ])
+
+    with tab_atencion:
+        st.subheader("📥 Recepción Automatizada Multicanal")
+        col_input, col_output = st.columns([1, 1.2])
+        with col_input:
+            uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
+            canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
+            tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
+            mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se detectó un desperfecto crítico de {tipo_incidente.lower()} en la UF {uf_sel}.")
+            procesar = st.button("🚀 Desplegar Enjambre de IA", use_container_width=True)
+        with col_output:
+            st.markdown("### ⚙️ Trazabilidad de Decisiones")
+            if procesar:
+                st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Agente Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
+                costo_s = round(random.uniform(9000, 25000), 2)
