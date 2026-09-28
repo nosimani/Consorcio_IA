@@ -4,7 +4,7 @@ import pandas as pd
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
     page_title="Resilia_Condominios",
-    page_icon="https://imgbox.com",
+    page_icon="https://www.google.com/imgres?q=dibujo%20edificios%20ciudad&imgurl=https%3A%2F%2Fwww.shutterstock.com%2Fshutterstock%2Fvideos%2F3571982317%2Fthumb%2F1.jpg%3Fip%3Dx480&imgrefurl=https%3A%2F%2Fwww.shutterstock.com%2Fes%2Fvideo%2Fclip-3571982317-cartoon-city-buildings-landscape-2d-animation&docid=p75hD62VjNvm_M&tbnid=R_HaJcBUGHZE9M&vet=12ahUKEwi5z-_phJKXAxXDnpUCHT0JKP8QnPAOegUI0AUQAA..i&w=480&h=270&hcb=2&ved=2ahUKEwi5z-_phJKXAxXDnpUCHT0JKP8QnPAOegUI0AUQAA",
     layout="wide"
 )
 
