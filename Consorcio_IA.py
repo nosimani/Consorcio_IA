@@ -29,7 +29,7 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
         with st.spinner("El enjambre está operando..."):
             try:
                 # Inicializar el modelo base gratuito y potente
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
+               model = genai.GenerativeModel('gemini-pro')
 
                 # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
                 prompt_atencion = f"""
