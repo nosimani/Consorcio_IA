@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import random
-from datetime import datetime
 
 # =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ (LETRAS ULTRA AGRANDADAS)
@@ -17,44 +15,70 @@ st.set_page_config(
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
-        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; font-size: 2.8rem !important; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
+        h2 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2.2rem !important; }
+        h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 1.9rem !important; }
         
-        /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
+        /* Agrandamos el texto general de la aplicación */
+        .stMarkdown p, p, label, .stRadio label { 
+            color: #e2e8f0; 
+            font-size: 1.3rem !important; 
+            line-height: 1.6 !important;
+        }
+
+        /* FORCE TOTAL: Agrandamos la letra de las descripciones internas de las tablas a tamaño GIGANTE */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
             font-size: 1.5rem !important; 
-            font-weight: 600 !important; 
-            color: #ffffff !important; 
+            font-weight: 600 !important;
+            color: #ffffff !important;
         }
-        th, .stDataFrame th div { font-weight: 800 !important; color: #38bdf8 !important; font-size: 1.4rem !important; }
         
-        /* Paneles de Métricas en Oro Líquido */
-        div[data-testid="stMetric"] { background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important; border-radius: 20px !important; padding: 22px !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2) !important; }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
+        /* Modificador para los encabezados de columnas de las tablas */
+        th, .stDataFrame th div {
+            font-weight: 800 !important;
+            color: #38bdf8 !important;
+            font-size: 1.4rem !important;
+        }
+
+        /* Paneles de Métricas en Oro Líquido Flotante */
+        div[data-testid="stMetric"] {
+            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
+            border-radius: 20px !important;
+            padding: 22px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            transition: transform 0.2s;
+        }
+        div[data-testid="stMetric"]:hover { transform: translateY(-5px); }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        
-        /* Solapas Estilo Neón */
+
+        /* Menú de Solapas Estilo Neón */
         .stTabs [data-baseweb="tab-list"] { gap: 12px; background-color: #1e293b; padding: 8px; border-radius: 12px; }
-        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 14px 28px; border-radius: 8px; font-weight: 800; color: #94a3b8; font-size: 1.3rem !important; }
+        .stTabs [data-baseweb="tab"] { background-color: transparent; border: none !important; padding: 14px 28px; border-radius: 8px; font-weight: 800; color: #94a3b8; transition: all 0.3s; font-size: 1.3rem !important; }
         .stTabs [aria-selected="true"] { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #FFFFFF !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-        
+
+        /* Tarjetas de Agentes e Inputs */
         .agent-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; border-radius: 16px; border-left: 6px solid #38bdf8; margin-bottom: 20px; color: #f1f5f9; }
         .agent-title { font-size: 1.3rem; font-weight: 900; color: #ffffff; text-transform: uppercase; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+        
+        .stAlert div { font-size: 1.3rem !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# CONFIGURACIÓN ESTÁTICA INDESTRUCTIBLE POR EDIFICIO
+# =====================================================================
+# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA LÓGICA
+# =====================================================================
 ESTADISTICAS_EDIFICIOS = {
-    "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1"},
-    "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2"},
-    "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2"},
-    "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1"},
-    "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1"}
+    "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "tasa": 4.5, "ots": "2"},
+    "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "tasa": 5.0, "ots": "1"},
+    "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2", "tasa": 6.2, "ots": "1"},
+    "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1", "tasa": 3.8, "ots": "1"},
+    "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "tasa": 7.5, "ots": "1"}
 }
 
-# BASE DE DATA FIJA DE PROVEEDORES FICTICIOS SOLICITADA POR RUBROS (PLOMEROS, ELECTRICISTAS, CERRAJEROS, ALBAÑILES)
+# CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORDENADOS POR RUBRO
 DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
     {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
@@ -66,7 +90,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# TABLA FIJA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL
+# TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL NATIVA
 TABLA_SOLICITADA_OT = [
     {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26"},
     {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26"},
@@ -75,12 +99,9 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26"}
 ]
 
-if 'ordenes_simuladas' not in st.session_state: 
-    st.session_state.ordenes_simuladas = []
-if "tasas_mora_manual" not in st.session_state:
-    st.session_state.tasas_mora_manual = {"Av. Corrientes 1234, CABA": 4.5, "Larrea 435, CABA": 5.0, "Montevideo 891, CABA": 6.2, "San Jose 1111, CABA": 3.8, "Guayaquil 399, CABA": 7.5}
-
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO FÉNIX)
+# =====================================================================
+# PANEL LATERAL (SIDEBAR DE CONTROL CON TU LOGO OFICIAL FÉNIX)
+# =====================================================================
 with st.sidebar:
     st.image("https://imgbox.com", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -91,17 +112,12 @@ with st.sidebar:
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
     st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("⚠️ Resetear Historial Simulador IA", use_container_width=True):
-        st.session_state.ordenes_simuladas = []
-        st.rerun()
 
 consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
-tasa_act = st.session_state.tasas_mora_manual[edificio_seleccionado]
+tasa_act = consorcio_actual["tasa"]
 
-# Listados financieros estructurados linealmente
+# Listados financieros estructurados con nombres solicitados en letra gigante
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
     {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
@@ -120,7 +136,9 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
+# =====================================================================
 # VISTA 1: DASHBOARD GENERAL DEL EDIFICIO
+# =====================================================================
 if pantalla_activa == "Panel General por Edificio":
     st.title("🏢 Resilia_Condominios")
     st.markdown(f"Monitoreo analítico activo sobre el consorcio: **{edificio_seleccionado}**")
@@ -129,7 +147,7 @@ if pantalla_activa == "Panel General por Edificio":
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(TABLA_SOLICITADA_OT) + len(st.session_state.ordenes_simuladas)))
+    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
 
     st.markdown("<br>", unsafe_allow_html=True)
     tab_atencion, tab_contable, tab_prov = st.tabs(["Centro de Atencion Multicanal", "Cuadro de Ingresos y Gastos", "Cartilla de Proveedores"])
@@ -138,10 +156,3 @@ if pantalla_activa == "Panel General por Edificio":
         st.subheader("📥 Recepción Automatizada Multicanal")
         uf_sel = st.selectbox("Unidad Funcional Emisora", ["1A", "3J", "4K", "5M", "6P"])
         canal_sel = st.radio("Canal de Ingreso", ["WhatsApp", "Portal Web", "Correo Electrónico"], horizontal=True)
-        tipo_incidente = st.selectbox("Tipo de Incidencia Semántica:", ["Plomería", "Cerrajería", "Electricidad", "Gas"])
-        mensaje_custom = st.text_area("Cuerpo del Requerimiento:", value=f"Se desperfectó {tipo_incidente.lower()} en la UF {uf_sel}.", key="text_atencion_real")
-        
-        if st.button("🚀 Desplegar Enjambre de IA", use_container_width=True):
-            st.markdown(f'''<div class="agent-card"><div class="agent-title">🤖 Front-Desk</div>Mensaje recibido por <b>{canal_sel}</b> de la UF {uf_sel}.</div>''', unsafe_allow_html=True)
-            costo_s = round(random.uniform(9000, 25000), 2)
-            
