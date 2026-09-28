@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import streamlit as st
 import os
+
+# TRUCO INGENIERIL: Forzamos al sistema operativo a usar la versión de producción antes de importar Google
+os.environ["GOOGLE_API_VERSION"] = "v1"
+
 import google.generativeai as genai
 
 # Configuración de página de Streamlit
@@ -28,21 +32,20 @@ if st.button("🚀 Ejecutar Enjambre de Agentes"):
     else:
         with st.spinner("El enjambre está operando..."):
             try:
-                # SOLUCIÓN CRÍTICA: Forzamos el uso de la API v1 oficial de producción para evitar el error 404 de v1beta
-                client_config = genai.types.GenerationConfig(api_version="v1")
+                # Inicializar el modelo con el nombre oficial limpio
                 model = genai.GenerativeModel('gemini-1.5-flash')
 
                 # --- AGENTE 1: ATENCIÓN AL COPROPIETARIO ---
                 prompt_atencion = f"Sos el Agente Especialista en Atención al Copropietario de una administración en Argentina. Tu meta es analizar el mensaje del vecino, extraer la UF, el rubro técnico (Plomería, Electricidad, Gas, Ascensores) y la urgencia. Mensaje del vecino: '{mensaje_vecino}'. Devuelve un informe estructurado con UF, Rubro, Nivel de Urgencia y un saludo empático de respuesta."
-                respuesta_atencion = model.generate_content(prompt_atencion, generation_config=client_config).text
+                respuesta_atencion = model.generate_content(prompt_atencion).text
 
                 # --- AGENTE 2: LEGAL Y COMPLIANCE CONTABLE ---
                 prompt_legal = f"Sos el Agente Auditor Legal y Contador de Propiedad Horizontal en Argentina. Basándote en el siguiente informe de mantenimiento: '{respuesta_atencion}'. Aplica el Código Civil y Comercial de la Nación (Art. 2041, 2042 y 2067) y determina si el gasto corresponde al Consorcio (bien común/cañería interna) o al Propietario (bien privado/gasto exclusivo). Indica si se imputará en Expensas Ordinarias o Extraordinarias de forma resumida en un párrafo contundente."
-                respuesta_legal = model.generate_content(prompt_legal, generation_config=client_config).text
+                respuesta_legal = model.generate_content(prompt_legal).text
 
                 # --- AGENTE 3: COORDINADOR DE PROVEEDORES ---
                 prompt_proveedores = f"Sos el Agente Coordinador de Mantenimiento y Gremios Matriculados. Tomando en cuenta la resolución legal: '{respuesta_legal}'. Si corresponde al consorcio, redacta un mensaje formal e institucional por WhatsApp/Mail dirigido a un prestador matriculado del rubro detectado para solicitarle presupuesto urgente y visita técnica a la locación. Si no corresponde, redacta una respuesta formal denegando el servicio al propietario con fundamentos."
-                respuesta_proveedores = model.generate_content(prompt_proveedores, generation_config=client_config).text
+                respuesta_proveedores = model.generate_content(prompt_proveedores).text
 
                 # --- RENDERIZADO VISUAL EN LA APP ---
                 st.success("¡Procesamiento del enjambre completado de forma segura!")
