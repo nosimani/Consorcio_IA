@@ -4,11 +4,9 @@ import pandas as pd
 # =====================================================================
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 # =====================================================================
-st.set_page_config(
-    page_title="Resilia_Condominios",
-    page_icon="https://imgbox.com",
-    layout="wide"
-)
+    # Tu imagen nocturna Cyberpunk de la ciudad en alta definición
+    st.image("https://imgbox.com", use_container_width=True)
+    st.title("Resilia_Condominios - Panel de Control Principal")
 
 # Inyección de CSS de Vanguardia Estética con Modificadores de Tamaño de Letra Críticos
 st.markdown("""
