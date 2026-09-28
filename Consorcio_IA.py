@@ -154,7 +154,7 @@ if pantalla_activa == "Panel General por Edificio":
         st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
         
         st.markdown("---")
-        st.markdown("### 📈 Balance de Ejecución Mensual Neto")
+        st.markdown("### 📈 Balance de Execution Mensual Neto")
         if balance_neto >= 0:
             st.success(f"💰 **SUPERÁVIT CONSORCIAL DETECTADO:** El remanente neto positivo de caja es de **${balance_neto:,.2f}**")
         else:
