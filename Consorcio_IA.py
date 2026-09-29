@@ -167,4 +167,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
     st.markdown("---")
-    
