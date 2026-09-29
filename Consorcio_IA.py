@@ -161,4 +161,62 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         expensa_pura = total_g_calc * u["Coeficiente"]
         interes_mora = u["Deuda_Base"] * (tasa_act / 100.0)
         total_a_liquidar = expensa_pura + u["Deuda_Base"] + interes_mora
+        # =========================================================================================
+# LÓGICA DE CONTROL CONTINUA: SEPARACIÓN DE PANTALLAS SEGÚN EL SIDEBAR
+# =========================================================================================
+
+# NOTA: Para que este bloque funcione con tu estructura actual, buscá más arriba en tu archivo
+# donde definiste las tablas de "ingresos_lista" y "gastos_lista" y envolvelas bajo este condicional IF:
+# (Si preferís dejarlo simple y que todo cargue junto sin condicionales, pegá esto directo abajo de la línea 159):
+
+st.markdown("---")
+st.header("🔧 Sección Operativa: Control de Órdenes de Trabajo")
+st.markdown(f"Monitoreo de incidentes activos y prestadores asignados para el consorcio seleccionado.")
+
+# 1. CUADROS INDIVIDUALES SEGMENTADOS POR UNIDAD FUNCIONAL (NATIVOS Y ULTRA-ESTABLES)
+st.subheader("🏢 Estado Operativo por Unidad Funcional")
+
+# Filtramos las órdenes de trabajo para que solo aparezcan las que corresponden al edificio activo
+# Buscamos coincidencias de texto simples para evitar errores de escritura en las variables
+ots_filtradas = [
+    ot for ot in TABLA_SOLICITADA_OT 
+    if edificio_seleccionado.split(",")[0].strip().lower() in ot["Edificio"].lower()
+]
+
+if ots_filtradas:
+    # Creamos 3 columnas nativas para distribuir los cuadros en la pantalla sin colapsar el CSS
+    columnas_uf = st.columns(3)
+    for idx, ot in enumerate(ots_filtradas):
+        with columnas_uf[idx % 3]:
+            # Contenedor con borde nativo para simular el cuadro de cada departamento
+            with st.container(border=True):
+                st.markdown(f"### 🏢 Departamento: {ot['UF']}")
+                st.markdown(f"**Trabajo Requerido:** {ot['Trabajo']}")
+                st.markdown(f"**Presupuesto:** {ot['Presupuesto Aprobado']}")
+                st.markdown(f"**Plazo Inicial:** {ot['Fecha_Inicio']} | **Fin:** {ot['Fecha_Finaliz']}")
+                
+                # Asignamos un estado visual dinámico según el rubro para control interno
+                if "Plomería" in ot["Trabajo"]:
+                    st.success("🟢 Estado: Realizado / Terminado")
+                elif "Albañilería" in ot["Trabajo"]:
+                    st.info("🔵 Estado: En Proceso de Ejecución")
+                else:
+                    st.warning("🟡 Estado: Presupuestado / Pendiente")
+else:
+    st.info("No se registran Órdenes de Trabajo (OT) activas para este consorcio en el periodo corriente.")
+
+st.markdown("---")
+
+# 2. CARTILLA OBLIGATORIA DE PROVEEDORES HOMOLOGADOS
+st.subheader("📜 Cartilla de Prestadores de Servicio Matriculados")
+st.markdown("Nómina autorizada de profesionales independientes con CUIT validado para el ingreso a los edificios:")
+st.dataframe(pd.DataFrame(DATOS_CARTILLA_PROVEEDORES), use_container_width=True, hide_index=True)
+
+st.markdown("---")
+
+# 3. PLANILLA DE AUDITORÍA GENERAL (HISTÓRICO COMPLETO)
+st.subheader("📋 Registro Central de Órdenes de Trabajo (Histórico)")
+st.markdown("Bitácora contable de todas las reparaciones liquidadas en la plataforma:")
+st.dataframe(pd.DataFrame(TABLA_SOLICITADA_OT), use_container_width=True, hide_index=True)
+
         
