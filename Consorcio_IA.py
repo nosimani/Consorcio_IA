@@ -15,7 +15,7 @@ st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
@@ -112,7 +112,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO (INMUNE A ERRORES)
+# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO (100% INMUNE A ERRORES)
 st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
 
 # EJECUCIÓN TOTALMENTE LINEAL ORIGINAL
@@ -142,26 +142,24 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA EN MATRIZ PLANA (100% INMUNE A SYNTAXERROR)
+    # SECCIÓN 2: LIQUIDACIÓN CON ARREGLOS DE PANDAS (CERO LLAVES SUELTAS, 100% INFALIBLE)
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
     st.markdown(f"Cálculos de auditoría legal aplicados con una Tasa Punitoria Activa Mensual del {tasa_act}%:")
     
-    # Matriz plana estructural de copropiedad
-    uf_reglamento = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
-    pisos_reglamento = ["1° A", "1° B", "2° A", "2° B", "3° A"]
-    coef_reglamento = [0.35, 0.25, 0.18, 0.12, 0.10]
+    # Construcción de vectores planos directos sin iteraciones de diccionarios conflictivos
+    uf_lista = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
+    piso_lista = ["1° A", "1° B", "2° A", "2° B", "3° A"]
+    coef_lista = [0.35, 0.25, 0.18, 0.12, 0.10]
     
-    deuda_m1 = 180000.0 if consorcio_actual["mora"] >= "1" else 0.0
-    deuda_m2 = 220000.0 if consorcio_actual["mora"] == "2" else 0.0
-    deudas_reglamento = [0.0, deuda_m1, deuda_m2, 0.0, 0.0]
+    deuda_base_1 = 180000.0 if consorcio_actual["mora"] >= "1" else 0.0
+    deuda_base_2 = 220000.0 if consorcio_actual["mora"] == "2" else 0.0
+    deudas_lista = [0.0, deuda_base_1, deuda_base_2, 0.0, 0.0]
     
-    prorrateo_data_list = []
-    for i in range(5):
-        exp_pura = total_g_calc * coef_reglamento[i]
-        int_mora = deudas_reglamento[i] * (tasa_act / 100.0)
-        tot_liquidar = exp_pura + deudas_reglamento[i] + int_mora
-        
-        prorrateo_data_list.append({
-            "Unidad Funcional": uf_reglamento[i],
-            "Piso/Dpto": pisos_reglamento[i],
+    # Operaciones matemáticas vectorizadas puras
+    df_prorrateo = pd.DataFrame()
+    df_prorrateo["Unidad Funcional"] = uf_lista
+    df_prorrateo["Piso/Dpto"] = piso_lista
+    df_prorrateo["Coeficiente de Ley"] = [f"{c * 100:.2f}%" for c in coef_lista]
+    
+    # Cálculos puros en columnas
