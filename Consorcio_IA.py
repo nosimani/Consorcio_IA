@@ -10,36 +10,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Alta Visibilidad (Garantiza contraste absoluto s/ fondo negro)
+# Inyección de CSS para forzar el fondo azul metalizado oscuro, paneles dorados y letra gigante
 st.markdown("""
     <style>
-        /* Fondo Negro Absolute en toda la aplicación */
-        .main, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
-            background-color: #000000 !important; 
-            background: #000000 !important;
-        }
-        
-        /* Forzar letras enteramente visibles en el Sidebar Izquierdo */
-        [data-testid="stSidebar"], [data-testid="stSidebar"] div, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-            color: #ffffff !important;
-            font-size: 1.2rem !important;
-        }
-        [data-testid="stSidebar"] p {
-            color: #38bdf8 !important;
-            font-weight: 700 !important;
-        }
-        
-        /* Contraste estricto para títulos principales */
-        h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2.2rem !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-        h3 { color: #ffffff !important; font-family: sans-serif; font-weight: 700; font-size: 1.8rem !important; }
-        
-        /* Textos informativos de párrafos y etiquetas */
-        .stMarkdown p, p, label, .stRadio label, span { 
-            color: #ffffff !important; 
-            font-size: 1.3rem !important; 
-            line-height: 1.6 !important; 
-        }
+        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
+        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
@@ -54,14 +31,12 @@ st.markdown("""
             background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
             border-radius: 20px !important;
             padding: 22px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        
-        /* Contenedor de tablas adaptado al fondo negro */
-        .stDataFrame, .stTable { background-color: rgba(20, 20, 20, 0.8) !important; border-radius: 16px; padding: 10px; border: 1px solid #2d3748; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -76,17 +51,17 @@ ESTADISTICAS_EDIFICIOS = {
 
 # CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORGANIZADOS POR RUBRO
 DATOS_CARTILLA_PROVEEDORES = [
-    {"Rubro": "Plomería", "Prestador": "   Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
+    {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
     {"Rubro": "Plomería", "Prestador": "   Caños Matriculados Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
-    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes Cerraduras", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA Oeste"},
+    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes y Cerraduras Pro", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA Oeste"},
     {"Rubro": "Albañilería", "Prestador": "🧱 Constructora San José", "CUIT": "30-88547612-5", "Teléfono": "11-5541-2369", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
+    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES COINCIDENTES
+# TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA CON ESTADOS DE AVANCE INCORPORADOS
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -96,11 +71,13 @@ if "historico_ot" not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
     ]
 
-# INTERFAZ LATERAL DE CONTROL CORPORATIVO
+# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
+    st.markdown("---")
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -110,26 +87,25 @@ consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 f_cal = consorcio_actual["factor"]
 tasa_act = consorcio_actual["tasa"]
 
-# ====== CÁLCULOS SALARIALES SUTERH OBLIGATORIOS EXIGIDOS ======
+# ====== REQUERIMIENTOS SALARIALES DEL SUTERH (CCT 589/10) ======
 neto_encargado = 1500000.0
 bruto_referencial = neto_encargado / 0.805
 aportes_suterh = bruto_referencial * 0.195
 contribuciones_patronales = bruto_referencial * 0.255
 total_cargas_sociales = aportes_suterh + contribuciones_patronales
 
-# Listados financieros estructurados con los valores fijos requeridos
+# Listados financieros estructurados con los montos fijos solicitados
 ingresos_lista = [
     {"Ingresos": "ingresos por expensas", "Monto ($)": 5320000.0},
     {"Ingresos": "alquileres de locales", "Monto ($)": 3000000.0},
     {"Ingresos": "intereses por colocacion a plazo fijo", "Monto ($)": 14000.0 * f_cal * (tasa_act / 5.0)}
 ]
-
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "sueldo de encargado (NETO)", "Monto ($)": neto_encargado},
-    {"Gastos": "Cargas SUTERH (Aportes/Contrib.)", "Monto ($)": total_cargas_sociales},
-    {"Gastos": "compra artículos limpieza", "Monto ($)": 12000.0 * f_cal},
+    {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
+    {"Gastos": "Cargas Sociales SUTERH (Aportes 19.5% y Contribuciones 25.5%)", "Monto ($)": total_cargas_sociales},
+    {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
     {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
 ]
@@ -150,24 +126,39 @@ unidades_reglamento = [
 # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas y contadores
 ots_edificio_activo = [ot for ot in st.session_state.historico_ot if ot["Edificio"] == edificio_seleccionado]
 
-# ==========================================
-# RENDERIZADO EJECUTIVO COMPACTO EN PARALELO
-# ==========================================
-st.title("🏢 Resilia_Condominios - Panel de Control Integral")
-st.markdown(f"Consorcio de Propiedad Horizontal Activo: **{edificio_seleccionado}**")
+# EJECUCIÓN TOTALMENTE LINEAL COMPILADA
+if pantalla_activa == "📋 Dashboard y Contabilidad":
+    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
+    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
-# 1. PANELES DE MÉTRICAS SUPERIORES
-m1, m2, m3, m4 = st.columns(4)
-with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
-with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
+    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
-st.markdown("---")
-
-# 2. SECCIÓN FINANCIERA EN PARALELO (Columnas Izquierda y Derecha para ahorrar espacio)
-st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-col_fin1, col_fin2 = st.columns(2)
-
-with col_fin1:
-    st.subheader("📥 Flujo de Ingresos Percibidos")
+    st.markdown("---")
+    
+    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+    
+    st.markdown("### 📥 Flujo de Ingresos Percibidos")
+    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.markdown("### 📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA AVANZADA CON INTERESES POR MORA
+    st.markdown("---")
+    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
+    st.markdown(f"Distribución legal s/ Art. 2046 y 2048 del CCyCN con una Tasa Punitoria del {tasa_act}%:")
+    
+    prorrateo_raw = []
+    prorrateo_calculado = []
+    for u in unidades_reglamento:
+        expensa_pura = total_g_calc * u["Coeficiente"]
+        interes_mora = u["Deuda_Base"] * (tasa_act / 100.0)
+        total_a_liquidar = expensa_pura + u["Deuda_Base"] + interes_mora
+        
