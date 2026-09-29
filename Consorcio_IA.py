@@ -72,7 +72,7 @@ TABLA_SOLICITADA_OT = [
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard", "🔧 Órdenes de Trabajo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
