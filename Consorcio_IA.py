@@ -84,7 +84,6 @@ with st.sidebar:
     # REQUERIMIENTO: Logo del panel izquierdo más chico (width=110)
     st.image("Resilia.jfif", width=110)
     # REQUERIMIENTO: Nombre RESILIA AGENCY más pequeño (estilizado mediante CSS de arriba)
-    st.write("## RESILIA AGENCY")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
