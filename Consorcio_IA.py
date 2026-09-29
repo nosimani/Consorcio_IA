@@ -76,14 +76,14 @@ ESTADISTICAS_EDIFICIOS = {
 
 # CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORGANIZADOS POR RUBRO
 DATOS_CARTILLA_PROVEEDORES = [
-    {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
-    {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Plomería", "Prestador": "   Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
+    {"Rubro": "Plomería", "Prestador": "   Caños Matriculados Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
-    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes y Cerraduras Pro", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA Oeste"},
+    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes Cerraduras", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA Oeste"},
     {"Rubro": "Albañilería", "Prestador": "🧱 Constructora San José", "CUIT": "30-88547612-5", "Teléfono": "11-5541-2369", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
+    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
 # INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES COINCIDENTES
@@ -96,7 +96,7 @@ if "historico_ot" not in st.session_state:
         {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
     ]
 
-# INTERFAZ LATERAL DE CONTROL CORPORATIVO UNIFICADA
+# INTERFAZ LATERAL DE CONTROL CORPORATIVO
 with st.sidebar:
     st.image("Resilia.jfif", use_container_width=True)
     st.title("Resilia_Condominios")
@@ -127,9 +127,9 @@ ingresos_lista = [
 gastos_lista = [
     {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
     {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
-    {"Gastos": "Cargas Sociales SUTERH (Aportes 19.5% y Contribuciones 25.5%)", "Monto ($)": total_cargas_sociales},
-    {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
+    {"Gastos": "sueldo de encargado (NETO)", "Monto ($)": neto_encargado},
+    {"Gastos": "Cargas SUTERH (Aportes/Contrib.)", "Monto ($)": total_cargas_sociales},
+    {"Gastos": "compra artículos limpieza", "Monto ($)": 12000.0 * f_cal},
     {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
     {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
 ]
@@ -150,9 +150,9 @@ unidades_reglamento = [
 # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas y contadores
 ots_edificio_activo = [ot for ot in st.session_state.historico_ot if ot["Edificio"] == edificio_seleccionado]
 
-# =========================================================================================
-# VISTA GENERAL COMPLETA, CONTINUA Y MAESTRA (TODO SE MUESTRA AL MISMO TIEMPO EN LA WEB)
-# =========================================================================================
+# ==========================================
+# RENDERIZADO EJECUTIVO COMPACTO EN PARALELO
+# ==========================================
 st.title("🏢 Resilia_Condominios - Panel de Control Integral")
 st.markdown(f"Consorcio de Propiedad Horizontal Activo: **{edificio_seleccionado}**")
 
@@ -165,5 +165,9 @@ with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo
 
 st.markdown("---")
 
-# 2. CUADRO DE INGRESOS Y GASTOS MÁSTER
+# 2. SECCIÓN FINANCIERA EN PARALELO (Columnas Izquierda y Derecha para ahorrar espacio)
 st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+col_fin1, col_fin2 = st.columns(2)
+
+with col_fin1:
+    st.subheader("📥 Flujo de Ingresos Percibidos")
