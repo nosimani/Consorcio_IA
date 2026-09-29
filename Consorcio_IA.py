@@ -1,164 +1,191 @@
-import streamlit as st
-import pandas as pd
+import os
+import json
+import asyncio
+from datetime import datetime
+from typing import List, Dict, Any
 
-# CONFIGURACIÓN HIGH-END DE LA INTERFAZ
-st.set_page_config(
-    page_title="Resilia_Condominios",
-    page_icon="🏢",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Inyección de CSS Original (Fondo azul metalizado oscuro original, paneles dorados y letra gigante de tablas)
-st.markdown("""
-    <style>
-        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
-        h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+# =====================================================================
+# SIMULADORES DE LLAMADOS A LLM / HERRAMIENTAS EXTERNAS
+# =====================================================================
+class LLMEngine:
+    """Simula la ejecución y el razonamiento de un Modelo de Lenguaje de IA."""
+    @staticmethod
+    async def chat(prompt: str, system_instruction: str) -> str:
+        await asyncio.sleep(0.1) # Simulación de latencia de red / inferencia
         
-        /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
-        .stDataFrame td, .stDataFrame div, table, td, tr { 
-            font-size: 1.5rem !important; 
-            font-weight: 600 !important;
-            color: #ffffff !important;
-        }
-        th, .stDataFrame th div { font-weight: 800 !important; color: #38bdf8 !important; font-size: 1.4rem !important; }
+        # Enrutamiento de respuestas simuladas de IA altamente contextualizadas
+        if "liquidacion" in prompt.lower() or "contable" in prompt.lower():
+            return json.dumps({
+                "estado": "PROCESADO",
+                "total_gastos": 850000.00,
+                "fondo_reserva_detraido": 50000.00,
+                "observacion_legal": "Aplicación estricta Art. 2048 CCyCN. Expensas ordinarias devengadas de forma equitativa."
+            })
+        elif "reclamo" in prompt.lower() or "propietario" in prompt.lower():
+            return json.dumps({
+                "categoria": "Plomería",
+                "urgencia": "ALTA",
+                "requiere_proveedor": True,
+                "respuesta_propietario": "Estimado Propietario de la UF 4B: Hemos recibido su reclamo por filtración. Se ha derivado de manera urgente al servicio de Plomería homologado. Lo mantendremos informado."
+            })
+        elif "cotizacion" in prompt.lower() or "proveedor" in prompt.lower():
+            return json.dumps({
+                "proveedor_seleccionado": "Plomería Swift S.R.L.",
+                "presupuesto_ars": 45000.00,
+                "fecha_visita": "2026-09-28",
+                "aprobado_automatico": True
+            })
+        elif "legal" in prompt.lower() or "afip" in prompt.lower():
+            return json.dumps({
+                "cumplimiento_estatutario": "OK",
+                "alerta": "Verificar presentación del Libro de Órdenes digital s/ Ley 941 CABA.",
+                "retenciones_suterh": "Aplicadas s/ CCT 589/10."
+            })
+        return '{"status": "OK", "message": "Procesado correctamente."}'
 
-        /* Paneles de Métricas en Oro Líquido Flotante */
-        div[data-testid="stMetric"] {
-            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
-            border-radius: 20px !important;
-            padding: 22px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+# =====================================================================
+# MENSAJERÍA ENTRE AGENTES (SWARM EVENT BROKER)
+# =====================================================================
+class SwarmMessage:
+    def __init__(self, sender: str, receiver: str, content: Dict[str, Any], topic: str):
+        self.sender = sender
+        self.receiver = receiver
+        self.content = content
+        self.topic = topic
+        self.timestamp = datetime.now().isoformat()
 
-        /* REQUERIMIENTO BLINDADO: Centrado perfecto del Logo Fénix en la barra lateral */
-        [data-testid="stSidebar"] [data-testid="stImage"] > img {
-            display: block !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
+class SwarmBroker:
+    def __init__(self):
+        self.history: List[SwarmMessage] = []
 
-# BASE DE DATOS GLOBAL DE CONDOMINIOS ESTÁTICA ORIGINAL
-ESTADISTICAS_EDIFICIOS = {
-    "Av. Corrientes 1234, CABA": {"reserva": 450000.0, "factor": 1.0, "mora": "1", "tasa": 4.5, "ots": "5"},
-    "Larrea 435, CABA": {"reserva": 380000.0, "factor": 0.6, "mora": "2", "tasa": 5.0, "ots": "5"},
-    "Montevideo 891, CABA": {"reserva": 620000.0, "factor": 0.8, "mora": "2", "tasa": 6.2, "ots": "5"},
-    "San Jose 1111, CABA": {"reserva": 290000.0, "factor": 0.5, "mora": "1", "tasa": 3.8, "ots": "5"},
-    "Guayaquil 399, CABA": {"reserva": 850000.0, "factor": 1.5, "mora": "1", "tasa": 7.5, "ots": "5"}
-}
+    def dispatch(self, message: SwarmMessage):
+        self.history.append(message)
+        print(f"📡 [BROKER] {message.sender} ➔ {message.receiver} | Evento: {message.topic}")
 
-# CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORGANIZADOS POR RUBRO ORIGINAL
-DATOS_CARTILLA_PROVEEDORES = [
-    {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
-    {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
-    {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
-    {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
-    {"Rubro": "Cerrajería", "Prestador": "🔑 Blindajes y Cerraduras Pro", "CUIT": "30-71458962-3", "Teléfono": "11-4125-3698", "Zona de Atención": "CABA推 Oeste"},
-    {"Rubro": "Albañilería", "Prestador": "🧱 Constructora San José", "CUIT": "30-88547612-5", "Teléfono": "11-5541-2369", "Zona de Atención": "Toda CABA"},
-    {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
-]
+# =====================================================================
+# DEFINICIÓN DE LOS AGENTES ESPECIALIZADOS
+# =====================================================================
+class BaseAgent:
+    def __init__(self, name: str, role: str, broker: SwarmBroker):
+        self.name = name
+        self.role = role
+        self.broker = broker
+        self.system_instruction = f"Actúa como el agente {name}, experto senior en {role}."
 
-# TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL ORIGINAL
-TABLA_SOLICITADA_OT = [
-    {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
-    {"Edificio": "Larrea 435, CABA", "UF": "UF 03", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
-    {"Edificio": "Montevideo 891, CABA", "UF": "UF 04", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
-    {"Edificio": "San Jose 1111, CABA", "UF": "UF 05", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
-    {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
-]
+    async def execute_task(self, prompt: str) -> Dict[str, Any]:
+        response_raw = await LLMEngine.chat(prompt, self.system_instruction)
+        try:
+            return json.loads(response_raw)
+        except json.JSONDecodeError:
+            return {"raw_reply": response_raw}
 
-# INTERFAZ LATERAL CON LOS NUEVOS NOMBRES CORTOS SOLICITADOS
-with st.sidebar:
-    st.image("Resilia.jfif", width=110)
-    st.caption("AI Swarm ERP Platform v2.6")
-    st.markdown("---")
-    # AQUÍ SE MODIFICARON LOS DOS TÍTULOS CORTANDO LAS PALABRAS
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard", "🔧 Órdenes de Trabajo"], index=0)
-    st.markdown("---")
-    edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
-    st.markdown("---")
-    st.info("CUIT: 30-11111111-9\n\nJurisdicción: Ley 941 CABA")
+# 1. Agente de Atención al Propietario (Atención y Clasificación)
+class OwnerRelationAgent(BaseAgent):
+    def __init__(self, broker: SwarmBroker):
+        super().__init__("Agente_Atencion_Propietarios", "Atención al cliente, recepción de incidentes y derivación s/ Código Civil y Comercial", broker)
 
-consorcio_actual = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
-f_cal = consorcio_actual["factor"]
-tasa_act = consorcio_actual["tasa"]
+    async def procesar_mensaje_propietario(self, uf: str, edificio: str, mensaje: str):
+        print(f"\n📥 [PROCESANDO MENSAJE] UF {uf} de Edificio {edificio}: '{mensaje}'")
+        prompt = f"Analizar reclamo de UF {uf} Edificio {edificio}. Mensaje: {mensaje}."
+        analisis = await self.execute_task(prompt)
+        
+        if analisis.get("requiere_proveedor"):
+            msg = SwarmMessage(
+                sender=self.name,
+                receiver="Agente_Operaciones_Proveedores",
+                content={"edificio": edificio, "uf": uf, "categoria": analisis["categoria"], "urgencia": analisis["urgencia"]},
+                topic="SOLICITUD_PROVEEDOR_URGENTE"
+            )
+            self.broker.dispatch(msg)
+        return analisis["respuesta_propietario"]
 
-# ====== ENCARGADO SUTERH CON LOS CALCULOS REQUERIDOS ======
-neto_encargado = 1500000.0
-bruto_referencial = neto_encargado / 0.805
-aportes_suterh = bruto_referencial * 0.195
-contribuciones_patronales = bruto_referencial * 0.255
-total_cargas = aportes_suterh + contribuciones_patronales
+# 2. Agente de Operaciones y Licitación Automática de Proveedores
+class OperationsSupplierAgent(BaseAgent):
+    def __init__(self, broker: SwarmBroker):
+        super().__init__("Agente_Operaciones_Proveedores", "Búsqueda, cotización y contratación de prestadores de servicios matriculados", broker)
 
-# Listados financieros estructurados con los MONTOS FIJOS SOLICITADOS
-ingresos_lista = [
-    {"Ingresos": "ingresos por expensas", "Monto ($)": 5320000.0},
-    {"Ingresos": "alquileres de locales", "Monto ($)": 3000000.0},
-    {"Ingresos": "intereses por colocacion a plazo fijo", "Monto ($)": 14000.0 * f_cal * (tasa_act / 5.0)}
-]
-gastos_lista = [
-    {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
-    {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
-    {"Gastos": "sueldo de encargado (NETO A COBRAR)", "Monto ($)": neto_encargado},
-    {"Gastos": "cargas sociales suterh (aportes y contribuciones)", "Monto ($)": total_cargas},
-    {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
-    {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
-    {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal}
-]
+    async def gestionar_incidente(self, datos_incidente: Dict[str, Any]):
+        print(f"🛠️  [CONTRATACIÓN] Buscando prestadores para el rubro: {datos_incidente['categoria']}...")
+        prompt = f"Cotizar y seleccionar el mejor proveedor para rubro {datos_incidente['categoria']} en {datos_incidente['edificio']}. Urgencia: {datos_incidente['urgencia']}."
+        seleccion = await self.execute_task(prompt)
+        
+        msg = SwarmMessage(
+            sender=self.name,
+            receiver="Agente_Contable_Liquidaciones",
+            content={"proveedor": seleccion["proveedor_seleccionado"], "monto": seleccion["presupuesto_ars"], "edificio": datos_incidente["edificio"]},
+            topic="GASTO_DEVENGADO"
+        )
+        self.broker.dispatch(msg)
+        return seleccion
 
-total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
-total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
-balance_neto = total_i_calc - total_g_calc
+# 3. Agente Contable y Liquidación de Expensas
+class AccountingLiquidationsAgent(BaseAgent):
+    def __init__(self, broker: SwarmBroker):
+        super().__init__("Agente_Contable_Liquidaciones", "Liquidación de expensas mensuales, devengamientos, fondos de reserva y prorrateo s/ CCyCN", broker)
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO NATIVO PANDAS
-uf_lista = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
-piso_lista = ["1° A", "1° B", "2° A", "2° B", "3° A"]
-coef_lista = [0.35, 0.25, 0.18, 0.12, 0.10]
+    async def liquidar_periodo(self, edificio: str, gastos_adicionales: List[Dict[str, Any]]):
+        print(f"🧮 [LIQUIDACIÓN] Procesando expensas del edificio {edificio}...")
+        prompt = f"Calcular liquidación total para {edificio} incorporando gastos: {json.dumps(gastos_adicionales)}."
+        resultado = await self.execute_task(prompt)
+        
+        msg = SwarmMessage(
+            sender=self.name,
+            receiver="Agente_Legal_Normativo",
+            content=resultado,
+            topic="VALIDACION_LIQUIDACION"
+        )
+        self.broker.dispatch(msg)
+        return resultado
 
-deuda_base_1 = 180000.0 if consorcio_actual["mora"] >= "1" else 0.0
-deuda_base_2 = 220000.0 if consorcio_actual["mora"] == "2" else 0.0
-deudas_lista = [0.0, deuda_base_1, deuda_base_2, 0.0, 0.0]
+# 4. Agente Legal y de Cumplimiento Normativo
+class LegalComplianceAgent(BaseAgent):
+    def __init__(self, broker: SwarmBroker):
+        super().__init__("Agente_Legal_Normativo", "Derecho de Propiedad Horizontal, Paritarias SUTERH, Ley 941 CABA y AFIP", broker)
 
-gastos_puros = [total_g_calc * c for c in coef_lista]
-intereses_puros = [d * (tasa_act / 100.0) for d in deudas_lista]
-totales_puros = [gastos_puros[i] + deudas_lista[i] + intereses_puros[i] for i in range(5)]
+    async def auditar_transaccion(self, datos_auditoria: Dict[str, Any]):
+        print(f"⚖️  [LEGAL & FISCAL] Auditando cumplimiento impositivo y normativo...")
+        prompt = f"Validar legalidad del siguiente balance o acción: {json.dumps(datos_auditoria)}."
+        dictamen = await self.execute_task(prompt)
+        return dictamen
 
-# TÍTULO EN EL PANEL PRINCIPAL ARRIBA DE TODO DE COLOR ROJO FUEGO SEGURO
-st.markdown("<h1 style='color: #ff3b30 !important; -webkit-text-fill-color: #ff3b30 !important; font-weight: 900; margin-bottom: 15px; margin-top: 0px;'>🏢 RESIL_IA CONDOMINIOS</h1>", unsafe_allow_html=True)
+# =====================================================================
+# COORDINADOR CENTRAL DE ENJAMBRE (ORQUESTADOR PRINCIPAL)
+# =====================================================================
+class ConsorcioSwarmOrchestrator:
+    def __init__(self):
+        self.broker = SwarmBroker()
+        self.atencion = OwnerRelationAgent(self.broker)
+        self.operaciones = OperationsSupplierAgent(self.broker)
+        self.contable = AccountingLiquidationsAgent(self.broker)
+        self.legal = LegalComplianceAgent(self.broker)
 
-# ====== SOLUCIÓN AL APAGÓN DE PANTALLA: LOS CONDICIONALES AHORA SINO MATCHEAN PERFECTO ======
-if pantalla_activa == "📋 Dashboard":
-    st.title("Panel Principal")
-    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
-
-    # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas de la pantalla
-    ots_edificio_activo = [ot for ot in TABLA_SOLICITADA_OT if ot["Edificio"] == edificio_seleccionado]
-
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
-
-    st.markdown("---")
-    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-    
-    st.markdown("### 📥 Flujo de Ingresos Percibidos")
-    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
-    
-    st.markdown("### 📤 Flujo de Gastos Devengados")
-    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
-    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
-    
-    st.markdown("---")
-    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
+    async def simular_ciclo_consorcio(self):
+        print("="*60)
+        print("🚀 INICIANDO ENJAMBRE DE INTELIGENCIA ARTIFICIAL PARA CONSORCIOS")
+        print("="*60)
+        
+        # Paso 1: Recepción de mensaje crítico de un propietario
+        respuesta_usuario = await self.atencion.procesar_mensaje_propietario(
+            uf="4B", 
+            edificio="Av. Santa Fe 2300, CABA", 
+            mensaje="Hola, me está cayendo agua del techo del baño a baldes, por favor manden a alguien urgente."
+        )
+        print(f"💬 [Respuesta Automática a Propietario]:\n  -> '{respuesta_usuario}'")
+        
+        # Paso 2: El Broker detecta la orden de plomería y el Agente Operativo gestiona la orden
+        ultimo_mensaje = self.broker.history[-1]
+        if ultimo_mensaje.topic == "SOLICITUD_PROVEEDOR_URGENTE":
+            proveedor_elegido = await self.operaciones.gestionar_incidente(ultimo_mensaje.content)
+            print(f"✅ [Proveedor Contratado]: {proveedor_elegido['proveedor_seleccionado']} | Costo: ${proveedor_elegido['presupuesto_ars']} ARS")
+        
+        # Paso 3: Al cierre de periodo, el Agente Contable compila los gastos del broker y realiza la liquidación
+        gastos_mes = [{"concepto": m.content["proveedor"], "monto": m.content["monto"]} for m in self.broker.history if m.topic == "GASTO_DEVENGADO"]
+        liquidacion = await self.contable.liquidar_periodo("Av. Santa Fe 2300, CABA", gastos_mes)
+        print(f"📊 [Resumen Liquidación Expensas]: Total de Gastos Liquidados: ${liquidacion['total_gastos']} ARS")
+        
+        # Paso 4: El Agente Legal fiscaliza de manera cruzada el proceso
+        ultimo_mensaje_liquidacion = self.broker.history[-1]
+        if ultimo_mensaje_liquidacion.topic == "VALIDACION_LIQUIDACION":
+            dictamen_final = await self.legal.auditar_transaccion(ultimo_mensaje_liquidacion.content)
+            print(f"📝 [Dictamen Final de Auditoría]: {dictamen_final['alerta']} | {dictamen_final['retenciones_suterh']}")
+            
