@@ -14,7 +14,7 @@ st.set_page_config(
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
-        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
+        h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
         h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
@@ -52,7 +52,7 @@ ESTADISTICAS_EDIFICIOS = {
 # CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORGANIZADOS POR RUBRO ORIGINAL
 DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
-    {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Plomería", "Prestador": "   Caños Matriculados Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
     {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
@@ -70,7 +70,7 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
 ]
 
-# INTERFAZ LATERAL ORIGINAL CON EL LOGO ACHICADO A 150PX A PEDIDO
+# INTERFAZ LATERAL ORIGINAL CON EL LOGO ACHICADO A 150PX
 with st.sidebar:
     st.image("Resilia.jfif", width=150)
     st.caption("AI Swarm ERP Platform v2.6")
@@ -112,7 +112,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO DE LA SECCIÓN DE ABAJO
+# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO
 unidades_reglamento = [
     {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
     {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
@@ -121,7 +121,7 @@ unidades_reglamento = [
     {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
 ]
 
-# TÍTULO PREMIUM INSTITUTICIONAL CORREGIDO (EN ROJO CON FILTRO SÓLIDO SIN COMILLAS ROTAS)
+# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO
 st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
 
 # EJECUCIÓN TOTALMENTE LINEAL ORIGINAL
@@ -153,12 +153,17 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
     st.markdown(f"Cálculos de auditoría legal aplicados con una Tasa Punitoria Activa Mensual del {tasa_act}%:")
     
-    prorrateo_raw = []
     prorrateo_calculado = []
+    uf_lista_seleccion = []
+    totales_uf_map = {}
+    
     for u in unidades_reglamento:
         expensa_pura = total_g_calc * u["Coeficiente"]
         interes_mora = u["Deuda_Base"] * (tasa_act / 100.0)
         total_a_liquidar = expensa_pura + u["Deuda_Base"] + interes_mora
         
-        prorrateo_raw.append({
-            "UF": u["UF"], "Piso": u["Piso"], "Coef": f"{u['Coeficiente'] * 100:.2f}%",
+        uf_lista_seleccion.append(u["UF"])
+        totales_uf_map[u["UF"]] = {
+            "Piso": u["Piso"],
+            "Coef": f"{u['Coeficiente'] * 100:.2f}%",
+            "Expensa": expensa_pura,
