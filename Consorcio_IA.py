@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
@@ -10,15 +9,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS de Alta Visibilidad (Garantiza contraste absoluto de títulos, textos y contenedores en ambas pantallas)
+# Inyección de CSS Original (Fondo azul metalizado oscuro, paneles dorados y letra gigante)
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
         h2, h3 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        
-        /* Forzar visibilidad total de textos generales, etiquetas y marcas */
-        .stMarkdown p, p, label, .stRadio label, span { color: #ffffff !important; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
@@ -38,9 +35,7 @@ st.markdown("""
         }
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        
-        /* Contenedor de tablas y bloques de texto optimizado para fondo oscuro */
-        .stDataFrame, .stTable, div[data-testid="stVerticalBlock"] { background-color: rgba(30, 41, 59, 0.4); border-radius: 16px; padding: 10px; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -56,7 +51,7 @@ ESTADISTICAS_EDIFICIOS = {
 # CARTILLA REQUERIDA DE PROVEEDORES FICTICIOS ORGANIZADOS POR RUBRO ORIGINAL
 DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Plomería", "Prestador": "🚰 Caños y Sanitarios Express", "CUIT": "30-55489712-4", "Teléfono": "11-4895-1234", "Zona de Atención": "CABA Centro"},
-    {"Rubro": "Plomería", "Prestador": "   Caños Matriculados Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
+    {"Rubro": "Plomería", "Prestador": "🚰 Ingeniería Hidráulica Sur", "CUIT": "33-66985214-9", "Teléfono": "11-3564-9871", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Electricidad", "Prestador": "⚡ El Fusible Matriculado", "CUIT": "20-14896532-1", "Teléfono": "11-5478-6532", "Zona de Atención": "Toda CABA"},
     {"Rubro": "Electricidad", "Prestador": "⚡ Conexiones Seguras Palermo", "CUIT": "27-33659874-2", "Teléfono": "11-6985-3214", "Zona de Atención": "CABA Norte"},
     {"Rubro": "Cerrajería", "Prestador": "🔑 Llaves Fénix 24hs", "CUIT": "23-45896521-8", "Teléfono": "11-2365-9847", "Zona de Atención": "Urgencias CABA"},
@@ -67,11 +62,11 @@ DATOS_CARTILLA_PROVEEDORES = [
 
 # TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL ORIGINAL
 TABLA_SOLICITADA_OT = [
-    {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
-    {"Edificio": "Larrea 435, CABA", "UF": "UF 03", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
-    {"Edificio": "Montevideo 891, CABA", "UF": "UF 04", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
-    {"Edificio": "San Jose 1111, CABA", "UF": "UF 05", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
-    {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
+    {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
+    {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
+    {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
+    {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
+    {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
 ]
 
 # INTERFAZ LATERAL ORIGINAL CON EL LOGO ACHICADO A 150PX
@@ -125,26 +120,23 @@ unidades_reglamento = [
     {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
 ]
 
-# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO SÓLIDO TOTALMENTE VISIBLE
-st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 5px; margin-top: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
+# TÍTULO PREMIUM SOLICITADO: MÁS GIGANTE (3.2rem) Y EN COLOR BORDÓ CON SOMBRA SÓLIDA CONTROLADA
+st.markdown("<span style='color: #800020 !important; -webkit-text-fill-color: #800020 !important; font-size: 3.2rem !important; font-weight: 900 !important; font-family: sans-serif; letter-spacing: -1px; text-shadow: 2px 2px 4px #000000;'>🏢 RESIL_IA CONDOMINIOS</span>", unsafe_allow_html=True)
 
 # EJECUCIÓN TOTALMENTE LINEAL ORIGINAL
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("Panel Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
-    # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas y contadores
-    ots_edificio_activo = [ot for ot in TABLA_SOLICITADA_OT if ot["Edificio"] == edificio_seleccionado]
-
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
+    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
 
     st.markdown("---")
     
-    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS ORIGINAL
+    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS ORIGINAL RESTAURADO
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
@@ -155,6 +147,16 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN CON ARREGLOS DE PANDAS (100% LIBRE DE SYNTAXERROR)
+    # SECCIÓN 2: COMPLETADO DE LIQUIDACIÓN PRORRATEADA CON INTERESES POR MORA REQUERIDA
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
+    st.markdown(f"Cálculos de auditoría legal aplicados con una Tasa Punitoria Activa Mensual del {tasa_act}%:")
+    
+    prorrateo_raw = []
+    prorrateo_calculado = []
+    for u in unidades_reglamento:
+        expensa_pura = total_g_calc * u["Coeficiente"]
+        interes_mora = u["Deuda_Base"] * (tasa_act / 100.0)
+        total_a_liquidar = expensa_pura + u["Deuda_Base"] + interes_mora
+        
+        prorrateo_raw.append({
