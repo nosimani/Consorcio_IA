@@ -15,7 +15,7 @@ st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        h2, h3 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
         .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
@@ -63,11 +63,11 @@ DATOS_CARTILLA_PROVEEDORES = [
 
 # TABLA REQUERIDA DE ÓRDENES DE TRABAJO EXACTA DEL EXCEL ORIGINAL
 TABLA_SOLICITADA_OT = [
-    {"Edificio": "Avda. Corrientes 1234", "UF": "1A", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
-    {"Edificio": "Larrea 435", "UF": "3J", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
-    {"Edificio": "Montevideo 891", "UF": "4K", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
-    {"Edificio": "San José 1111", "UF": "5M", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
-    {"Edificio": "Guayaquil 399", "UF": "6P", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
+    {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
+    {"Edificio": "Larrea 435, CABA", "UF": "UF 03", "Trabajo": "Albañilería", "Presupuesto Aprobado": "$ 390.000.-", "Fecha_Inicio": "07/06/26", "Fecha_Finaliz": "12/06/26", "Estado": "En Proceso"},
+    {"Edificio": "Montevideo 891, CABA", "UF": "UF 04", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 120.000.-", "Fecha_Inicio": "08/09/26", "Fecha_Finaliz": "09/09/26", "Estado": "Realizado"},
+    {"Edificio": "San Jose 1111, CABA", "UF": "UF 05", "Trabajo": "Electricidad", "Presupuesto Aprobado": "$ 95.000.-", "Fecha_Inicio": "12/07/26", "Fecha_Finaliz": "12/07/26", "Estado": "Presupuestado"},
+    {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
 ]
 
 # INTERFAZ LATERAL ORIGINAL CON EL LOGO ACHICADO A 150PX
@@ -112,16 +112,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO
-unidades_reglamento = [
-    {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
-    {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
-    {"UF": "UF 03", "Piso": "2° A", "Coeficiente": 0.18, "Deuda_Base": 220000.0 if consorcio_actual["mora"] == "2" else 0.0},
-    {"UF": "UF 04", "Piso": "2° B", "Coeficiente": 0.12, "Deuda_Base": 0.0},
-    {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
-]
-
-# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO
+# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO (INMUNE A ERRORES)
 st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
 
 # EJECUCIÓN TOTALMENTE LINEAL ORIGINAL
@@ -129,11 +120,14 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.title("Panel Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
+    # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas y contadores
+    ots_edificio_activo = [ot for ot in TABLA_SOLICITADA_OT if ot["Edificio"] == edificio_seleccionado]
+
     m1, m2, m3, m4 = st.columns(4)
     with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
     with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
     with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=consorcio_actual['ots'])
+    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
     st.markdown("---")
     
@@ -148,22 +142,26 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: COMPLETADO DE LIQUIDACIÓN PRORRATEADA CON INTERESES POR MORA REQUERIDA
+    # SECCIÓN 2: LIQUIDACIÓN PRORRATEADA EN MATRIZ PLANA (100% INMUNE A SYNTAXERROR)
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
     st.markdown(f"Cálculos de auditoría legal aplicados con una Tasa Punitoria Activa Mensual del {tasa_act}%:")
     
-    prorrateo_calculado = []
-    uf_lista_seleccion = []
-    totales_uf_map = {}
+    # Matriz plana estructural de copropiedad
+    uf_reglamento = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
+    pisos_reglamento = ["1° A", "1° B", "2° A", "2° B", "3° A"]
+    coef_reglamento = [0.35, 0.25, 0.18, 0.12, 0.10]
     
-    for u in unidades_reglamento:
-        expensa_pura = total_g_calc * u["Coeficiente"]
-        interes_mora = u["Deuda_Base"] * (tasa_act / 100.0)
-        total_a_liquidar = expensa_pura + u["Deuda_Base"] + interes_mora
+    deuda_m1 = 180000.0 if consorcio_actual["mora"] >= "1" else 0.0
+    deuda_m2 = 220000.0 if consorcio_actual["mora"] == "2" else 0.0
+    deudas_reglamento = [0.0, deuda_m1, deuda_m2, 0.0, 0.0]
+    
+    prorrateo_data_list = []
+    for i in range(5):
+        exp_pura = total_g_calc * coef_reglamento[i]
+        int_mora = deudas_reglamento[i] * (tasa_act / 100.0)
+        tot_liquidar = exp_pura + deudas_reglamento[i] + int_mora
         
-        uf_lista_seleccion.append(u["UF"])
-        totales_uf_map[u["UF"]] = {
-            "Piso": u["Piso"],
-            "Coef": f"{u['Coeficiente'] * 100:.2f}%",
-            "Expensa": expensa_pura,
+        prorrateo_data_list.append({
+            "Unidad Funcional": uf_reglamento[i],
+            "Piso/Dpto": pisos_reglamento[i],
