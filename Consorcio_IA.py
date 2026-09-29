@@ -44,8 +44,13 @@ st.markdown("""
             color: #ffffff !important;
             font-weight: 800 !important;
             margin-top: 5px !important;
-            margin-bottom: 5px !important;
-        }
+            margin-bottom: 5px !important; 
+                    /* Forzar el centrado perfecto de la imagen en la barra lateral */
+        [data-testid="stSidebar"] [data-testid="stImage"] > img {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }        
     </style>
 """, unsafe_allow_html=True)
 
@@ -82,8 +87,7 @@ TABLA_SOLICITADA_OT = [
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON MÓDULOS DE CONTROL)
 with st.sidebar:
     # REQUERIMIENTO: Logo del panel izquierdo más chico (width=110)
-    st.markdown("<div style='text-align: center; width: 100%;'><style>[data-testid='stSidebar'] [data-testid='stImage'] {display: block; margin-left: auto; margin-right: auto;}</style></div>", unsafe_allow_html=True)
-    st.image("Resilia.jfif", width=110) 
+        st.image("Resilia.jfif", width=110)
     # REQUERIMIENTO: Nombre RESILIA AGENCY más pequeño (estilizado mediante CSS de arriba)
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
