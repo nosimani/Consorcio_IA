@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(
     page_title="Resilia_Condominios",
     page_icon="🏢",
-    layout="wide",
+    layout="wide=10",
     initial_sidebar_state="expanded"
 )
 
