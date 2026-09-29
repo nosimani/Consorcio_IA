@@ -44,13 +44,15 @@ st.markdown("""
             color: #ffffff !important;
             font-weight: 800 !important;
             margin-top: 5px !important;
-            margin-bottom: 5px !important; 
-                    /* Forzar el centrado perfecto de la imagen en la barra lateral */
+            margin-bottom: 5px !important;
+        }
+
+        /* REQUERIMIENTO BLINDADO: Forzar el centrado perfecto de la imagen en la barra lateral */
         [data-testid="stSidebar"] [data-testid="stImage"] > img {
             display: block !important;
             margin-left: auto !important;
             margin-right: auto !important;
-        }        
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -86,9 +88,7 @@ TABLA_SOLICITADA_OT = [
 
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON MÓDULOS DE CONTROL)
 with st.sidebar:
-    # REQUERIMIENTO: Logo del panel izquierdo más chico (width=110)
-        st.image("Resilia.jfif", width=110)
-    # REQUERIMIENTO: Nombre RESILIA AGENCY más pequeño (estilizado mediante CSS de arriba)
+    st.image("Resilia.jfif", width=110)
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
@@ -128,7 +128,7 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO NATIVO PANDAS (INMUNE A ERRORES DE SINTAXIS)
+# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO NATIVO PANDAS
 uf_lista = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
 piso_lista = ["1° A", "1° B", "2° A", "2° B", "3° A"]
 coef_lista = [0.35, 0.25, 0.18, 0.12, 0.10]
@@ -164,4 +164,3 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
-    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
