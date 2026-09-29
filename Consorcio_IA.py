@@ -128,7 +128,22 @@ balance_neto = total_i_calc - total_g_calc
 if pantalla_activa == "📋 Dashboard y Contabilidad":
     # Banner GIF animado premium en alta resolución
     st.image("https://imgbox.com", use_container_width=True)
-    st.markdown("## 🏢 RESIL_IA CONDOMINIOS")
+    st.markdown("""
+    <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 5px;'>
+        <!-- ICONO DE INTERNET: Reemplazá el link de abajo entre comillas por la URL de la imagen que elijas -->
+        <img src='https://icons8.com' width='55' style='filter: drop-shadow(0 0 10px rgba(56,189,248,0.5));'>
+        <!-- TÍTULO EN ROJO CON REFLEJO DORADO CORPORATIVO -->
+        <h2 style='
+            margin: 0;
+            font-size: 2.5rem !important;
+            font-weight: 900 !important;
+            color: #ff3b30 !important;
+            font-family: sans-serif;
+            letter-spacing: -1px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.7), 2px 2px 0px #aa7c11;
+        '>RESIL_IA CONDOMINIOS</h2>
+    </div>
+""", unsafe_allow_html=True)
     st.title("Panel Principal")
 
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
