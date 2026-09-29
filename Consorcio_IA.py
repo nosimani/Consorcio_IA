@@ -1,5 +1,6 @@
-import streamlit as st
+import streamlit st
 import pandas as pd
+from datetime import datetime
 
 # CONFIGURACIÓN HIGH-END DE LA INTERFAZ
 st.set_page_config(
@@ -9,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS (Fondo azul metalizado oscuro original, paneles dorados y letra gigante de tablas)
+# Inyección de CSS de Alta Visibilidad (Fondo azul metalizado original, paneles dorados y letra gigante)
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
@@ -35,19 +36,9 @@ st.markdown("""
         }
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5) !important; border-radius: 16px; padding: 10px; }
 
-        /* REQUERIMIENTO: Reducir el nombre RESILIA AGENCY en la barra lateral izquierda */
-        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2 {
-            font-size: 1.1rem !important;
-            text-align: center !important;
-            color: #ffffff !important;
-            font-weight: 800 !important;
-            margin-top: 5px !important;
-            margin-bottom: 5px !important;
-        }
-
-        /* REQUERIMIENTO BLINDADO: Forzar el centrado perfecto de la imagen en la barra lateral */
+        /* REQUERIMIENTO BLINDADO: Centrado perfecto del Logo Fénix en la barra lateral */
         [data-testid="stSidebar"] [data-testid="stImage"] > img {
             display: block !important;
             margin-left: auto !important;
@@ -86,12 +77,10 @@ TABLA_SOLICITADA_OT = [
     {"Edificio": "Guayaquil 399, CABA", "UF": "UF 02", "Trabajo": "Cerrajería", "Presupuesto Aprobado": "$ 180.000.-", "Fecha_Inicio": "15/08/26", "Fecha_Finaliz": "15/08/26", "Estado": "En Proceso"}
 ]
 
-# INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON MÓDULOS DE CONTROL)
+# INTERFAZ LATERAL ORIGINAL CON LOGO CENTRADO AUTOMÁTICO
 with st.sidebar:
     st.image("Resilia.jfif", width=110)
     st.caption("AI Swarm ERP Platform v2.6")
-    st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -141,26 +130,36 @@ gastos_puros = [total_g_calc * c for c in coef_lista]
 intereses_puros = [d * (tasa_act / 100.0) for d in deudas_lista]
 totales_puros = [gastos_puros[i] + deudas_lista[i] + intereses_puros[i] for i in range(5)]
 
-# REQUERIMIENTO: TÍTULO EN EL PANEL PRINCIPAL ARRIBA DE TODO DE COLOR ROJO FUEGO SEGURO
-st.markdown("<h1 style='color: #ff3b30 !important; -webkit-text-fill-color: #ff3b30 !important; font-weight: 900; margin-bottom: 15px; margin-top: 0px;'>🏢 RESIL_IA CONDOMINIOS</h1>", unsafe_allow_html=True)
+# REQUERIMIENTO BLINDADO: TÍTULO EN ROJO FUEGO PURO GIGANTE DE 3.2REM ARRIBA DE TODO [1]
+st.markdown("<span style='color: #ff3b30 !important; -webkit-text-fill-color: #ff3b30 !important; font-size: 3.2rem !important; font-weight: 900 !important; font-family: sans-serif; letter-spacing: -1px; text-shadow: 2px 2px 4px #000000;'>🏢 RESIL_IA CONDOMINIOS</span>", unsafe_allow_html=True)
 
-# EJECUCIÓN TOTALMENTE LINEAL CONDICIONAL
-if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("Panel Principal")
-    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
+st.title("Panel Principal")
+st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
-    # Filtrado dinámico de OTs del edificio seleccionado para las tarjetas de la pantalla
-    ots_edificio_activo = [ot for ot in TABLA_SOLICITADA_OT if ot["Edificio"] == edificio_seleccionado]
+# Filtrado dinámico de OTs del edificio seleccionado para las tarjetas de la pantalla
+ots_edificio_activo = [ot for ot in TABLA_SOLICITADA_OT if ot["Edificio"] == edificio_seleccionado]
 
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
+# METRICAS DORADAS
+m1, m2, m3, m4 = st.columns(4)
+with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
+with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
+with m3: st.metric(label="UF en Mora", value=consorcio_actual['mora'])
+with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
 
-    st.markdown("---")
-    
-    # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS ORIGINAL RESTAURADO
-    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
-    
-    st.markdown("### 📥 Flujo de Ingresos Percibidos")
+st.markdown("---")
+
+# =========================================================================================
+# MAESTRO CONTABLE COMPLETO Y ACUMULATIVO (TODO SE MUESTRA AL MISMO TIEMPO ABAJO) [1]
+# =========================================================================================
+st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+
+st.markdown("### 📥 Flujo de Ingresos Percibidos")
+st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+
+st.markdown("### 📤 Flujo de Gastos Devengados")
+st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+
+st.markdown("---")
+
