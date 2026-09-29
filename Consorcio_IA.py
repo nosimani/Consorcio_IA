@@ -132,7 +132,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 5px;'>
         <!-- ICONO DE INTERNET: Reemplazá el link de abajo entre comillas por la URL de la imagen que elijas -->
         <img src='https://icons8.com' width='55' style='filter: drop-shadow(0 0 10px rgba(56,189,248,0.5));'>
-        <!-- TÍTULO EN ROJO CON REFLEJO DORADO CORPORATIVO -->
+        <!-- TÍTULO EN ROJO -->
         <h2 style='
             margin: 0;
             font-size: 2.5rem !important;
