@@ -82,7 +82,9 @@ TABLA_SOLICITADA_OT = [
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON MÓDULOS DE CONTROL)
 with st.sidebar:
     # REQUERIMIENTO: Logo del panel izquierdo más chico (width=110)
-    st.image("Resilia.jfif", width=110)
+        col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
+    with col_logo2:
+        st.image("Resilia.jfif", width=110)
     # REQUERIMIENTO: Nombre RESILIA AGENCY más pequeño (estilizado mediante CSS de arriba)
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
