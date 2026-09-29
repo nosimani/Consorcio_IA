@@ -71,9 +71,7 @@ TABLA_SOLICITADA_OT = [
 
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
 with st.sidebar:
-    st.image("Resilia.jfif", use_container_width=True)
-    st.title("Resilia_Condominios")
-    st.caption("AI Swarm ERP Platform v2.6")
+    st.image("Resilia.jfif", use_container_width=5)
     st.markdown("---")
     pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
