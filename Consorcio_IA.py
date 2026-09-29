@@ -125,24 +125,24 @@ balance_neto = total_i_calc - total_g_calc
 # =====================================================================
 # CONDICIONAL 1: MÓDULO DE CONTABILIDAD PRINCIPAL
 # =====================================================================
-if pantalla_activa == "📋 Dashboard y Contabilidad":
-    # Banner GIF animado premium en alta resolución
-    st.image("https://imgbox.com", use_container_width=True)
-    st.markdown("""
-    <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 5px;'>
-        <!-- ICONO DE INTERNET: Reemplazá el link de abajo entre comillas por la URL de la imagen que elijas -->
-        <img src='https://icons8.com' width='55' style='filter: drop-shadow(0 0 10px rgba(56,189,248,0.5));'>
-        <!-- TÍTULO EN ROJO -->
-        <h2 style='
+st.markdown("""
+    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px; margin-bottom: 15px;">
+        <!-- ICONO INSTITUCIONAL DE ADMINISTRACIÓN (DIRECCIÓN DE IMAGEN CONTROLADA) -->
+        <img src="https://icons8.com" width="50" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.8));">
+        
+        <!-- TEXTO FORZADO EN ROJO FUEGO CON CONTORNO Y RELIEVE EN ORO LÍQUIDO -->
+        <span style="
             margin: 0;
-            font-size: 2.5rem !important;
+            font-size: 2.6rem !important;
             font-weight: 900 !important;
-            color: #ff3b30 !important;
             font-family: sans-serif;
             letter-spacing: -1px;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.7), 2px 2px 0px #aa7c11;
-        '>RESIL_IA CONDOMINIOS</h2>
+            color: #ff3b30 !important;
+            -webkit-text-fill-color: #ff3b30 !important;
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.9), 2px 2px 0px #aa7c11, -1px -1px 0px #aa7c11, 1px -1px 0px #aa7c11, -1px 1px 0px #aa7c11;
+        ">RESIL_IA CONDOMINIOS</span>
     </div>
+""", unsafe_allow_html=True)
 """, unsafe_allow_html=True)
     st.title("Panel Principal")
 
