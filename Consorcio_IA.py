@@ -103,7 +103,7 @@ total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
 # EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
-if pantalla_activa == "📋 Dashboard y Contabilidad":
+if pantalla_activa == "📋 Dashboard":
     st.title("Resil_IA Condominios")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
