@@ -48,6 +48,12 @@ st.markdown("""
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
         .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+                /* Reducir el tamaño del título en el sidebar */
+        [data-testid="stSidebar"] h1 {
+            font-size: 1.6rem !important;
+            text-align: center !important;
+            margin-top: 5px !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
