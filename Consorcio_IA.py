@@ -90,7 +90,6 @@ TABLA_SOLICITADA_OT = [
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO FÉNIX LOCAL)
 with st.sidebar:
     st.image("Resilia.jfif", width=150)
-    st.title("Resil_IA Condominios")
     st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
     # RADIO SANEADO: CONTROL TOTAL DE FLUJO EN PANTALLA
