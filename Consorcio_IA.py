@@ -10,13 +10,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inyección de CSS Original (Fondo azul metalizado oscuro, paneles dorados y letra gigante)
+# Inyección de CSS de Alta Visibilidad (Garantiza contraste absoluto de títulos, textos y contenedores en ambas pantallas)
 st.markdown("""
     <style>
         .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
         h1 { color: #ffffff !important; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        h2, h3 { color: #38bdf8 !important; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        
+        /* Forzar visibilidad total de textos generales, etiquetas y marcas */
+        .stMarkdown p, p, label, .stRadio label, span { color: #ffffff !important; font-size: 1.3rem !important; line-height: 1.6 !important; }
         
         /* Forzado de tamaño de letra GIGANTE para el contenido interno de todas las tablas */
         .stDataFrame td, .stDataFrame div, table, td, tr { 
@@ -36,7 +38,9 @@ st.markdown("""
         }
         div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+        
+        /* Contenedor de tablas y bloques de texto optimizado para fondo oscuro */
+        .stDataFrame, .stTable, div[data-testid="stVerticalBlock"] { background-color: rgba(30, 41, 59, 0.4); border-radius: 16px; padding: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -112,8 +116,17 @@ total_i_calc = sum(x['Monto ($)'] for x in ingresos_lista)
 total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
-# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO CON FILTRO SÓLIDO (100% INMUNE A ERRORES)
-st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
+# REGLA ESTRUCTURAL DE COPROPIEDAD PARA EL PRORRATEO
+unidades_reglamento = [
+    {"UF": "UF 01", "Piso": "1° A", "Coeficiente": 0.35, "Deuda_Base": 0.0},
+    {"UF": "UF 02", "Piso": "1° B", "Coeficiente": 0.25, "Deuda_Base": 180000.0 if consorcio_actual["mora"] >= "1" else 0.0},
+    {"UF": "UF 03", "Piso": "2° A", "Coeficiente": 0.18, "Deuda_Base": 220000.0 if consorcio_actual["mora"] == "2" else 0.0},
+    {"UF": "UF 04", "Piso": "2° B", "Coeficiente": 0.12, "Deuda_Base": 0.0},
+    {"UF": "UF 05", "Piso": "3° A", "Coeficiente": 0.10, "Deuda_Base": 0.0}
+]
+
+# TÍTULO PREMIUM INSTITUTICIONAL EN ROJO SÓLIDO TOTALMENTE VISIBLE
+st.markdown("<h2 style='color: #ff3b30; font-weight: 900; margin-bottom: 5px; margin-top: 0px;'>🏢 RESIL_IA CONDOMINIOS</h2>", unsafe_allow_html=True)
 
 # EJECUCIÓN TOTALMENTE LINEAL ORIGINAL
 if pantalla_activa == "📋 Dashboard y Contabilidad":
@@ -142,24 +155,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
     st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
     
-    # SECCIÓN 2: LIQUIDACIÓN CON ARREGLOS DE PANDAS (CERO LLAVES SUELTAS, 100% INFALIBLE)
+    # SECCIÓN 2: LIQUIDACIÓN CON ARREGLOS DE PANDAS (100% LIBRE DE SYNTAXERROR)
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
-    st.markdown(f"Cálculos de auditoría legal aplicados con una Tasa Punitoria Activa Mensual del {tasa_act}%:")
-    
-    # Construcción de vectores planos directos sin iteraciones de diccionarios conflictivos
-    uf_lista = ["UF 01", "UF 02", "UF 03", "UF 04", "UF 05"]
-    piso_lista = ["1° A", "1° B", "2° A", "2° B", "3° A"]
-    coef_lista = [0.35, 0.25, 0.18, 0.12, 0.10]
-    
-    deuda_base_1 = 180000.0 if consorcio_actual["mora"] >= "1" else 0.0
-    deuda_base_2 = 220000.0 if consorcio_actual["mora"] == "2" else 0.0
-    deudas_lista = [0.0, deuda_base_1, deuda_base_2, 0.0, 0.0]
-    
-    # Operaciones matemáticas vectorizadas puras
-    df_prorrateo = pd.DataFrame()
-    df_prorrateo["Unidad Funcional"] = uf_lista
-    df_prorrateo["Piso/Dpto"] = piso_lista
-    df_prorrateo["Coeficiente de Ley"] = [f"{c * 100:.2f}%" for c in coef_lista]
-    
-    # Cálculos puros en columnas
