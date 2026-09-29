@@ -104,7 +104,7 @@ balance_neto = total_i_calc - total_g_calc
 
 # EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
 if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
+    st.title("Resilia_Condominios")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
