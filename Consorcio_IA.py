@@ -71,9 +71,11 @@ TABLA_SOLICITADA_OT = [
 
 # INTERFAZ LATERAL (SIDEBAR CORPORATIVO CON TU LOGO OFICIAL FÉNIX)
 with st.sidebar:
-    st.image("Resilia.jfif", use_container_width=10)
+    st.image("Resilia.jfif", use_container_width=True)
+    st.title("Resilia_Condominios")
+    st.caption("AI Swarm ERP Platform v2.6")
     st.markdown("---")
-    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard", "🔧 Órdenes de Trabajo"], index=0)
+    pantalla_activa = st.radio("Seleccione Módulo de Control:", ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"], index=0)
     st.markdown("---")
     edificio_seleccionado = st.selectbox("Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys()))
     st.markdown("---")
@@ -103,8 +105,8 @@ total_g_calc = sum(x['Monto ($)'] for x in gastos_lista)
 balance_neto = total_i_calc - total_g_calc
 
 # EJECUCIÓN TOTALMENTE LINEAL COMPILADA (CERO SOLAPAS O TABULACIONES CONFLICTIVAS)
-if pantalla_activa == "📋 Dashboard":
-    st.title("Resil_IA Condominios")
+if pantalla_activa == "📋 Dashboard y Contabilidad":
+    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
     st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
 
     m1, m2, m3, m4 = st.columns(4)
@@ -116,7 +118,7 @@ if pantalla_activa == "📋 Dashboard":
     st.markdown("---")
     
     # SECCIÓN 1: CUADRO DE INGRESOS Y GASTOS CON LETRA GIGANTE
-    st.header("📊 Cuadro de Ingresos y Gastos")
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
     
     st.markdown("### 📥 Flujo de Ingresos Percibidos")
     st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
