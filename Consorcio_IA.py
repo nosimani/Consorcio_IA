@@ -86,7 +86,7 @@ DATOS_CARTILLA_PROVEEDORES = [
     {"Rubro": "Albañilería", "Prestador": "🧱 Refacciones Integrales Baires", "CUIT": "20-99653214-7", "Teléfono": "11-3254-7896", "Zona de Atención": "CABA Sur"}
 ]
 
-# INICIALIZACIÓN DE ÓRDENES DE TRABAJO EN ESTADO DE SESIÓN CON DIRECCIONES COINCIDENTES
+# INICIALIZACIÓN DE ÓRDENES DE TRABAJO CON LAS DIRECCIONES COINCIDENTES
 if "historico_ot" not in st.session_state:
     st.session_state.historico_ot = [
         {"Edificio": "Av. Corrientes 1234, CABA", "UF": "UF 01", "Trabajo": "Plomería", "Presupuesto Aprobado": "$ 250.000.-", "Fecha_Inicio": "01/05/26", "Fecha_Finaliz": "01/05/26", "Estado": "Realizado"},
@@ -119,10 +119,10 @@ aportes_suterh = bruto_referencial * 0.195
 contribuciones_patronales = bruto_referencial * 0.255
 total_cargas_sociales = aportes_suterh + contribuciones_patronales
 
-# Listados financieros estructurados con los NUEVOS valores fijos solicitados
+# Listados financieros estructurados
 ingresos_lista = [
-    {"Ingresos": "ingresos por expensas", "Monto ($)": 5320000.0},
-    {"Ingresos": "alquileres de locales", "Monto ($)": 3000000.0},
+    {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
+    {"Ingresos": "alquileres de locales", "Monto ($)": 85000.0 * (1.0 if f_cal >= 0.8 else 0.0)},
     {"Ingresos": "intereses por colocacion a plazo fijo", "Monto ($)": 14000.0 * f_cal * (tasa_act / 5.0)}
 ]
 
@@ -156,14 +156,16 @@ ots_edificio_activo = [ot for ot in st.session_state.historico_ot if ot["Edifici
 # MÓDULO 1: DASHBOARD Y CONTABILIDAD
 # ==========================================
 if pantalla_activa == "📋 Dashboard y Contabilidad":
-    st.title("🏢 Resilia_Condominios - Panel de Control Principal")
-    st.markdown(f"Monitoreo analítico y flujos contables para el consorcio: **{edificio_seleccionado}**")
-
-    # MÉTRICAS FLOTANTES DORADAS
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric(label="Total gastos del periodo", value=f"${total_g_calc:,.2f}")
-    with m2: st.metric(label="Fondos de reserva", value=f"${consorcio_actual['reserva']:,.2f}")
-    with m3: st.metric(label="UF en Mora", value=consorcio_actual["mora"])
-    with m4: st.metric(label="Ordenes de trabajo", value=str(len(ots_edificio_activo)))
-
     st.markdown("---")
+    st.header("📊 Módulo Contable: Cuadro de Ingresos y Gastos")
+    
+    st.subheader("📥 Flujo de Ingresos Percibidos")
+    st.dataframe(pd.DataFrame(ingresos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Ingresos Registrados:** ${total_i_calc:,.2f}")
+    
+    st.subheader("📤 Flujo de Gastos Devengados")
+    st.dataframe(pd.DataFrame(gastos_lista), use_container_width=True, hide_index=True)
+    st.info(f"**Total Gastos Registrados:** ${total_g_calc:,.2f}")
+    
+    st.markdown("---")
+    st.header("🧮 Liquidación Prorrateada Avanzada con Coeficientes e Intereses por Mora")
