@@ -1,12 +1,12 @@
 """
-╔═══════════════════════════════════════════════════════════════════════════╗
+╔═════════════════════════════════════════════════════════════════──[...]
 ║                    RESILIA_CONDOMINIOS v2.0                               ║
 ║         SISTEMA MULTIAGENTE DE ENJAMBRE PARA GESTIÓN DE CONDOMINIOS        ║
 ║                                                                            ║
 ║  Arquitectura: Orquestador Central + 7 Agentes Especializados              ║
 ║  Patrón: Swarm Intelligence con Coordinación Emergente                     ║
 ║  Enfoque: Cada petición dispara activación selectiva del enjambre          ║
-╚═══════════════════════════════════════════════════════════════════════════╝
+╚═════════════════════════════════════════════════════════════════──[...]
 """
 
 import streamlit as st
@@ -18,9 +18,9 @@ from datetime import datetime
 import time
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 1. DEFINICIONES ESTRUCTURALES DEL ENJAMBRE
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 class TipoAgente(Enum):
     """Clasificación de roles dentro del enjambre"""
@@ -63,9 +63,9 @@ class ResultadoAgente:
     dependencias_cumplidas: List[str]
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 2. BASE DE DATOS GLOBAL (INMUTABLE)
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {
@@ -208,9 +208,9 @@ TABLA_SOLICITADA_OT = [
 ]
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 3. NÚCLEO DEL ENJAMBRE - AGENTES ESPECIALIZADOS
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 class AgenteBase:
     """Clase base para todos los agentes del enjambre"""
@@ -558,9 +558,9 @@ class AgenteReportes(AgenteBase):
         )
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 4. ORQUESTADOR CENTRAL - El "cerebro" del enjambre
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 
 class OrquestadorSwarm:
@@ -626,9 +626,9 @@ class OrquestadorSwarm:
         return self.resultados_enjambre
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 5. CONFIGURACIÓN DE STREAMLIT
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 st.set_page_config(
     page_title="Resilia_Condominios v2.0",
@@ -747,9 +747,9 @@ if "orquestador" not in st.session_state:
 
 orquestador = st.session_state.orquestador
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 6. SIDEBAR - CONTROL CENTRAL CON LOGO
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 with st.sidebar:
     # LOGO CENTRADO Y PEQUEÑO
@@ -762,7 +762,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("**Sistema Multiagente Avanzado**")
+    st.markdown("<p style='font-size: 1.5rem; color: #ff1744; font-weight: bold; text-align: center;'>Sistema Multiagente Avanzado</p>", unsafe_allow_html=True)
     st.markdown("---")
 
     pantalla_activa = st.radio(
@@ -786,9 +786,9 @@ with st.sidebar:
     )
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 7. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO CONTABILIDAD
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 if pantalla_activa == "📋 Dashboard y Contabilidad":
 
@@ -951,9 +951,9 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 st.write(f"• {accion}")
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 8. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO OPERATIVO
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
@@ -1076,9 +1076,9 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
             st.success(validaciones.get("vigencia_fiscal", "N/A"))
 
 
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 # 9. FOOTER - INFORMACIÓN DEL SISTEMA
-# ══════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════──[...]
 
 st.markdown("---")
 st.markdown(
