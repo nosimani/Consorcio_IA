@@ -761,7 +761,7 @@ st.markdown(
         }
 
         .header-brand .underscore {
-            color: #ff1744;
+            color: #ffffff;
             font-weight: 900;
         }
 
