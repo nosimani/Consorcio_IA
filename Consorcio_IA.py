@@ -725,13 +725,13 @@ st.markdown(
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px 0;
-            padding: 15px 0;
-            border-bottom: 2px solid #38bdf8;
+            margin: 20px 0 10px 0;
+            padding: 8px 0 12px 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.25);
         }
         
         .logo-container img {
-            max-width: 120px;
+            max-width: 110px;
             height: auto;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
@@ -761,8 +761,7 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    
-    st.markdown("### 🏢 RESILIA_CONDOMINIOS v2.0")
+
     st.markdown("**Sistema Multiagente Avanzado**")
     st.markdown("---")
 
