@@ -1,12 +1,12 @@
 """
-╔═════════════════════════════════════════════════════════════════��[...]
+╔═════════════════════════════════════════════════════════════════──[...]
 ║                    RESILIA_CONDOMINIOS v2.0                               ║
 ║         SISTEMA MULTIAGENTE DE ENJAMBRE PARA GESTIÓN DE CONDOMINIOS        ║
 ║                                                                            ║
 ║  Arquitectura: Orquestador Central + 7 Agentes Especializados              ║
 ║  Patrón: Swarm Intelligence con Coordinación Emergente                     ║
 ║  Enfoque: Cada petición dispara activación selectiva del enjambre          ║
-╚═════════════════════════════════════════════════════════════════��[...]
+╚═════════════════════════════════════════════════════════════════──[...]
 """
 
 import streamlit as st
@@ -18,9 +18,9 @@ from datetime import datetime
 import time
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 1. DEFINICIONES ESTRUCTURALES DEL ENJAMBRE
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 class TipoAgente(Enum):
     """Clasificación de roles dentro del enjambre"""
@@ -63,9 +63,9 @@ class ResultadoAgente:
     dependencias_cumplidas: List[str]
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 2. BASE DE DATOS GLOBAL (INMUTABLE)
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {
@@ -208,9 +208,9 @@ TABLA_SOLICITADA_OT = [
 ]
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 3. NÚCLEO DEL ENJAMBRE - AGENTES ESPECIALIZADOS
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 class AgenteBase:
     """Clase base para todos los agentes del enjambre"""
@@ -558,9 +558,9 @@ class AgenteReportes(AgenteBase):
         )
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 4. ORQUESTADOR CENTRAL - El "cerebro" del enjambre
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 
 class OrquestadorSwarm:
@@ -626,12 +626,12 @@ class OrquestadorSwarm:
         return self.resultados_enjambre
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 5. CONFIGURACIÓN DE STREAMLIT
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 st.set_page_config(
-    page_title="Resilia IA Condominios",
+    page_title="Resil_IA Condominios",
     page_icon="🏙️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -745,9 +745,9 @@ st.markdown(
             padding: 8px 0;
         }
 
-        .header-brand svg {
-            width: 110px;
-            height: auto;
+        .header-brand img {
+            height: 100px;
+            width: auto;
             flex-shrink: 0;
             filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4));
         }
@@ -757,6 +757,11 @@ st.markdown(
             color: #f8fafc;
             font-size: 3rem !important;
             letter-spacing: -2px;
+            font-weight: 900;
+        }
+
+        .header-brand .underscore {
+            color: #ff1744;
             font-weight: 900;
         }
 
@@ -775,9 +780,9 @@ if "orquestador" not in st.session_state:
 
 orquestador = st.session_state.orquestador
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 6. SIDEBAR - CONTROL CENTRAL CON LOGO
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 with st.sidebar:
     # LOGO CENTRADO Y PEQUEÑO
@@ -814,9 +819,9 @@ with st.sidebar:
     )
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 7. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO CONTABILIDAD
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 if pantalla_activa == "📋 Dashboard y Contabilidad":
 
@@ -835,55 +840,8 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     st.markdown(
         """
         <div class="header-brand">
-            <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg" aria-label="Edificio skyline icon">
-                <rect width="220" height="100" fill="#020817"/>
-                <g fill="#ffffff">
-                    <rect x="10" y="55" width="26" height="45" rx="2"/>
-                    <rect x="40" y="45" width="28" height="55" rx="2"/>
-                    <rect x="74" y="28" width="34" height="72" rx="2"/>
-                    <rect x="112" y="38" width="30" height="62" rx="2"/>
-                    <rect x="146" y="24" width="36" height="76" rx="2"/>
-                    <rect x="186" y="52" width="22" height="48" rx="2"/>
-                    <g fill="#f8fafc">
-                        <rect x="17" y="62" width="8" height="8"/>
-                        <rect x="29" y="62" width="8" height="8"/>
-                        <rect x="17" y="74" width="8" height="8"/>
-                        <rect x="29" y="74" width="8" height="8"/>
-                        <rect x="47" y="53" width="8" height="8"/>
-                        <rect x="59" y="53" width="8" height="8"/>
-                        <rect x="47" y="65" width="8" height="8"/>
-                        <rect x="59" y="65" width="8" height="8"/>
-                        <rect x="47" y="77" width="8" height="8"/>
-                        <rect x="59" y="77" width="8" height="8"/>
-                        <rect x="82" y="37" width="8" height="8"/>
-                        <rect x="94" y="37" width="8" height="8"/>
-                        <rect x="82" y="49" width="8" height="8"/>
-                        <rect x="94" y="49" width="8" height="8"/>
-                        <rect x="82" y="61" width="8" height="8"/>
-                        <rect x="94" y="61" width="8" height="8"/>
-                        <rect x="82" y="73" width="8" height="8"/>
-                        <rect x="94" y="73" width="8" height="8"/>
-                        <rect x="120" y="48" width="8" height="8"/>
-                        <rect x="132" y="48" width="8" height="8"/>
-                        <rect x="120" y="60" width="8" height="8"/>
-                        <rect x="132" y="60" width="8" height="8"/>
-                        <rect x="120" y="72" width="8" height="8"/>
-                        <rect x="132" y="72" width="8" height="8"/>
-                        <rect x="154" y="33" width="8" height="8"/>
-                        <rect x="166" y="33" width="8" height="8"/>
-                        <rect x="154" y="45" width="8" height="8"/>
-                        <rect x="166" y="45" width="8" height="8"/>
-                        <rect x="154" y="57" width="8" height="8"/>
-                        <rect x="166" y="57" width="8" height="8"/>
-                        <rect x="154" y="69" width="8" height="8"/>
-                        <rect x="166" y="69" width="8" height="8"/>
-                        <rect x="154" y="81" width="8" height="8"/>
-                        <rect x="166" y="81" width="8" height="8"/>
-                    </g>
-                    <rect x="6" y="92" width="208" height="4" fill="#ffffff" opacity="0.9"/>
-                </g>
-            </svg>
-            <h1>Resilia <span class="ia">IA</span> Condominios</h1>
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="NYC Skyline">
+            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1034,9 +992,9 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 st.write(f"• {accion}")
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 8. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO OPERATIVO
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
@@ -1055,55 +1013,8 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
     st.markdown(
         """
         <div class="header-brand">
-            <svg viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg" aria-label="Edificio skyline icon">
-                <rect width="220" height="100" fill="#020817"/>
-                <g fill="#ffffff">
-                    <rect x="10" y="55" width="26" height="45" rx="2"/>
-                    <rect x="40" y="45" width="28" height="55" rx="2"/>
-                    <rect x="74" y="28" width="34" height="72" rx="2"/>
-                    <rect x="112" y="38" width="30" height="62" rx="2"/>
-                    <rect x="146" y="24" width="36" height="76" rx="2"/>
-                    <rect x="186" y="52" width="22" height="48" rx="2"/>
-                    <g fill="#f8fafc">
-                        <rect x="17" y="62" width="8" height="8"/>
-                        <rect x="29" y="62" width="8" height="8"/>
-                        <rect x="17" y="74" width="8" height="8"/>
-                        <rect x="29" y="74" width="8" height="8"/>
-                        <rect x="47" y="53" width="8" height="8"/>
-                        <rect x="59" y="53" width="8" height="8"/>
-                        <rect x="47" y="65" width="8" height="8"/>
-                        <rect x="59" y="65" width="8" height="8"/>
-                        <rect x="47" y="77" width="8" height="8"/>
-                        <rect x="59" y="77" width="8" height="8"/>
-                        <rect x="82" y="37" width="8" height="8"/>
-                        <rect x="94" y="37" width="8" height="8"/>
-                        <rect x="82" y="49" width="8" height="8"/>
-                        <rect x="94" y="49" width="8" height="8"/>
-                        <rect x="82" y="61" width="8" height="8"/>
-                        <rect x="94" y="61" width="8" height="8"/>
-                        <rect x="82" y="73" width="8" height="8"/>
-                        <rect x="94" y="73" width="8" height="8"/>
-                        <rect x="120" y="48" width="8" height="8"/>
-                        <rect x="132" y="48" width="8" height="8"/>
-                        <rect x="120" y="60" width="8" height="8"/>
-                        <rect x="132" y="60" width="8" height="8"/>
-                        <rect x="120" y="72" width="8" height="8"/>
-                        <rect x="132" y="72" width="8" height="8"/>
-                        <rect x="154" y="33" width="8" height="8"/>
-                        <rect x="166" y="33" width="8" height="8"/>
-                        <rect x="154" y="45" width="8" height="8"/>
-                        <rect x="166" y="45" width="8" height="8"/>
-                        <rect x="154" y="57" width="8" height="8"/>
-                        <rect x="166" y="57" width="8" height="8"/>
-                        <rect x="154" y="69" width="8" height="8"/>
-                        <rect x="166" y="69" width="8" height="8"/>
-                        <rect x="154" y="81" width="8" height="8"/>
-                        <rect x="166" y="81" width="8" height="8"/>
-                    </g>
-                    <rect x="6" y="92" width="208" height="4" fill="#ffffff" opacity="0.9"/>
-                </g>
-            </svg>
-            <h1>Resilia <span class="ia">IA</span> Condominios</h1>
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="NYC Skyline">
+            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1214,9 +1125,9 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
             st.success(validaciones.get("vigencia_fiscal", "N/A"))
 
 
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 # 9. FOOTER - INFORMACIÓN DEL SISTEMA
-# ════════════════════════════════════════════════════════════════��[...]
+# ════════════════════════════════════════════════════════════════──[...]
 
 st.markdown("---")
 st.markdown(
