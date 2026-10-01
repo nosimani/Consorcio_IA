@@ -17,7 +17,18 @@ from typing import List, Dict, Any
 from datetime import datetime
 import time
 from io import BytesIO
-import xlsxwriter
+
+# ✅ Import opcional para evitar error en Streamlit Cloud
+try:
+    import xlsxwriter
+except Exception:
+    xlsxwriter = None
+
+try:
+    import openpyxl
+except Exception:
+    openpyxl = None
+
 
 # ════════════════════════════════════════════════════════════════════════════════
 # EMOJIS DE ROBOTS Y ANIMACIONES
@@ -32,6 +43,7 @@ ROBOTS_ANIMADOS = {
     "AUDITOR": ["🤖", "🔍", "📋"],
     "REPORTES": ["🤖", "📊", "📈"],
 }
+
 
 def obtener_robot_animado(agente_tipo: str, paso: int) -> str:
     secuencia = ROBOTS_ANIMADOS.get(agente_tipo, ["🤖", "⚙️", "📊"])
@@ -133,7 +145,6 @@ class RegistroIngreso:
 
 @dataclass
 class CoeficienteUF:
-    """Registro de coeficientes de cada UF"""
     uf: str
     propietario: str = ""
     piso: str = ""
@@ -342,16 +353,9 @@ def cargar_base_unidades(archivo) -> pd.DataFrame:
 
     df.columns = [str(col).strip() for col in df.columns]
 
-    campos_faltantes = [
-        campo for campo in CAMPOS_UNIDADES_REQUERIDOS
-        if campo not in df.columns
-    ]
-
+    campos_faltantes = [campo for campo in CAMPOS_UNIDADES_REQUERIDOS if campo not in df.columns]
     if campos_faltantes:
-        raise ValueError(
-            "Faltan las siguientes columnas obligatorias: "
-            + ", ".join(campos_faltantes)
-        )
+        raise ValueError("Faltan las siguientes columnas obligatorias: " + ", ".join(campos_faltantes))
 
     for campo in ["Calle", "Ciudad", "UF/Dpto", "Piso"]:
         df[campo] = df[campo].fillna("").astype(str).str.strip()
@@ -371,10 +375,7 @@ def cargar_base_unidades(archivo) -> pd.DataFrame:
         .str.replace(",", ".", regex=False)
         .str.strip()
     )
-    df["Porcentual Expensas"] = pd.to_numeric(
-        df["Porcentual Expensas"],
-        errors="coerce",
-    ).fillna(0)
+    df["Porcentual Expensas"] = pd.to_numeric(df["Porcentual Expensas"], errors="coerce").fillna(0)
 
     df["Edificio"] = (
         df["Calle"].fillna("").astype(str)
@@ -383,7 +384,6 @@ def cargar_base_unidades(archivo) -> pd.DataFrame:
         + ", "
         + df["Ciudad"].fillna("").astype(str)
     )
-
     df["Edificio"] = df["Edificio"].str.replace("  ", " ", regex=False).str.strip()
 
     columnas_ordenadas = [
@@ -400,7 +400,6 @@ def cargar_base_unidades(archivo) -> pd.DataFrame:
 
 
 def cargar_base_coeficientes(archivo) -> pd.DataFrame:
-    """Carga archivo de coeficientes por UF"""
     nombre_archivo = archivo.name.lower()
 
     if nombre_archivo.endswith(".csv"):
@@ -411,20 +410,14 @@ def cargar_base_coeficientes(archivo) -> pd.DataFrame:
         raise ValueError("El archivo debe estar en formato CSV o Excel.")
 
     df.columns = [str(col).strip() for col in df.columns]
-
     campos_faltantes = [campo for campo in CAMPOS_COEFICIENTES_REQUERIDOS if campo not in df.columns]
-
     if campos_faltantes:
-        raise ValueError(
-            "Faltan las siguientes columnas obligatorias: "
-            + ", ".join(campos_faltantes)
-        )
+        raise ValueError("Faltan las siguientes columnas obligatorias: " + ", ".join(campos_faltantes))
 
     df["UF"] = df["UF"].fillna("").astype(str).str.strip().str.upper()
     df["Propietario"] = df["Propietario"].fillna("").astype(str).str.strip()
     df["Piso"] = df["Piso"].fillna("").astype(str).str.strip()
     df["Contacto"] = df["Contacto"].fillna("").astype(str).str.strip()
-
     df["Coeficiente"] = pd.to_numeric(
         df["Coeficiente"].astype(str).str.replace(",", ".", regex=False),
         errors="coerce",
@@ -476,7 +469,6 @@ class AgenteLiquidacion:
         self.ingresos_registrados.append(ingreso)
 
     def cargar_coeficientes_desde_dataframe(self, df: pd.DataFrame):
-        """Carga coeficientes desde un DataFrame"""
         self.coeficientes_uf = {}
         for _, row in df.iterrows():
             uf = str(row["UF"]).upper()
@@ -490,24 +482,22 @@ class AgenteLiquidacion:
             self.coeficientes_uf[uf] = coef_obj
 
     def normalizar_coeficientes(self) -> Dict[str, float]:
-        """Normaliza coeficientes si no suman 1.00"""
         if not self.coeficientes_uf:
             return {}
-        
+
         valores = {uf: coef_obj.coeficiente for uf, coef_obj in self.coeficientes_uf.items()}
         if not valores:
             return {}
-        
+
         total = sum(valores.values())
         if total <= 0:
             cantidad = len(valores)
             return {uf: 1 / cantidad for uf in valores}
-        
-        # Normalizar
+
         factor = 1.0 / total
         for uf in self.coeficientes_uf:
             self.coeficientes_uf[uf].coeficiente *= factor
-        
+
         return {uf: coef_obj.coeficiente for uf, coef_obj in self.coeficientes_uf.items()}
 
     def calcular_liquidacion(self, periodo: str) -> LiquidacionExpensas:
@@ -527,14 +517,14 @@ class AgenteLiquidacion:
         total_gastos = sum(gastos_por_rubro.values())
         total_ingresos = sum(ingresos_por_rubro.values())
 
-        # Normalizar coeficientes
-        self.normalizar_coeficientes()
-
+        # Si no hay coeficientes cargados, armamos uno uniforme
         if not self.coeficientes_uf:
             cantidad = 10
             for i in range(1, cantidad + 1):
                 uf = f"UF_{i:02d}"
-                self.coeficientes_uf[uf] = CoeficienteUF(uf=uf, coeficiente=1/cantidad)
+                self.coeficientes_uf[uf] = CoeficienteUF(uf=uf, coeficiente=1 / cantidad)
+
+        self.normalizar_coeficientes()
 
         expensas_por_uf = {
             uf: total_gastos * coef_obj.coeficiente
@@ -556,13 +546,12 @@ class AgenteLiquidacion:
         )
 
     def generar_estado_cuenta_uf(self, uf: str, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
-        """Genera estado de cuenta completo de una UF"""
         if uf not in self.coeficientes_uf:
             return None
-        
+
         coef_obj = self.coeficientes_uf[uf]
         expensas = liquidacion.expensas_por_uf.get(uf, 0)
-        
+
         return {
             "uf": uf,
             "propietario": coef_obj.propietario,
@@ -577,110 +566,101 @@ class AgenteLiquidacion:
             "vencimiento": datetime.now().strftime("%d/%m/%Y"),
         }
 
-    def generar_excel_liquidacion(self, liquidacion: LiquidacionExpensas, edificio: str) -> BytesIO:
-        """Genera un archivo Excel con la liquidación completa"""
+    def generar_excel_liquidacion(self, liquidacion: LiquidacionExpensas, edificio: str):
+        """Genera un archivo Excel en memoria, con fallback seguro a openpyxl/xlsxwriter"""
         output = BytesIO()
-        workbook = xlsxwriter.Workbook(output)
-        
-        # Formatos
-        header_format = workbook.add_format({
-            'bg_color': '#0d1e3d',
-            'font_color': '#ffffff',
-            'bold': True,
-            'border': 1,
-            'align': 'center',
-            'valign': 'vcenter'
-        })
-        
-        title_format = workbook.add_format({
-            'font_size': 16,
-            'bold': True,
-            'bg_color': '#38bdf8',
-            'font_color': '#0f172a',
-            'align': 'center'
-        })
-        
-        currency_format = workbook.add_format({
-            'num_format': '$#,##0.00',
-            'border': 1
-        })
-        
-        text_format = workbook.add_format({
-            'border': 1,
-            'align': 'left'
-        })
-        
-        percent_format = workbook.add_format({
-            'num_format': '0.00%',
-            'border': 1
-        })
-        
-        # Hoja 1: Resumen
-        ws_resumen = workbook.add_worksheet("Resumen")
-        ws_resumen.set_column('A:B', 30)
-        
-        ws_resumen.merge_cells('A1:B1')
-        ws_resumen.write('A1', f'LIQUIDACIÓN DE EXPENSAS - {edificio}', title_format)
-        ws_resumen.write('A2', f'Período: {liquidacion.periodo}')
-        ws_resumen.write('A3', f'Fecha: {liquidacion.fecha_liquidacion}')
-        
-        ws_resumen.write('A5', 'INGRESOS', header_format)
-        ws_resumen.write('B5', '', header_format)
-        
-        row = 6
+
+        # Si no hay libreria Excel disponible, devolver error claro
+        if xlsxwriter is None and openpyxl is None:
+            raise RuntimeError("No hay librería de Excel disponible. Instale xlsxwriter o openpyxl.")
+
+        # Aseguramos que haya worksheet para exportar
+        if xlsxwriter is not None:
+            workbook = xlsxwriter.Workbook(output)
+            header = workbook.add_format(
+                {"bg_color": "#0d1e3d", "font_color": "#ffffff", "bold": True, "border": 1, "align": "center"}
+            )
+            cell = workbook.add_format({"border": 1})
+            money = workbook.add_format({"num_format": "$#,##0.00", "border": 1})
+            percent = workbook.add_format({"num_format": "0.00%", "border": 1})
+
+            ws = workbook.add_worksheet("Resumen")
+            ws.set_column("A:B", 30)
+            ws.merge_range("A1:B1", f"LIQUIDACIÓN DE EXPENSAS - {edificio}", workbook.add_format({"bold": True, "font_size": 16, "align": "center", "bg_color": "#38bdf8", "font_color": "#0f172a"}))
+            ws.write("A2", "Período")
+            ws.write("B2", liquidacion.periodo)
+            ws.write("A3", "Fecha")
+            ws.write("B3", liquidacion.fecha_liquidacion)
+            row = 5
+            ws.write(row, 0, "INGRESOS", header)
+            ws.write(row, 1, "", header)
+            row += 1
+            for rubro, monto in liquidacion.ingresos_por_rubro.items():
+                ws.write(row, 0, rubro, cell)
+                ws.write(row, 1, monto, money)
+                row += 1
+            ws.write(row, 0, "TOTAL INGRESOS", header)
+            ws.write(row, 1, liquidacion.total_ingresos, money)
+            row += 2
+            ws.write(row, 0, "GASTOS", header)
+            ws.write(row, 1, "", header)
+            row += 1
+            for rubro, monto in liquidacion.gastos_por_rubro.items():
+                ws.write(row, 0, rubro, cell)
+                ws.write(row, 1, monto, money)
+                row += 1
+            ws.write(row, 0, "TOTAL GASTOS", header)
+            ws.write(row, 1, liquidacion.total_gastos, money)
+            row += 2
+            ws.write(row, 0, "RESULTADO", header)
+            ws.write(row, 1, liquidacion.deficit_o_superavit, money)
+
+            ws2 = workbook.add_worksheet("Por UF")
+            ws2.set_column("A:E", 22)
+            ws2.merge_range("A1:E1", f"DISTRIBUCIÓN POR UF - {edificio}", workbook.add_format({"bold": True, "font_size": 16, "align": "center", "bg_color": "#38bdf8", "font_color": "#0f172a"}))
+            ws2.write("A3", "UF", header)
+            ws2.write("B3", "Propietario", header)
+            ws2.write("C3", "Coeficiente", header)
+            ws2.write("D3", "Porcentaje", header)
+            ws2.write("E3", "Expensas a Pagar", header)
+            row = 3
+            for uf, coef_obj in liquidacion.coeficientes.items():
+                row += 1
+                ws2.write(row, 0, uf, cell)
+                ws2.write(row, 1, coef_obj.propietario, cell)
+                ws2.write(row, 2, coef_obj.coeficiente, percent)
+                ws2.write(row, 3, coef_obj.coeficiente * 100, percent)
+                ws2.write(row, 4, liquidacion.expensas_por_uf.get(uf, 0), money)
+
+            workbook.close()
+            output.seek(0)
+            return output
+
+        # fallback con openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Resumen"
+        ws.append(["LIQUIDACIÓN DE EXPENSAS", edificio])
+        ws.append(["Periodo", liquidacion.periodo])
+        ws.append(["Fecha", liquidacion.fecha_liquidacion])
+        ws.append([])
+        ws.append(["INGRESOS"])
         for rubro, monto in liquidacion.ingresos_por_rubro.items():
-            ws_resumen.write(row, 0, rubro, text_format)
-            ws_resumen.write(row, 1, monto, currency_format)
-            row += 1
-        
-        ws_resumen.write(row, 0, 'TOTAL INGRESOS', header_format)
-        ws_resumen.write(row, 1, liquidacion.total_ingresos, currency_format)
-        
-        row += 2
-        ws_resumen.write(row, 0, 'GASTOS', header_format)
-        ws_resumen.write(row, 1, '', header_format)
-        
-        row += 1
+            ws.append([rubro, monto])
+        ws.append(["TOTAL INGRESOS", liquidacion.total_ingresos])
+        ws.append([])
+        ws.append(["GASTOS"])
         for rubro, monto in liquidacion.gastos_por_rubro.items():
-            ws_resumen.write(row, 0, rubro, text_format)
-            ws_resumen.write(row, 1, monto, currency_format)
-            row += 1
-        
-        ws_resumen.write(row, 0, 'TOTAL GASTOS', header_format)
-        ws_resumen.write(row, 1, liquidacion.total_gastos, currency_format)
-        
-        row += 2
-        ws_resumen.write(row, 0, 'RESULTADO', header_format)
-        ws_resumen.write(row, 1, liquidacion.deficit_o_superavit, currency_format)
-        
-        # Hoja 2: Por UF
-        ws_uf = workbook.add_worksheet("Por UF")
-        ws_uf.set_column('A:E', 20)
-        
-        ws_uf.merge_cells('A1:E1')
-        ws_uf.write('A1', f'DISTRIBUCIÓN POR UF - {edificio}', title_format)
-        ws_uf.write('A2', f'Período: {liquidacion.periodo}')
-        
-        ws_uf.write('A4', 'UF', header_format)
-        ws_uf.write('B4', 'Propietario', header_format)
-        ws_uf.write('C4', 'Coeficiente', header_format)
-        ws_uf.write('D4', 'Porcentaje', header_format)
-        ws_uf.write('E4', 'Expensas a Pagar', header_format)
-        
-        row = 5
+            ws.append([rubro, monto])
+        ws.append(["TOTAL GASTOS", liquidacion.total_gastos])
+        ws.append(["RESULTADO", liquidacion.deficit_o_superavit])
+
+        ws2 = wb.create_sheet("Por UF")
+        ws2.append(["UF", "Propietario", "Coeficiente", "Porcentaje", "Expensas a Pagar"])
         for uf, coef_obj in liquidacion.coeficientes.items():
-            expensas = liquidacion.expensas_por_uf.get(uf, 0)
-            ws_uf.write(row, 0, uf, text_format)
-            ws_uf.write(row, 1, coef_obj.propietario, text_format)
-            ws_uf.write(row, 2, coef_obj.coeficiente, percent_format)
-            ws_uf.write(row, 3, coef_obj.coeficiente, percent_format)
-            ws_uf.write(row, 4, expensas, currency_format)
-            row += 1
-        
-        ws_uf.write(row, 0, 'TOTALES', header_format)
-        ws_uf.write(row, 4, liquidacion.total_gastos, currency_format)
-        
-        workbook.close()
+            ws2.append([uf, coef_obj.propietario, coef_obj.coeficiente, coef_obj.coeficiente * 100, liquidacion.expensas_por_uf.get(uf, 0)])
+
+        wb.save(output)
         output.seek(0)
         return output
 
@@ -853,11 +833,7 @@ class AgenteOperativo(AgenteBase):
 
         try:
             if edificio_filtro:
-                ots_filtradas = [
-                    ot
-                    for ot in TABLA_SOLICITADA_OT
-                    if edificio_filtro.lower() in ot["Edificio"].lower()
-                ]
+                ots_filtradas = [ot for ot in TABLA_SOLICITADA_OT if edificio_filtro.lower() in ot["Edificio"].lower()]
             else:
                 ots_filtradas = TABLA_SOLICITADA_OT
 
@@ -1098,15 +1074,7 @@ if "orquestador" not in st.session_state:
 
 if "unidades_edificios" not in st.session_state:
     st.session_state.unidades_edificios = pd.DataFrame(
-        columns=[
-            "Edificio",
-            "Calle",
-            "Numero",
-            "Ciudad",
-            "UF/Dpto",
-            "Piso",
-            "Porcentual Expensas",
-        ]
+        columns=["Edificio", "Calle", "Numero", "Ciudad", "UF/Dpto", "Piso", "Porcentual Expensas"]
     )
 
 if "coeficientes_cargados" not in st.session_state:
@@ -1644,11 +1612,9 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
         st.subheader("Resumen Ejecutivo de Liquidación")
 
         if agente_liquidacion.gastos_registrados or agente_liquidacion.ingresos_registrados:
-            # Cargar coeficientes
             if not st.session_state.coeficientes_cargados.empty:
                 agente_liquidacion.cargar_coeficientes_desde_dataframe(st.session_state.coeficientes_cargados)
             else:
-                # Coeficientes por defecto
                 cantidad_uf = ESTADISTICAS_EDIFICIOS[edificio_seleccionado].get("cantidad_uf", 10)
                 df_default = pd.DataFrame({
                     "UF": [f"UF_{i:02d}" for i in range(1, cantidad_uf + 1)],
@@ -1758,26 +1724,28 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                 estado_cuenta = agente_liquidacion.generar_estado_cuenta_uf(uf_seleccionada_ec, liquidacion)
 
                 if estado_cuenta:
-                    st.markdown(f"""
-                    <div class="estado-cuenta-box">
-                        <h3 style="color: #38bdf8;">ESTADO DE CUENTA</h3>
-                        <p><b>Edificio:</b> {edificio_seleccionado}</p>
-                        <p><b>Unidad Funcional:</b> {estado_cuenta['uf']}</p>
-                        <p><b>Propietario:</b> {estado_cuenta['propietario']}</p>
-                        <p><b>Piso:</b> {estado_cuenta['piso']}</p>
-                        <p><b>Teléfono/Contacto:</b> {estado_cuenta['contacto']}</p>
-                        <hr style="border-color: #38bdf8;">
-                        <p><b>Período:</b> {estado_cuenta['periodo']}</p>
-                        <p><b>Coeficiente:</b> {estado_cuenta['coeficiente']:.4f} ({estado_cuenta['porcentaje']})</p>
-                        <p><b>Total Gastos a Prorratear:</b> ${estado_cuenta['total_gastos']:,.2f}</p>
-                        <h4 style="color: #10b981; font-size: 1.5rem;">EXPENSAS A PAGAR: ${estado_cuenta['expensas_a_pagar']:,.2f}</h4>
-                        <hr style="border-color: #38bdf8;">
-                        <p><b>Fecha de Liquidación:</b> {estado_cuenta['fecha_liquidacion']}</p>
-                        <p><b>Vencimiento de Pago:</b> {estado_cuenta['vencimiento']}</p>
-                        <p style="font-size: 0.9rem; color: #94a3b8;">Pago realizado dentro de los 10 días de notificación</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-
+                    st.markdown(
+                        f"""
+                        <div class="estado-cuenta-box">
+                            <h3 style="color: #38bdf8;">ESTADO DE CUENTA</h3>
+                            <p><b>Edificio:</b> {edificio_seleccionado}</p>
+                            <p><b>Unidad Funcional:</b> {estado_cuenta['uf']}</p>
+                            <p><b>Propietario:</b> {estado_cuenta['propietario']}</p>
+                            <p><b>Piso:</b> {estado_cuenta['piso']}</p>
+                            <p><b>Teléfono/Contacto:</b> {estado_cuenta['contacto']}</p>
+                            <hr style="border-color: #38bdf8;">
+                            <p><b>Período:</b> {estado_cuenta['periodo']}</p>
+                            <p><b>Coeficiente:</b> {estado_cuenta['coeficiente']:.4f} ({estado_cuenta['porcentaje']})</p>
+                            <p><b>Total Gastos a Prorratear:</b> ${estado_cuenta['total_gastos']:,.2f}</p>
+                            <h4 style="color: #10b981; font-size: 1.5rem;">EXPENSAS A PAGAR: ${estado_cuenta['expensas_a_pagar']:,.2f}</h4>
+                            <hr style="border-color: #38bdf8;">
+                            <p><b>Fecha de Liquidación:</b> {estado_cuenta['fecha_liquidacion']}</p>
+                            <p><b>Vencimiento de Pago:</b> {estado_cuenta['vencimiento']}</p>
+                            <p style="font-size: 0.9rem; color: #94a3b8;">Pago realizado dentro de los 10 días de notificación</p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
         else:
             st.info("📭 Complete el resumen para ver la distribución por UF")
 
@@ -1786,20 +1754,22 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
 
         if st.session_state.liquidacion_actual:
             liquidacion = st.session_state.liquidacion_actual
-
             st.markdown("### Opciones de Exportación")
             col1, col2 = st.columns(2)
 
             with col1:
                 if st.button("📊 Descargar Excel", key="btn_excel"):
-                    excel_file = agente_liquidacion.generar_excel_liquidacion(liquidacion, edificio_seleccionado)
-                    st.download_button(
-                        label="⬇️ Descargar Archivo Excel",
-                        data=excel_file,
-                        file_name=f"Liquidacion_Expensas_{edificio_seleccionado.replace(' ', '_')}_{liquidacion.periodo.replace(' ', '_')}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    )
-                    st.success("✅ Archivo Excel generado correctamente")
+                    try:
+                        excel_file = agente_liquidacion.generar_excel_liquidacion(liquidacion, edificio_seleccionado)
+                        st.download_button(
+                            label="⬇️ Descargar Archivo Excel",
+                            data=excel_file,
+                            file_name=f"Liquidacion_Expensas_{edificio_seleccionado.replace(' ', '_')}_{liquidacion.periodo.replace(' ', '_')}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        )
+                        st.success("✅ Archivo Excel generado correctamente")
+                    except Exception as e:
+                        st.error(f"❌ No se pudo exportar Excel: {e}")
 
             with col2:
                 if st.button("📋 Copiar Datos", key="btn_copy"):
