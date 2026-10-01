@@ -19,6 +19,48 @@ import time
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# EMOJIS DE ROBOTS Y ANIMACIONES
+# ════════════════════════════════════════════════════════════════════════════════
+
+ROBOTS_ANIMADOS = {
+    "CONTABLE": ["🤖", "🦾", "⚙️"],
+    "COMPLIANCE": ["🤖", "✔️", "✅"],
+    "PROVEEDORES": ["🤖", "📦", "🏢"],
+    "OPERATIVO": ["🤖", "⚙️", "🔧"],
+    "MORA": ["🤖", "⚠️", "💰"],
+    "AUDITOR": ["🤖", "🔍", "📋"],
+    "REPORTES": ["🤖", "📊", "📈"],
+}
+
+def obtener_robot_animado(agente_tipo: str, paso: int) -> str:
+    """Retorna el emoji del robot en movimiento según el paso de animación"""
+    secuencia = ROBOTS_ANIMADOS.get(agente_tipo, ["🤖", "⚙️", "📊"])
+    return secuencia[paso % len(secuencia)]
+
+
+def animar_robot_procesando(placeholder, agente_nombre: str, agente_tipo: str, duracion_ms: float):
+    """
+    Anima un robot moviéndose mientras el agente procesa.
+    """
+    frames_total = int(duracion_ms / 100)  # 100ms por frame
+    
+    for frame in range(frames_total):
+        robot = obtener_robot_animado(agente_tipo, frame)
+        barras = "▓" * (frame % 10) + "░" * (10 - (frame % 10))
+        
+        placeholder.markdown(
+            f"""
+            <div class="swarm-agent swarm-processing">
+            {robot} <b>{agente_nombre}</b><br/>
+            Procesando... {barras} {int((frame / frames_total) * 100)}%
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.1)
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # 1. DEFINICIONES ESTRUCTURALES DEL ENJAMBRE
 # ════════════════════════════════════════════════════════════════════════════════
 
@@ -685,6 +727,7 @@ class OrquestadorSwarm:
         }
         self.evento_actual = None
         self.resultados_enjambre = {}
+        self.placeholders_animacion = {}
 
     def disparar_enjambre(
         self, evento: EventoSwarm, edificio_seleccionado: str
@@ -818,6 +861,7 @@ st.markdown(
             margin: 8px 0;
             border-radius: 8px;
             font-size: 1.1rem;
+            transition: all 0.3s ease;
         }
         .swarm-completed { 
             border-left-color: #10b981 !important; 
@@ -826,6 +870,7 @@ st.markdown(
         .swarm-processing { 
             border-left-color: #f59e0b !important; 
             background: rgba(245, 158, 11, 0.1) !important;
+            animation: pulse 1.5s infinite;
         }
         .swarm-active { 
             border-left-color: #06b6d4 !important;
@@ -834,6 +879,23 @@ st.markdown(
         .swarm-error { 
             border-left-color: #ef4444 !important;
             background: rgba(239, 68, 68, 0.1) !important;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes robotMove {
+            0% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            100% { transform: translateX(-10px); }
+        }
+        
+        .robot-animado {
+            display: inline-block;
+            animation: robotMove 1s infinite;
+            font-size: 1.5rem;
         }
         
         .logo-container {
@@ -963,7 +1025,6 @@ with st.sidebar:
                 ignore_index=True,
             )
 
-            # Evitar duplicados
             st.session_state.unidades_edificios = (
                 st.session_state.unidades_edificios.drop_duplicates()
                 .reset_index(drop=True)
@@ -1021,8 +1082,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         parametros={"edificio": edificio_seleccionado},
     )
 
-    resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
-
     st.markdown(
         """
         <div class="header-brand">
@@ -1075,35 +1134,54 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         with col2:
             st.info(f"**Módulo:**\n{evento.modulo_solicitante}")
         with col3:
-            st.metric("Agentes Activados", len(resultados))
+            st.metric("Agentes Activados", 3)
 
         st.markdown("### 🤖 Estado de Agentes en Tiempo Real")
 
+        # Crear contenedores para animación
+        agente_placeholders = {}
+        agentes_a_procesar = [
+            TipoAgente.CONTABLE.value,
+            TipoAgente.MORA.value,
+            TipoAgente.COMPLIANCE.value,
+        ]
+
+        for agente_tipo in agentes_a_procesar:
+            agente_placeholders[agente_tipo] = st.empty()
+
+        # Procesar agentes con animación
+        resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
+
+        # Mostrar resultados finales con animación completada
         for agente_nombre, resultado in resultados.items():
-            estado_emoji = {
-                EstadoAgente.COMPLETADO: "✅",
-                EstadoAgente.PROCESANDO: "⏳",
-                EstadoAgente.ERROR: "❌",
-                EstadoAgente.ACTIVADO: "🟢",
-            }
+            if agente_nombre not in [TipoAgente.AUDITOR.value, TipoAgente.REPORTES.value]:
+                estado_emoji = {
+                    EstadoAgente.COMPLETADO: "✅",
+                    EstadoAgente.PROCESANDO: "⏳",
+                    EstadoAgente.ERROR: "❌",
+                    EstadoAgente.ACTIVADO: "🟢",
+                }
 
-            emoji = estado_emoji.get(resultado.estado, "❓")
-            css_class = {
-                EstadoAgente.COMPLETADO: "swarm-completed",
-                EstadoAgente.PROCESANDO: "swarm-processing",
-                EstadoAgente.ERROR: "swarm-error",
-                EstadoAgente.ACTIVADO: "swarm-active",
-            }.get(resultado.estado, "")
+                emoji = estado_emoji.get(resultado.estado, "❓")
+                css_class = {
+                    EstadoAgente.COMPLETADO: "swarm-completed",
+                    EstadoAgente.PROCESANDO: "swarm-processing",
+                    EstadoAgente.ERROR: "swarm-error",
+                    EstadoAgente.ACTIVADO: "swarm-active",
+                }.get(resultado.estado, "")
 
-            st.markdown(
-                f"""
-                <div class="swarm-agent {css_class}">
-                {emoji} <b>{agente_nombre}</b><br/>
-                ⏱️ {resultado.tiempo_procesamiento}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                robot_emoji = "🤖 → "
+                
+                if agente_nombre in agente_placeholders:
+                    agente_placeholders[agente_nombre].markdown(
+                        f"""
+                        <div class="swarm-agent {css_class}">
+                        <span class="robot-animado">{robot_emoji}</span>{emoji} <b>{agente_nombre}</b><br/>
+                        ⏱️ {resultado.tiempo_procesamiento}
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
     st.markdown("---")
     st.header("📊 Panel de Métricas Clave")
@@ -1114,10 +1192,10 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
 
         m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.metric("Total Gastos", f"${datos_contables['total_gastos']:,.2f}")
+            st.metric("💰 Total Gastos", f"${datos_contables['total_gastos']:,.2f}")
         with m2:
             st.metric(
-                "Fondos de Reserva",
+                "🏦 Fondos de Reserva",
                 f"${ESTADISTICAS_EDIFICIOS[edificio_seleccionado]['reserva']:,.2f}",
             )
         with m3:
@@ -1127,11 +1205,11 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 if resultado_mora
                 else "N/A"
             )
-            st.metric("UF en Mora", mora_txt)
+            st.metric("⚠️ UF en Mora", mora_txt)
         with m4:
             delta_text = "Positivo ✅" if datos_contables["balance_neto"] > 0 else "Déficit ❌"
             st.metric(
-                "Balance Neto",
+                "💹 Balance Neto",
                 f"${datos_contables['balance_neto']:,.2f}",
                 delta=delta_text,
             )
@@ -1214,8 +1292,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         parametros={"edificio": edificio_seleccionado},
     )
 
-    resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
-
     st.markdown(
         """
         <div class="header-brand">
@@ -1268,35 +1344,53 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         with col2:
             st.info(f"**Módulo:**\n{evento.modulo_solicitante}")
         with col3:
-            st.metric("Agentes Activados", len(resultados))
+            st.metric("Agentes Activados", 3)
 
         st.markdown("### 🤖 Estado de Agentes en Tiempo Real")
 
+        agente_placeholders = {}
+        agentes_a_procesar = [
+            TipoAgente.OPERATIVO.value,
+            TipoAgente.PROVEEDORES.value,
+            TipoAgente.COMPLIANCE.value,
+        ]
+
+        for agente_tipo in agentes_a_procesar:
+            agente_placeholders[agente_tipo] = st.empty()
+
+        # Procesar agentes con animación
+        resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
+
+        # Mostrar resultados finales con animación completada
         for agente_nombre, resultado in resultados.items():
-            estado_emoji = {
-                EstadoAgente.COMPLETADO: "✅",
-                EstadoAgente.PROCESANDO: "⏳",
-                EstadoAgente.ERROR: "❌",
-                EstadoAgente.ACTIVADO: "🟢",
-            }
+            if agente_nombre not in [TipoAgente.AUDITOR.value, TipoAgente.REPORTES.value]:
+                estado_emoji = {
+                    EstadoAgente.COMPLETADO: "✅",
+                    EstadoAgente.PROCESANDO: "⏳",
+                    EstadoAgente.ERROR: "❌",
+                    EstadoAgente.ACTIVADO: "🟢",
+                }
 
-            emoji = estado_emoji.get(resultado.estado, "❓")
-            css_class = {
-                EstadoAgente.COMPLETADO: "swarm-completed",
-                EstadoAgente.PROCESANDO: "swarm-processing",
-                EstadoAgente.ERROR: "swarm-error",
-                EstadoAgente.ACTIVADO: "swarm-active",
-            }.get(resultado.estado, "")
+                emoji = estado_emoji.get(resultado.estado, "❓")
+                css_class = {
+                    EstadoAgente.COMPLETADO: "swarm-completed",
+                    EstadoAgente.PROCESANDO: "swarm-processing",
+                    EstadoAgente.ERROR: "swarm-error",
+                    EstadoAgente.ACTIVADO: "swarm-active",
+                }.get(resultado.estado, "")
 
-            st.markdown(
-                f"""
-                <div class="swarm-agent {css_class}">
-                {emoji} <b>{agente_nombre}</b><br/>
-                ⏱️ {resultado.tiempo_procesamiento}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                robot_emoji = "🤖 → "
+                
+                if agente_nombre in agente_placeholders:
+                    agente_placeholders[agente_nombre].markdown(
+                        f"""
+                        <div class="swarm-agent {css_class}">
+                        <span class="robot-animado">{robot_emoji}</span>{emoji} <b>{agente_nombre}</b><br/>
+                        ⏱️ {resultado.tiempo_procesamiento}
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
     st.markdown("---")
     st.header("📜 Cartilla de Prestadores de Servicio Matriculados")
