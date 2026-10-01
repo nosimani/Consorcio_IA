@@ -217,63 +217,191 @@ ESTADISTICAS_EDIFICIOS = {
     }
 }
 
+# ════════════════════════════════════════════════════════════════════════════════
+# DIRECTORIO COMPLETO DE PRESTADORES DE SERVICIOS
+# ════════════════════════════════════════════════════════════════════════════════
+
 DATOS_CARTILLA_PROVEEDORES = [
+    # 🚰 PLOMERÍA
     {
-        "Rubro": "Plomería",
-        "Prestador": "🚰 Caños y Sanitarios Express",
+        "Rubro": "🚰 Plomería",
+        "Prestador": "Caños y Sanitarios Express",
         "CUIT": "30-55489712-4",
         "Teléfono": "11-4895-1234",
-        "Zona de Atención": "CABA Centro"
+        "Email": "contacto@canosysan.com.ar",
+        "Zona de Atención": "CABA Centro",
+        "Horario": "Lunes a Viernes 8:00-18:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Reparación, instalación de cañerías, sanitarios"
     },
     {
-        "Rubro": "Plomería",
-        "Prestador": "🚰 Ingeniería Hidráulica Sur",
+        "Rubro": "🚰 Plomería",
+        "Prestador": "Ingeniería Hidráulica Sur",
         "CUIT": "33-66985214-9",
         "Teléfono": "11-3564-9871",
-        "Zona de Atención": "CABA Norte"
+        "Email": "info@hidraulicasur.com.ar",
+        "Zona de Atención": "CABA Norte",
+        "Horario": "Lunes a Sábado 8:00-20:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Sistemas de presión, purgas, desagües"
     },
+    
+    # ⚡ ELECTRICIDAD
     {
-        "Rubro": "Electricidad",
-        "Prestador": "⚡ El Fusible Matriculado",
+        "Rubro": "⚡ Electricidad",
+        "Prestador": "El Fusible Matriculado",
         "CUIT": "20-14896532-1",
         "Teléfono": "11-5478-6532",
-        "Zona de Atención": "Toda CABA"
+        "Email": "fusible@electrica.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Viernes 7:00-19:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Reparación de instalaciones, tableros, tomacorrientes"
     },
     {
-        "Rubro": "Electricidad",
-        "Prestador": "⚡ Conexiones Seguras Palermo",
+        "Rubro": "⚡ Electricidad",
+        "Prestador": "Conexiones Seguras Palermo",
         "CUIT": "27-33659874-2",
         "Teléfono": "11-6985-3214",
-        "Zona de Atención": "CABA Norte"
+        "Email": "seguras@palermo.com.ar",
+        "Zona de Atención": "CABA Norte",
+        "Horario": "Lunes a Viernes 8:00-18:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Iluminación LED, automatización, sistemas de energía"
     },
+    
+    # 🔑 CERRAJERÍA
     {
-        "Rubro": "Cerrajería",
-        "Prestador": "🔑 Llaves Fénix 24hs",
+        "Rubro": "🔑 Cerrajería",
+        "Prestador": "Llaves Fénix 24hs",
         "CUIT": "23-45896521-8",
         "Teléfono": "11-2365-9847",
-        "Zona de Atención": "Urgencias CABA"
+        "Email": "fenix24@cerrajeria.com.ar",
+        "Zona de Atención": "Urgencias CABA",
+        "Horario": "24 horas, 7 días",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Cerraduras de seguridad, aperturas de emergencia"
     },
     {
-        "Rubro": "Cerrajería",
-        "Prestador": "🔑 Blindajes y Cerraduras Pro",
+        "Rubro": "🔑 Cerrajería",
+        "Prestador": "Blindajes y Cerraduras Pro",
         "CUIT": "30-71458962-3",
         "Teléfono": "11-4125-3698",
-        "Zona de Atención": "CABA Oeste"
+        "Email": "blindajes@pro.com.ar",
+        "Zona de Atención": "CABA Oeste",
+        "Horario": "Lunes a Viernes 9:00-17:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Puertas blindadas, cajas de seguridad"
     },
+    
+    # 🧱 ALBAÑILERÍA
     {
-        "Rubro": "Albañilería",
-        "Prestador": "🧱 Constructora San José",
+        "Rubro": "🧱 Albañilería",
+        "Prestador": "Constructora San José",
         "CUIT": "30-88547612-5",
         "Teléfono": "11-5541-2369",
-        "Zona de Atención": "Toda CABA"
+        "Email": "info@sanjose.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Sábado 8:00-18:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Mampostería, revoques, pintura, reformas"
     },
     {
-        "Rubro": "Albañilería",
-        "Prestador": "🧱 Refacciones Integrales Baires",
+        "Rubro": "🧱 Albañilería",
+        "Prestador": "Refacciones Integrales Baires",
         "CUIT": "20-99653214-7",
         "Teléfono": "11-3254-7896",
-        "Zona de Atención": "CABA Sur"
-    }
+        "Email": "refacciones@baires.com.ar",
+        "Zona de Atención": "CABA Sur",
+        "Horario": "Lunes a Viernes 8:00-17:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Arreglos menores, grietas, humedades"
+    },
+    
+    # 🚪 PORTERO ELECTRÓNICO
+    {
+        "Rubro": "🚪 Portero Electrónico",
+        "Prestador": "Smart Door Solutions",
+        "CUIT": "27-78945612-3",
+        "Teléfono": "11-5892-3456",
+        "Email": "smartdoor@solutions.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Viernes 8:00-18:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Instalación, reparación, modernización de porteros"
+    },
+    {
+        "Rubro": "🚪 Portero Electrónico",
+        "Prestador": "Comunicaciones Seguras",
+        "CUIT": "33-54123789-6",
+        "Teléfono": "11-4567-8901",
+        "Email": "comunicaciones@seguras.com.ar",
+        "Zona de Atención": "CABA Centro",
+        "Horario": "Lunes a Viernes 9:00-17:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Videoporteros, sistemas de acceso, vigilancia"
+    },
+    
+    # 🧹 LIMPIEZA Y MANTENIMIENTO
+    {
+        "Rubro": "🧹 Limpieza",
+        "Prestador": "Limpieza Pro CABA",
+        "CUIT": "29-66354789-2",
+        "Teléfono": "11-5534-6789",
+        "Email": "pro@limpieza.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Sábado 8:00-20:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Limpieza de viviendas, común, desinfección"
+    },
+    {
+        "Rubro": "🧹 Limpieza",
+        "Prestador": "Green Clean Eco",
+        "CUIT": "25-71234567-8",
+        "Teléfono": "11-6789-1234",
+        "Email": "eco@greenclean.com.ar",
+        "Zona de Atención": "CABA Norte y Centro",
+        "Horario": "Lunes a Viernes 7:00-18:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Limpieza ecológica, lavado a presión"
+    },
+    
+    # 🔧 MANTENIMIENTO GENERAL
+    {
+        "Rubro": "🔧 Mantenimiento General",
+        "Prestador": "Técnicos Express",
+        "CUIT": "24-89456123-1",
+        "Teléfono": "11-7890-2345",
+        "Email": "express@tecnicos.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Domingo 8:00-20:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Reparaciones varias, tornería, ajustes menores"
+    },
+    {
+        "Rubro": "🔧 Mantenimiento General",
+        "Prestador": "Profesionales del Mantenimiento",
+        "CUIT": "26-34567890-5",
+        "Teléfono": "11-2345-6789",
+        "Email": "profesionales@mant.com.ar",
+        "Zona de Atención": "CABA Oeste y Sur",
+        "Horario": "Lunes a Viernes 8:00-17:00",
+        "Emergencias": "❌ No",
+        "Especialidad": "Mantención preventiva, inspecciones"
+    },
+    
+    # 🪟 VIDRIERÍA
+    {
+        "Rubro": "🪟 Vidriería",
+        "Prestador": "Vidrios Blindados Premium",
+        "CUIT": "28-67890123-4",
+        "Teléfono": "11-3456-7890",
+        "Email": "premium@vidrios.com.ar",
+        "Zona de Atención": "Toda CABA",
+        "Horario": "Lunes a Viernes 8:00-18:00",
+        "Emergencias": "✅ Sí",
+        "Especialidad": "Vidrios blindados, espejos, cerramientos"
+    },
 ]
 
 TABLA_SOLICITADA_OT = [
@@ -517,7 +645,6 @@ class AgenteLiquidacion:
         total_gastos = sum(gastos_por_rubro.values())
         total_ingresos = sum(ingresos_por_rubro.values())
 
-        # Si no hay coeficientes cargados, armamos uno uniforme
         if not self.coeficientes_uf:
             cantidad = 10
             for i in range(1, cantidad + 1):
@@ -567,14 +694,11 @@ class AgenteLiquidacion:
         }
 
     def generar_excel_liquidacion(self, liquidacion: LiquidacionExpensas, edificio: str):
-        """Genera un archivo Excel en memoria, con fallback seguro a openpyxl/xlsxwriter"""
         output = BytesIO()
 
-        # Si no hay libreria Excel disponible, devolver error claro
         if xlsxwriter is None and openpyxl is None:
             raise RuntimeError("No hay librería de Excel disponible. Instale xlsxwriter o openpyxl.")
 
-        # Aseguramos que haya worksheet para exportar
         if xlsxwriter is not None:
             workbook = xlsxwriter.Workbook(output)
             header = workbook.add_format(
@@ -636,7 +760,6 @@ class AgenteLiquidacion:
             output.seek(0)
             return output
 
-        # fallback con openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Resumen"
@@ -792,7 +915,7 @@ class AgenteProveedores(AgenteBase):
                 proveedores_filtrados = [
                     p
                     for p in DATOS_CARTILLA_PROVEEDORES
-                    if p["Rubro"].lower() == rubro_filtro.lower()
+                    if rubro_filtro.lower() in p["Rubro"].lower()
                 ]
             else:
                 proveedores_filtrados = DATOS_CARTILLA_PROVEEDORES
@@ -806,7 +929,7 @@ class AgenteProveedores(AgenteBase):
                 datos_procesados={
                     "proveedores": proveedores_filtrados,
                     "total_disponibles": len(proveedores_filtrados),
-                    "rubros": list(set([p["Rubro"] for p in proveedores_filtrados])),
+                    "rubros": list(set([p["Rubro"] for p in DATOS_CARTILLA_PROVEEDORES])),
                 },
                 tiempo_procesamiento=tiempo_procesamiento,
                 dependencias_cumplidas=[],
@@ -969,7 +1092,7 @@ class AgenteReportes(AgenteBase):
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 4. ORQUESTADOR CENTRAL - El "cerebro" del enjambre
+# 4. ORQUESTADOR CENTRAL
 # ════════════════════════════════════════════════════════════════════════════════
 
 class OrquestadorSwarm:
@@ -1063,6 +1186,7 @@ st.markdown(
         .header-brand .ia { color: #7dd3fc; font-weight: 800; }
         .titulo-edificio { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #0f172a; padding: 12px 16px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; margin: 20px 0 15px 0; }
         .estado-cuenta-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #38bdf8; border-radius: 12px; padding: 20px; margin: 15px 0; }
+        .prestador-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #10b981; border-radius: 12px; padding: 16px; margin: 10px 0; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -1091,7 +1215,7 @@ agente_liquidacion = st.session_state.agente_liquidacion
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 6. SIDEBAR - CONTROL CENTRAL CON LOGO
+# 6. SIDEBAR - CONTROL CENTRAL
 # ════════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
@@ -1109,7 +1233,12 @@ with st.sidebar:
 
     pantalla_activa = st.radio(
         "📌 Seleccione Módulo de Control:",
-        ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo", "📊 Liquidación de Expensas"],
+        [
+            "📋 Dashboard y Contabilidad",
+            "🔧 Órdenes de Trabajo de Campo",
+            "📊 Liquidación de Expensas",
+            "👷 Directorio de Prestadores"
+        ],
         index=0,
     )
 
@@ -1184,10 +1313,131 @@ with st.sidebar:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 7. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO CONTABILIDAD
+# MÓDULO 4: DIRECTORIO DE PRESTADORES DE SERVICIOS
 # ════════════════════════════════════════════════════════════════════════════════
 
-if pantalla_activa == "📋 Dashboard y Contabilidad":
+if pantalla_activa == "👷 Directorio de Prestadores":
+    
+    st.markdown(
+        """
+        <div class="header-brand">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Imagen de edificio">
+            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    st.markdown("📍 **Directorio Completo de Prestadores de Servicios Homologados**")
+    st.markdown("---")
+    
+    st.header("👷 Cartilla de Prestadores")
+    st.markdown("Listado completo de profesionales y servicios disponibles para el consorcio.")
+    
+    # Filtros
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Extraer rubros únicos
+        rubros_unicos = sorted(list(set([p["Rubro"] for p in DATOS_CARTILLA_PROVEEDORES])))
+        rubro_filtrado = st.selectbox("🔎 Filtrar por rubro:", ["📋 Todos los rubros"] + rubros_unicos)
+    
+    with col2:
+        buscar_texto = st.text_input("🔍 Buscar por nombre o CUIT:", placeholder="Ej: plomería, 30-55489")
+    
+    # Aplicar filtros
+    proveedores_mostrados = DATOS_CARTILLA_PROVEEDORES.copy()
+    
+    if rubro_filtrado != "📋 Todos los rubros":
+        proveedores_mostrados = [p for p in proveedores_mostrados if p["Rubro"] == rubro_filtrado]
+    
+    if buscar_texto:
+        buscar_texto_lower = buscar_texto.lower()
+        proveedores_mostrados = [
+            p for p in proveedores_mostrados
+            if buscar_texto_lower in p["Prestador"].lower()
+            or buscar_texto_lower in p["CUIT"].lower()
+            or buscar_texto_lower in p["Email"].lower()
+        ]
+    
+    st.markdown(f"**Resultados encontrados: {len(proveedores_mostrados)}**")
+    st.markdown("---")
+    
+    # Mostrar prestadores en tarjetas
+    for prestador in proveedores_mostrados:
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col1:
+            st.markdown(f"### {prestador['Rubro']}")
+        
+        with col2:
+            st.markdown(f"""
+            <div class="prestador-card">
+                <h4 style="color: #38bdf8; margin: 0;">{prestador['Prestador']}</h4>
+                <p><b>CUIT:</b> {prestador['CUIT']}</p>
+                <p><b>Teléfono:</b> {prestador['Teléfono']}</p>
+                <p><b>Email:</b> {prestador['Email']}</p>
+                <p><b>Zona:</b> {prestador['Zona de Atención']}</p>
+                <p><b>Horario:</b> {prestador['Horario']}</p>
+                <p><b>Emergencias:</b> {prestador['Emergencias']}</p>
+                <p><b>Especialidad:</b> {prestador['Especialidad']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 20px;">
+                <a href="tel:{prestador['Teléfono'].replace('-', '')}" style="text-decoration: none;">
+                    <button style="background: #10b981; color: white; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        📞 Llamar
+                    </button>
+                </a>
+                <br><br>
+                <a href="mailto:{prestador['Email']}" style="text-decoration: none;">
+                    <button style="background: #38bdf8; color: #0f172a; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        ✉️ Email
+                    </button>
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+    
+    # Tabla resumida
+    st.markdown("---")
+    st.subheader("📊 Vista en Tabla")
+    
+    df_prestadores = pd.DataFrame(proveedores_mostrados)
+    df_mostrar = df_prestadores[["Rubro", "Prestador", "Teléfono", "Email", "Zona de Atención", "Emergencias"]]
+    
+    st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
+    
+    # Estadísticas
+    st.markdown("---")
+    st.subheader("📈 Estadísticas del Directorio")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Prestadores", len(DATOS_CARTILLA_PROVEEDORES))
+    
+    with col2:
+        rubros_totales = len(set([p["Rubro"] for p in DATOS_CARTILLA_PROVEEDORES]))
+        st.metric("Rubros Disponibles", rubros_totales)
+    
+    with col3:
+        emergencias = len([p for p in DATOS_CARTILLA_PROVEEDORES if p["Emergencias"] == "✅ Sí"])
+        st.metric("Con Emergencias 24hs", emergencias)
+    
+    with col4:
+        st.metric("Cobertura", "Toda CABA")
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 7-9. OTROS MÓDULOS (Dashboard, Operativo, Liquidación) - IGUALES AL ANTERIOR
+# ════════════════════════════════════════════════════════════════════════════════
+
+elif pantalla_activa == "📋 Dashboard y Contabilidad":
 
     evento = EventoSwarm(
         timestamp=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -1347,10 +1597,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 st.write(f"• {accion}")
 
 
-# ════════════════════════════════════════════════════════════════════════════════
-# 8. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO OPERATIVO
-# ════════════════════════════════════════════════════════════════════════════════
-
 elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
     evento = EventoSwarm(
@@ -1442,13 +1688,14 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
     resultado_proveedores = resultados.get(TipoAgente.PROVEEDORES.value)
     if resultado_proveedores and resultado_proveedores.estado == EstadoAgente.COMPLETADO:
         proveedores_df = pd.DataFrame(resultado_proveedores.datos_procesados["proveedores"])
-        st.dataframe(proveedores_df, use_container_width=True, hide_index=True)
+        columnas_mostrar = ["Rubro", "Prestador", "CUIT", "Teléfono", "Email", "Zona de Atención"]
+        st.dataframe(proveedores_df[columnas_mostrar], use_container_width=True, hide_index=True)
 
         col1, col2 = st.columns(2)
         with col1:
             st.info(f"📊 Total Prestadores: {resultado_proveedores.datos_procesados['total_disponibles']}")
         with col2:
-            rubros = ", ".join(resultado_proveedores.datos_procesados["rubros"])
+            rubros = ", ".join([r.replace("🚰 ", "").replace("⚡ ", "").replace("🔑 ", "").replace("🧱 ", "").replace("🚪 ", "").replace("🧹 ", "").replace("🔧 ", "") for r in resultado_proveedores.datos_procesados["rubros"]])
             st.info(f"🏷️ Rubros Disponibles: {rubros}")
 
     st.markdown("---")
@@ -1482,10 +1729,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         with col4:
             st.success(validaciones.get("vigencia_fiscal", "N/A"))
 
-
-# ════════════════════════════════════════════════════════════════════════════════
-# 9. MÓDULO LIQUIDACIÓN DE EXPENSAS
-# ════════════════════════════════════════════════════════════════════════════════
 
 elif pantalla_activa == "📊 Liquidación de Expensas":
 
@@ -1803,7 +2046,7 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 10. FOOTER - INFORMACIÓN DEL SISTEMA
+# 10. FOOTER
 # ════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
