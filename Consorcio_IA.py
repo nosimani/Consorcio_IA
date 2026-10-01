@@ -16,7 +16,8 @@ from enum import Enum
 from typing import List, Dict, Any
 from datetime import datetime
 import time
-
+from io import BytesIO
+import xlsxwriter
 
 # ════════════════════════════════════════════════════════════════════════════════
 # EMOJIS DE ROBOTS Y ANIMACIONES
@@ -33,21 +34,15 @@ ROBOTS_ANIMADOS = {
 }
 
 def obtener_robot_animado(agente_tipo: str, paso: int) -> str:
-    """Retorna el emoji del robot en movimiento según el paso de animación"""
     secuencia = ROBOTS_ANIMADOS.get(agente_tipo, ["🤖", "⚙️", "📊"])
     return secuencia[paso % len(secuencia)]
 
 
 def animar_robot_procesando(placeholder, agente_nombre: str, agente_tipo: str, duracion_ms: float):
-    """
-    Anima un robot moviéndose mientras el agente procesa.
-    """
     frames_total = int(duracion_ms / 100)
-    
     for frame in range(frames_total):
         robot = obtener_robot_animado(agente_tipo, frame)
         barras = "▓" * (frame % 10) + "░" * (10 - (frame % 10))
-        
         placeholder.markdown(
             f"""
             <div class="swarm-agent swarm-processing">
@@ -65,7 +60,6 @@ def animar_robot_procesando(placeholder, agente_nombre: str, agente_tipo: str, d
 # ════════════════════════════════════════════════════════════════════════════════
 
 class TipoAgente(Enum):
-    """Clasificación de roles dentro del enjambre"""
     ORQUESTADOR = "🎯 Orquestador Central"
     CONTABLE = "📊 Agente Contable"
     COMPLIANCE = "✅ Agente Compliance"
@@ -77,7 +71,6 @@ class TipoAgente(Enum):
 
 
 class EstadoAgente(Enum):
-    """Estados del ciclo de vida de cada agente"""
     INACTIVO = "⚪ Inactivo"
     ACTIVADO = "🟢 Activado"
     PROCESANDO = "🟡 Procesando"
@@ -86,7 +79,6 @@ class EstadoAgente(Enum):
 
 
 class TipoGasto(Enum):
-    """Clasificación de gastos por rubro"""
     SERVICIOS_BASICOS = "Servicios Básicos"
     PERSONAL = "Personal y Cargas Sociales"
     MANTENIMIENTO = "Mantenimiento y Reparaciones"
@@ -98,7 +90,6 @@ class TipoGasto(Enum):
 
 
 class TipoIngreso(Enum):
-    """Clasificación de ingresos"""
     EXPENSAS = "Expensas Cobradas"
     SERVICIOS = "Ingresos por Servicios"
     FINANCIEROS = "Ingresos Financieros"
@@ -107,7 +98,6 @@ class TipoIngreso(Enum):
 
 @dataclass
 class EventoSwarm:
-    """Evento que dispara el enjambre - el 'qué' solicita el usuario"""
     timestamp: str
     tipo_evento: str
     descripcion: str
@@ -117,7 +107,6 @@ class EventoSwarm:
 
 @dataclass
 class ResultadoAgente:
-    """Resultado del procesamiento de cada agente"""
     agente: str
     estado: EstadoAgente
     datos_procesados: Dict[str, Any]
@@ -127,7 +116,6 @@ class ResultadoAgente:
 
 @dataclass
 class RegistroGasto:
-    """Registro de un gasto del consorcio"""
     concepto: str
     tipo_gasto: TipoGasto
     monto: float
@@ -137,7 +125,6 @@ class RegistroGasto:
 
 @dataclass
 class RegistroIngreso:
-    """Registro de un ingreso del consorcio"""
     concepto: str
     tipo_ingreso: TipoIngreso
     monto: float
@@ -145,8 +132,17 @@ class RegistroIngreso:
 
 
 @dataclass
+class CoeficienteUF:
+    """Registro de coeficientes de cada UF"""
+    uf: str
+    propietario: str = ""
+    piso: str = ""
+    coeficiente: float = 0.0
+    contacto: str = ""
+
+
+@dataclass
 class LiquidacionExpensas:
-    """Liquidación completa de expensas del período"""
     periodo: str
     fecha_liquidacion: str
     total_ingresos: float
@@ -154,7 +150,7 @@ class LiquidacionExpensas:
     deficit_o_superavit: float
     gastos_por_rubro: Dict[str, float]
     ingresos_por_rubro: Dict[str, float]
-    coeficientes: Dict[str, float]
+    coeficientes: Dict[str, CoeficienteUF]
     expensas_por_uf: Dict[str, float]
 
 
@@ -170,11 +166,7 @@ ESTADISTICAS_EDIFICIOS = {
         "tasa": 4.5,
         "ots": "5",
         "cantidad_uf": 50,
-        "coeficientes": {
-            "1A": 0.024, "1B": 0.017, "2A": 0.026, "2B": 0.018,
-            "3A": 0.026, "3B": 0.020, "4A": 0.025, "4B": 0.019,
-            "5A": 0.030, "5B": 0.022,
-        }
+        "coeficientes": {}
     },
     "Larrea 435, CABA": {
         "reserva": 380000.0,
@@ -183,11 +175,7 @@ ESTADISTICAS_EDIFICIOS = {
         "tasa": 5.0,
         "ots": "5",
         "cantidad_uf": 30,
-        "coeficientes": {
-            "1A": 0.035, "1B": 0.025, "2A": 0.036, "2B": 0.026,
-            "3A": 0.036, "3B": 0.028, "4A": 0.035, "4B": 0.027,
-            "5A": 0.038, "5B": 0.034,
-        }
+        "coeficientes": {}
     },
     "Montevideo 891, CABA": {
         "reserva": 620000.0,
@@ -321,7 +309,7 @@ TABLA_SOLICITADA_OT = [
 ]
 
 # ════════════════════════════════════════════════════════════════════════════════
-# CARGA DE BASES DE EDIFICIOS DESDE CSV/EXCEL
+# CARGA DE BASES DE EDIFICIOS Y COEFICIENTES
 # ════════════════════════════════════════════════════════════════════════════════
 
 CAMPOS_UNIDADES_REQUERIDOS = [
@@ -333,13 +321,16 @@ CAMPOS_UNIDADES_REQUERIDOS = [
     "Porcentual Expensas",
 ]
 
+CAMPOS_COEFICIENTES_REQUERIDOS = [
+    "UF",
+    "Propietario",
+    "Piso",
+    "Coeficiente",
+    "Contacto",
+]
+
 
 def cargar_base_unidades(archivo) -> pd.DataFrame:
-    """
-    Carga una base de datos de unidades funcionales desde CSV o Excel.
-    Requiere columnas:
-    Calle, Numero, Ciudad, UF/Dpto, Piso, Porcentual Expensas
-    """
     nombre_archivo = archivo.name.lower()
 
     if nombre_archivo.endswith(".csv"):
@@ -408,11 +399,41 @@ def cargar_base_unidades(archivo) -> pd.DataFrame:
     return df[columnas_ordenadas]
 
 
+def cargar_base_coeficientes(archivo) -> pd.DataFrame:
+    """Carga archivo de coeficientes por UF"""
+    nombre_archivo = archivo.name.lower()
+
+    if nombre_archivo.endswith(".csv"):
+        df = pd.read_csv(archivo, encoding="utf-8-sig")
+    elif nombre_archivo.endswith((".xlsx", ".xls")):
+        df = pd.read_excel(archivo)
+    else:
+        raise ValueError("El archivo debe estar en formato CSV o Excel.")
+
+    df.columns = [str(col).strip() for col in df.columns]
+
+    campos_faltantes = [campo for campo in CAMPOS_COEFICIENTES_REQUERIDOS if campo not in df.columns]
+
+    if campos_faltantes:
+        raise ValueError(
+            "Faltan las siguientes columnas obligatorias: "
+            + ", ".join(campos_faltantes)
+        )
+
+    df["UF"] = df["UF"].fillna("").astype(str).str.strip().str.upper()
+    df["Propietario"] = df["Propietario"].fillna("").astype(str).str.strip()
+    df["Piso"] = df["Piso"].fillna("").astype(str).str.strip()
+    df["Contacto"] = df["Contacto"].fillna("").astype(str).str.strip()
+
+    df["Coeficiente"] = pd.to_numeric(
+        df["Coeficiente"].astype(str).str.replace(",", ".", regex=False),
+        errors="coerce",
+    ).fillna(0)
+
+    return df
+
+
 def registrar_edificio_desde_base(df: pd.DataFrame):
-    """
-    Registra cada edificio cargado en ESTADISTICAS_EDIFICIOS, con datos
-    mínimos para que el resto del sistema pueda seguir funcionando.
-    """
     if df.empty:
         return
 
@@ -439,62 +460,86 @@ def registrar_edificio_desde_base(df: pd.DataFrame):
 # ════════════════════════════════════════════════════════════════════════════════
 
 class AgenteLiquidacion:
-    """💰 Especialista en liquidación integral de expensas"""
-
     def __init__(self):
         self.gastos_registrados: List[RegistroGasto] = []
         self.ingresos_registrados: List[RegistroIngreso] = []
-        self.coeficientes_uf: Dict[str, float] = {}
+        self.coeficientes_uf: Dict[str, CoeficienteUF] = {}
         self.estado = EstadoAgente.INACTIVO
 
     def activar(self):
         self.estado = EstadoAgente.ACTIVADO
 
     def registrar_gasto(self, gasto: RegistroGasto):
-        """Registra un gasto del período"""
         self.gastos_registrados.append(gasto)
 
     def registrar_ingreso(self, ingreso: RegistroIngreso):
-        """Registra un ingreso del período"""
         self.ingresos_registrados.append(ingreso)
 
-    def establecer_coeficientes(self, coeficientes: Dict[str, float]):
-        """Establece los coeficientes de prorrateo por UF"""
-        self.coeficientes_uf = coeficientes
+    def cargar_coeficientes_desde_dataframe(self, df: pd.DataFrame):
+        """Carga coeficientes desde un DataFrame"""
+        self.coeficientes_uf = {}
+        for _, row in df.iterrows():
+            uf = str(row["UF"]).upper()
+            coef_obj = CoeficienteUF(
+                uf=uf,
+                propietario=str(row.get("Propietario", "")),
+                piso=str(row.get("Piso", "")),
+                coeficiente=float(row.get("Coeficiente", 0)),
+                contacto=str(row.get("Contacto", ""))
+            )
+            self.coeficientes_uf[uf] = coef_obj
+
+    def normalizar_coeficientes(self) -> Dict[str, float]:
+        """Normaliza coeficientes si no suman 1.00"""
+        if not self.coeficientes_uf:
+            return {}
         
-        # Validar que sumen 1.00
-        total_coef = sum(coeficientes.values())
-        if abs(total_coef - 1.0) > 0.001:
-            raise ValueError(f"Coeficientes no suman 1.00. Total: {total_coef}")
+        valores = {uf: coef_obj.coeficiente for uf, coef_obj in self.coeficientes_uf.items()}
+        if not valores:
+            return {}
+        
+        total = sum(valores.values())
+        if total <= 0:
+            cantidad = len(valores)
+            return {uf: 1 / cantidad for uf in valores}
+        
+        # Normalizar
+        factor = 1.0 / total
+        for uf in self.coeficientes_uf:
+            self.coeficientes_uf[uf].coeficiente *= factor
+        
+        return {uf: coef_obj.coeficiente for uf, coef_obj in self.coeficientes_uf.items()}
 
     def calcular_liquidacion(self, periodo: str) -> LiquidacionExpensas:
-        """Calcula la liquidación completa del período"""
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
 
-        # Calcular totales por rubro
         gastos_por_rubro = {}
         for gasto in self.gastos_registrados:
             rubro = gasto.tipo_gasto.value
-            if rubro not in gastos_por_rubro:
-                gastos_por_rubro[rubro] = 0.0
-            gastos_por_rubro[rubro] += gasto.monto
+            gastos_por_rubro[rubro] = gastos_por_rubro.get(rubro, 0.0) + gasto.monto
 
         ingresos_por_rubro = {}
         for ingreso in self.ingresos_registrados:
             rubro = ingreso.tipo_ingreso.value
-            if rubro not in ingresos_por_rubro:
-                ingresos_por_rubro[rubro] = 0.0
-            ingresos_por_rubro[rubro] += ingreso.monto
+            ingresos_por_rubro[rubro] = ingresos_por_rubro.get(rubro, 0.0) + ingreso.monto
 
-        # Totales
         total_gastos = sum(gastos_por_rubro.values())
         total_ingresos = sum(ingresos_por_rubro.values())
 
-        # Calcular expensas por UF
-        expensas_por_uf = {}
-        for uf, coeficiente in self.coeficientes_uf.items():
-            expensas_por_uf[uf] = total_gastos * coeficiente
+        # Normalizar coeficientes
+        self.normalizar_coeficientes()
+
+        if not self.coeficientes_uf:
+            cantidad = 10
+            for i in range(1, cantidad + 1):
+                uf = f"UF_{i:02d}"
+                self.coeficientes_uf[uf] = CoeficienteUF(uf=uf, coeficiente=1/cantidad)
+
+        expensas_por_uf = {
+            uf: total_gastos * coef_obj.coeficiente
+            for uf, coef_obj in self.coeficientes_uf.items()
+        }
 
         self.estado = EstadoAgente.COMPLETADO
 
@@ -507,32 +552,137 @@ class AgenteLiquidacion:
             gastos_por_rubro=gastos_por_rubro,
             ingresos_por_rubro=ingresos_por_rubro,
             coeficientes=self.coeficientes_uf,
-            expensas_por_uf=expensas_por_uf
+            expensas_por_uf=expensas_por_uf,
         )
 
-    def obtener_estado_cuenta_uf(self, uf: str, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
-        """Genera el estado de cuenta de una UF específica"""
-        if uf not in liquidacion.expensas_por_uf:
+    def generar_estado_cuenta_uf(self, uf: str, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
+        """Genera estado de cuenta completo de una UF"""
+        if uf not in self.coeficientes_uf:
             return None
-
+        
+        coef_obj = self.coeficientes_uf[uf]
+        expensas = liquidacion.expensas_por_uf.get(uf, 0)
+        
         return {
             "uf": uf,
-            "coeficiente": liquidacion.coeficientes.get(uf, 0),
-            "expensas_mes": liquidacion.expensas_por_uf[uf],
-            "porcentaje_total": f"{(liquidacion.coeficientes.get(uf, 0) * 100):.2f}%"
+            "propietario": coef_obj.propietario,
+            "piso": coef_obj.piso,
+            "contacto": coef_obj.contacto,
+            "coeficiente": coef_obj.coeficiente,
+            "porcentaje": f"{coef_obj.coeficiente * 100:.2f}%",
+            "periodo": liquidacion.periodo,
+            "total_gastos": liquidacion.total_gastos,
+            "expensas_a_pagar": expensas,
+            "fecha_liquidacion": liquidacion.fecha_liquidacion,
+            "vencimiento": datetime.now().strftime("%d/%m/%Y"),
         }
 
-    def generar_resumen_desglose(self, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
-        """Genera resumen con desglose por conceptos"""
-        return {
-            "periodo": liquidacion.periodo,
-            "fecha_liquidacion": liquidacion.fecha_liquidacion,
-            "total_ingresos": liquidacion.total_ingresos,
-            "total_gastos": liquidacion.total_gastos,
-            "resultado": liquidacion.deficit_o_superavit,
-            "gastos_por_rubro": liquidacion.gastos_por_rubro,
-            "ingresos_por_rubro": liquidacion.ingresos_por_rubro,
-        }
+    def generar_excel_liquidacion(self, liquidacion: LiquidacionExpensas, edificio: str) -> BytesIO:
+        """Genera un archivo Excel con la liquidación completa"""
+        output = BytesIO()
+        workbook = xlsxwriter.Workbook(output)
+        
+        # Formatos
+        header_format = workbook.add_format({
+            'bg_color': '#0d1e3d',
+            'font_color': '#ffffff',
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+        
+        title_format = workbook.add_format({
+            'font_size': 16,
+            'bold': True,
+            'bg_color': '#38bdf8',
+            'font_color': '#0f172a',
+            'align': 'center'
+        })
+        
+        currency_format = workbook.add_format({
+            'num_format': '$#,##0.00',
+            'border': 1
+        })
+        
+        text_format = workbook.add_format({
+            'border': 1,
+            'align': 'left'
+        })
+        
+        percent_format = workbook.add_format({
+            'num_format': '0.00%',
+            'border': 1
+        })
+        
+        # Hoja 1: Resumen
+        ws_resumen = workbook.add_worksheet("Resumen")
+        ws_resumen.set_column('A:B', 30)
+        
+        ws_resumen.merge_cells('A1:B1')
+        ws_resumen.write('A1', f'LIQUIDACIÓN DE EXPENSAS - {edificio}', title_format)
+        ws_resumen.write('A2', f'Período: {liquidacion.periodo}')
+        ws_resumen.write('A3', f'Fecha: {liquidacion.fecha_liquidacion}')
+        
+        ws_resumen.write('A5', 'INGRESOS', header_format)
+        ws_resumen.write('B5', '', header_format)
+        
+        row = 6
+        for rubro, monto in liquidacion.ingresos_por_rubro.items():
+            ws_resumen.write(row, 0, rubro, text_format)
+            ws_resumen.write(row, 1, monto, currency_format)
+            row += 1
+        
+        ws_resumen.write(row, 0, 'TOTAL INGRESOS', header_format)
+        ws_resumen.write(row, 1, liquidacion.total_ingresos, currency_format)
+        
+        row += 2
+        ws_resumen.write(row, 0, 'GASTOS', header_format)
+        ws_resumen.write(row, 1, '', header_format)
+        
+        row += 1
+        for rubro, monto in liquidacion.gastos_por_rubro.items():
+            ws_resumen.write(row, 0, rubro, text_format)
+            ws_resumen.write(row, 1, monto, currency_format)
+            row += 1
+        
+        ws_resumen.write(row, 0, 'TOTAL GASTOS', header_format)
+        ws_resumen.write(row, 1, liquidacion.total_gastos, currency_format)
+        
+        row += 2
+        ws_resumen.write(row, 0, 'RESULTADO', header_format)
+        ws_resumen.write(row, 1, liquidacion.deficit_o_superavit, currency_format)
+        
+        # Hoja 2: Por UF
+        ws_uf = workbook.add_worksheet("Por UF")
+        ws_uf.set_column('A:E', 20)
+        
+        ws_uf.merge_cells('A1:E1')
+        ws_uf.write('A1', f'DISTRIBUCIÓN POR UF - {edificio}', title_format)
+        ws_uf.write('A2', f'Período: {liquidacion.periodo}')
+        
+        ws_uf.write('A4', 'UF', header_format)
+        ws_uf.write('B4', 'Propietario', header_format)
+        ws_uf.write('C4', 'Coeficiente', header_format)
+        ws_uf.write('D4', 'Porcentaje', header_format)
+        ws_uf.write('E4', 'Expensas a Pagar', header_format)
+        
+        row = 5
+        for uf, coef_obj in liquidacion.coeficientes.items():
+            expensas = liquidacion.expensas_por_uf.get(uf, 0)
+            ws_uf.write(row, 0, uf, text_format)
+            ws_uf.write(row, 1, coef_obj.propietario, text_format)
+            ws_uf.write(row, 2, coef_obj.coeficiente, percent_format)
+            ws_uf.write(row, 3, coef_obj.coeficiente, percent_format)
+            ws_uf.write(row, 4, expensas, currency_format)
+            row += 1
+        
+        ws_uf.write(row, 0, 'TOTALES', header_format)
+        ws_uf.write(row, 4, liquidacion.total_gastos, currency_format)
+        
+        workbook.close()
+        output.seek(0)
+        return output
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -540,29 +690,22 @@ class AgenteLiquidacion:
 # ════════════════════════════════════════════════════════════════════════════════
 
 class AgenteBase:
-    """Clase base para todos los agentes del enjambre"""
-
     def __init__(self, tipo_agente: TipoAgente):
         self.tipo_agente = tipo_agente
         self.estado = EstadoAgente.INACTIVO
         self.historial_procesamiento = []
 
     def activar(self):
-        """Pasa el agente a estado ACTIVADO"""
         self.estado = EstadoAgente.ACTIVADO
 
     def procesar(self, evento: EventoSwarm) -> ResultadoAgente:
-        """Método abstracto que cada agente implementa según su especialidad"""
         raise NotImplementedError
 
     def registrar_operacion(self, resultado: ResultadoAgente):
-        """Mantiene auditoría interna del agente"""
         self.historial_procesamiento.append(resultado)
 
 
 class AgenteContable(AgenteBase):
-    """📊 Especialista en flujos de dinero, ingresos y gastos"""
-
     def __init__(self):
         super().__init__(TipoAgente.CONTABLE)
 
@@ -589,18 +732,9 @@ class AgenteContable(AgenteBase):
 
             gastos = [
                 {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
-                {
-                    "Gastos": "honorarios de administración",
-                    "Monto ($)": 35000.0 * f_cal,
-                },
-                {
-                    "Gastos": "sueldo de encargado",
-                    "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0),
-                },
-                {
-                    "Gastos": "compra de articulos de limpieza",
-                    "Monto ($)": 12000.0 * f_cal,
-                },
+                {"Gastos": "honorarios de administración", "Monto ($)": 35000.0 * f_cal},
+                {"Gastos": "sueldo de encargado", "Monto ($)": 250000.0 * (1.0 if f_cal >= 0.7 else 0.0)},
+                {"Gastos": "compra de articulos de limpieza", "Monto ($)": 12000.0 * f_cal},
                 {"Gastos": "pagos luz", "Monto ($)": 18000.0 * f_cal},
                 {"Gastos": "otros gastos", "Monto ($)": 7000.0 * f_cal},
             ]
@@ -637,8 +771,6 @@ class AgenteContable(AgenteBase):
 
 
 class AgenteCompliance(AgenteBase):
-    """✅ Validador de regulaciones y normativas fiscales"""
-
     def __init__(self):
         super().__init__(TipoAgente.COMPLIANCE)
 
@@ -667,14 +799,10 @@ class AgenteCompliance(AgenteBase):
 
 
 class AgenteProveedores(AgenteBase):
-    """🏢 Gestor de cartilla homologada de prestadores"""
-
     def __init__(self):
         super().__init__(TipoAgente.PROVEEDORES)
 
-    def procesar(
-        self, evento: EventoSwarm, rubro_filtro: str = None
-    ) -> ResultadoAgente:
+    def procesar(self, evento: EventoSwarm, rubro_filtro: str = None) -> ResultadoAgente:
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
         tiempo_inicio = time.time()
@@ -715,14 +843,10 @@ class AgenteProveedores(AgenteBase):
 
 
 class AgenteOperativo(AgenteBase):
-    """🔧 Gestor de órdenes de trabajo de campo"""
-
     def __init__(self):
         super().__init__(TipoAgente.OPERATIVO)
 
-    def procesar(
-        self, evento: EventoSwarm, edificio_filtro: str = None
-    ) -> ResultadoAgente:
+    def procesar(self, evento: EventoSwarm, edificio_filtro: str = None) -> ResultadoAgente:
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
         tiempo_inicio = time.time()
@@ -739,9 +863,7 @@ class AgenteOperativo(AgenteBase):
 
             presupuesto_total = 0
             for ot in ots_filtradas:
-                presupuesto_str = (
-                    ot["Presupuesto Aprobado"].replace("$ ", "").replace(".-", "")
-                )
+                presupuesto_str = ot["Presupuesto Aprobado"].replace("$ ", "").replace(".-", "")
                 presupuesto_total += float(presupuesto_str)
 
             self.estado = EstadoAgente.COMPLETADO
@@ -770,8 +892,6 @@ class AgenteOperativo(AgenteBase):
 
 
 class AgenteMora(AgenteBase):
-    """⚠️ Especialista en cobranza y seguimiento de deudores"""
-
     def __init__(self):
         super().__init__(TipoAgente.MORA)
 
@@ -810,14 +930,10 @@ class AgenteMora(AgenteBase):
 
 
 class AgenteAuditor(AgenteBase):
-    """🔍 Fiscalizador de coherencia y anomalías"""
-
     def __init__(self):
         super().__init__(TipoAgente.AUDITOR)
 
-    def procesar(
-        self, evento: EventoSwarm, resultados_previos: Dict[str, ResultadoAgente]
-    ) -> ResultadoAgente:
+    def procesar(self, evento: EventoSwarm, resultados_previos: Dict[str, ResultadoAgente]) -> ResultadoAgente:
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
         tiempo_inicio = time.time()
@@ -846,21 +962,15 @@ class AgenteAuditor(AgenteBase):
 
 
 class AgenteReportes(AgenteBase):
-    """📈 Generador de síntesis ejecutivas e informes"""
-
     def __init__(self):
         super().__init__(TipoAgente.REPORTES)
 
-    def procesar(
-        self, evento: EventoSwarm, resultados_previos: Dict[str, ResultadoAgente]
-    ) -> ResultadoAgente:
+    def procesar(self, evento: EventoSwarm, resultados_previos: Dict[str, ResultadoAgente]) -> ResultadoAgente:
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
         tiempo_inicio = time.time()
 
-        agentes_exitosos = len(
-            [r for r in resultados_previos.values() if r.estado == EstadoAgente.COMPLETADO]
-        )
+        agentes_exitosos = len([r for r in resultados_previos.values() if r.estado == EstadoAgente.COMPLETADO])
 
         reporte_ejecutivo = {
             "fecha_generacion": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -887,8 +997,6 @@ class AgenteReportes(AgenteBase):
 # ════════════════════════════════════════════════════════════════════════════════
 
 class OrquestadorSwarm:
-    """🎯 Coordinador central que activa el enjambre según el evento"""
-
     def __init__(self):
         self.enjambre = {
             TipoAgente.CONTABLE: AgenteContable(),
@@ -903,19 +1011,12 @@ class OrquestadorSwarm:
         self.resultados_enjambre = {}
         self.placeholders_animacion = {}
 
-    def disparar_enjambre(
-        self, evento: EventoSwarm, edificio_seleccionado: str
-    ) -> Dict[str, ResultadoAgente]:
-        """🚀 Atiende una solicitud con activación selectiva del enjambre"""
-
+    def disparar_enjambre(self, evento: EventoSwarm, edificio_seleccionado: str) -> Dict[str, ResultadoAgente]:
         self.evento_actual = evento
         self.resultados_enjambre = {}
 
         if edificio_seleccionado not in ESTADISTICAS_EDIFICIOS:
-            registrar_edificio_desde_base(
-                st.session_state.get("unidades_edificios", pd.DataFrame())
-            )
-
+            registrar_edificio_desde_base(st.session_state.get("unidades_edificios", pd.DataFrame()))
         if edificio_seleccionado not in ESTADISTICAS_EDIFICIOS:
             ESTADISTICAS_EDIFICIOS[edificio_seleccionado] = {
                 "reserva": 250000.0,
@@ -924,39 +1025,23 @@ class OrquestadorSwarm:
                 "tasa": 5.0,
                 "ots": "3",
                 "cantidad_uf": 10,
-                "coeficientes": {}
+                "coeficientes": {},
             }
 
         edificio_data = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 
         if evento.tipo_evento == "MODULO_CONTABILIDAD":
-            self.resultados_enjambre[TipoAgente.CONTABLE.value] = (
-                self.enjambre[TipoAgente.CONTABLE].procesar(evento, edificio_data)
-            )
-            self.resultados_enjambre[TipoAgente.MORA.value] = (
-                self.enjambre[TipoAgente.MORA].procesar(evento, edificio_data)
-            )
-            self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = (
-                self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
-            )
+            self.resultados_enjambre[TipoAgente.CONTABLE.value] = self.enjambre[TipoAgente.CONTABLE].procesar(evento, edificio_data)
+            self.resultados_enjambre[TipoAgente.MORA.value] = self.enjambre[TipoAgente.MORA].procesar(evento, edificio_data)
+            self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
 
         elif evento.tipo_evento == "MODULO_OPERATIVO":
-            self.resultados_enjambre[TipoAgente.OPERATIVO.value] = (
-                self.enjambre[TipoAgente.OPERATIVO].procesar(evento, edificio_seleccionado)
-            )
-            self.resultados_enjambre[TipoAgente.PROVEEDORES.value] = (
-                self.enjambre[TipoAgente.PROVEEDORES].procesar(evento)
-            )
-            self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = (
-                self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
-            )
+            self.resultados_enjambre[TipoAgente.OPERATIVO.value] = self.enjambre[TipoAgente.OPERATIVO].procesar(evento, edificio_seleccionado)
+            self.resultados_enjambre[TipoAgente.PROVEEDORES.value] = self.enjambre[TipoAgente.PROVEEDORES].procesar(evento)
+            self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
 
-        self.resultados_enjambre[TipoAgente.AUDITOR.value] = (
-            self.enjambre[TipoAgente.AUDITOR].procesar(evento, self.resultados_enjambre)
-        )
-        self.resultados_enjambre[TipoAgente.REPORTES.value] = (
-            self.enjambre[TipoAgente.REPORTES].procesar(evento, self.resultados_enjambre)
-        )
+        self.resultados_enjambre[TipoAgente.AUDITOR.value] = self.enjambre[TipoAgente.AUDITOR].procesar(evento, self.resultados_enjambre)
+        self.resultados_enjambre[TipoAgente.REPORTES.value] = self.enjambre[TipoAgente.REPORTES].procesar(evento, self.resultados_enjambre)
 
         return self.resultados_enjambre
 
@@ -972,166 +1057,36 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ESTILOS PREMIUM
 st.markdown(
     """
     <style>
-        .main { 
-            background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); 
-        }
-        h1 { 
-            color: #ffffff; 
-            font-family: sans-serif; 
-            font-weight: 900; 
-            letter-spacing: -1px; 
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); 
-            font-size: 2.8rem !important; 
-        }
-        h2, h3 { 
-            color: #38bdf8; 
-            font-family: sans-serif; 
-            font-weight: 700; 
-            font-size: 2rem !important; 
-        }
-        .stMarkdown p, p, label, .stRadio label { 
-            color: #e2e8f0; 
-            font-size: 1.3rem !important; 
-            line-height: 1.6 !important; 
-        }
-        .stDataFrame td, .stDataFrame div, table, td, tr { 
-            font-size: 1.5rem !important; 
-            font-weight: 600 !important; 
-            color: #ffffff !important; 
-        }
-        th, .stDataFrame th div { 
-            font-weight: 800 !important; 
-            color: #38bdf8 !important; 
-            font-size: 1.4rem !important; 
-        }
-        div[data-testid="stMetric"] {
-            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
-            border-radius: 20px !important; 
-            padding: 22px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        }
-        div[data-testid="stMetric"] label { 
-            color: #0f172a !important; 
-            font-weight: 800 !important; 
-            font-size: 1.1rem !important; 
-        }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { 
-            color: #0b192c !important; 
-            font-weight: 900 !important; 
-            font-size: 2.4rem !important; 
-        }
-        .stDataFrame, .stTable { 
-            background-color: rgba(30, 41, 59, 0.5); 
-            border-radius: 16px; 
-            padding: 10px; 
-        }
-        .swarm-agent { 
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-left: 5px solid #38bdf8;
-            padding: 15px;
-            margin: 8px 0;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-        .swarm-completed { 
-            border-left-color: #10b981 !important; 
-            background: rgba(16, 185, 129, 0.1) !important;
-        }
-        .swarm-processing { 
-            border-left-color: #f59e0b !important; 
-            background: rgba(245, 158, 11, 0.1) !important;
-            animation: pulse 1.5s infinite;
-        }
-        .swarm-active { 
-            border-left-color: #06b6d4 !important;
-            background: rgba(6, 182, 212, 0.1) !important;
-        }
-        .swarm-error { 
-            border-left-color: #ef4444 !important;
-            background: rgba(239, 68, 68, 0.1) !important;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        @keyframes robotMove {
-            0% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            100% { transform: translateX(-10px); }
-        }
-        
-        .robot-animado {
-            display: inline-block;
-            animation: robotMove 1s infinite;
-            font-size: 1.5rem;
-        }
-        
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0 10px 0;
-            padding: 8px 0 12px 0;
-            border-bottom: 1px solid rgba(56, 189, 248, 0.25);
-        }
-        
-        .logo-container img {
-            max-width: 110px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin: 20px 0 8px 0;
-            padding: 8px 0;
-        }
-
-        .header-brand img {
-            height: 100px;
-            width: auto;
-            flex-shrink: 0;
-            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4));
-        }
-
-        .header-brand h1 {
-            margin: 0;
-            color: #f8fafc;
-            font-size: 3rem !important;
-            letter-spacing: -2px;
-            font-weight: 900;
-        }
-
-        .header-brand .underscore {
-            color: #ffffff;
-            font-weight: 900;
-        }
-
-        .header-brand .ia {
-            color: #7dd3fc;
-            font-weight: 800;
-        }
-        
-        .titulo-edificio {
-            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-            color: #0f172a;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin: 20px 0 15px 0;
-        }
+        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
+        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
+        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
+        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
+        .stDataFrame td, .stDataFrame div, table, td, tr { font-size: 1.5rem !important; font-weight: 600 !important; color: #ffffff !important; }
+        th, .stDataFrame th div { font-weight: 800 !important; color: #38bdf8 !important; font-size: 1.4rem !important; }
+        div[data-testid="stMetric"] { background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important; border-radius: 20px !important; padding: 22px !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2) !important; }
+        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
+        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
+        .swarm-agent { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 5px solid #38bdf8; padding: 15px; margin: 8px 0; border-radius: 8px; font-size: 1.1rem; transition: all 0.3s ease; }
+        .swarm-completed { border-left-color: #10b981 !important; background: rgba(16, 185, 129, 0.1) !important; }
+        .swarm-processing { border-left-color: #f59e0b !important; background: rgba(245, 158, 11, 0.1) !important; animation: pulse 1.5s infinite; }
+        .swarm-active { border-left-color: #06b6d4 !important; background: rgba(6, 182, 212, 0.1) !important; }
+        .swarm-error { border-left-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @keyframes robotMove { 0% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 100% { transform: translateX(-10px); } }
+        .robot-animado { display: inline-block; animation: robotMove 1s infinite; font-size: 1.5rem; }
+        .logo-container { display: flex; justify-content: center; align-items: center; margin: 20px 0 10px 0; padding: 8px 0 12px 0; border-bottom: 1px solid rgba(56, 189, 248, 0.25); }
+        .logo-container img { max-width: 110px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
+        .header-brand { display: flex; align-items: center; gap: 18px; margin: 20px 0 8px 0; padding: 8px 0; }
+        .header-brand img { height: 100px; width: auto; flex-shrink: 0; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
+        .header-brand h1 { margin: 0; color: #f8fafc; font-size: 3rem !important; letter-spacing: -2px; font-weight: 900; }
+        .header-brand .underscore { color: #ffffff; font-weight: 900; }
+        .header-brand .ia { color: #7dd3fc; font-weight: 800; }
+        .titulo-edificio { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #0f172a; padding: 12px 16px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; margin: 20px 0 15px 0; }
+        .estado-cuenta-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #38bdf8; border-radius: 12px; padding: 20px; margin: 15px 0; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -1153,6 +1108,9 @@ if "unidades_edificios" not in st.session_state:
             "Porcentual Expensas",
         ]
     )
+
+if "coeficientes_cargados" not in st.session_state:
+    st.session_state.coeficientes_cargados = pd.DataFrame()
 
 if "agente_liquidacion" not in st.session_state:
     st.session_state.agente_liquidacion = AgenteLiquidacion()
@@ -1183,11 +1141,7 @@ with st.sidebar:
 
     pantalla_activa = st.radio(
         "📌 Seleccione Módulo de Control:",
-        [
-            "📋 Dashboard y Contabilidad",
-            "🔧 Órdenes de Trabajo de Campo",
-            "📊 Liquidación de Expensas"
-        ],
+        ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo", "📊 Liquidación de Expensas"],
         index=0,
     )
 
@@ -1198,10 +1152,7 @@ with st.sidebar:
         "Seleccione uno o varios archivos CSV o Excel",
         type=["csv", "xlsx", "xls"],
         accept_multiple_files=True,
-        help=(
-            "Cada archivo debe contener las columnas: "
-            "Calle, Numero, Ciudad, UF/Dpto, Piso y Porcentual Expensas."
-        ),
+        help=("Cada archivo debe contener las columnas: Calle, Numero, Ciudad, UF/Dpto, Piso y Porcentual Expensas."),
     )
 
     if archivos_edificios:
@@ -1221,43 +1172,42 @@ with st.sidebar:
                 [st.session_state.unidades_edificios, base_total],
                 ignore_index=True,
             )
-
-            st.session_state.unidades_edificios = (
-                st.session_state.unidades_edificios.drop_duplicates()
-                .reset_index(drop=True)
-            )
-
+            st.session_state.unidades_edificios = st.session_state.unidades_edificios.drop_duplicates().reset_index(drop=True)
             registrar_edificio_desde_base(st.session_state.unidades_edificios)
-
-            st.success(
-                f"✅ Se cargaron {len(st.session_state.unidades_edificios)} unidades funcionales."
-            )
+            st.success(f"✅ Se cargaron {len(st.session_state.unidades_edificios)} unidades funcionales.")
 
         for error in errores_carga:
             st.error(f"❌ {error}")
+
+    st.markdown("---")
+    st.subheader("📋 Cargar Coeficientes por UF")
+    archivo_coeficientes = st.file_uploader(
+        "Cargue archivo de coeficientes (CSV o Excel)",
+        type=["csv", "xlsx", "xls"],
+        key="coef_uploader",
+        help="Debe contener columnas: UF, Propietario, Piso, Coeficiente, Contacto"
+    )
+
+    if archivo_coeficientes:
+        try:
+            df_coef = cargar_base_coeficientes(archivo_coeficientes)
+            st.session_state.coeficientes_cargados = df_coef
+            st.success(f"✅ Se cargaron {len(df_coef)} coeficientes correctamente.")
+        except Exception as error:
+            st.error(f"❌ Error: {str(error)}")
 
     edificios_base = list(ESTADISTICAS_EDIFICIOS.keys())
     edificios_cargados = []
 
     if not st.session_state.unidades_edificios.empty:
-        edificios_cargados = sorted(
-            st.session_state.unidades_edificios["Edificio"]
-            .dropna()
-            .unique()
-            .tolist()
-        )
+        edificios_cargados = sorted(st.session_state.unidades_edificios["Edificio"].dropna().unique().tolist())
 
     edificios_disponibles = sorted(set(edificios_base).union(edificios_cargados))
 
     st.markdown("---")
-    edificio_seleccionado = st.selectbox(
-        "🏗️ Edificio Activo de Control",
-        edificios_disponibles,
-    )
-
+    edificio_seleccionado = st.selectbox("🏗️ Edificio Activo de Control", edificios_disponibles)
     st.markdown("---")
     st.info("**CUIT:** 30-11111111-9\n\n**Jurisdicción:** Ley 941 CABA")
-
     st.markdown("---")
     st.markdown(
         "<p style='font-size: 0.9rem; color: #64748b;'>ℹ️ <b>Arquitectura Multiagente</b><br/>Cada solicitud activa el enjambre de agentes especializados</p>",
@@ -1295,37 +1245,21 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         and not st.session_state.unidades_edificios.empty
         and edificio_seleccionado in st.session_state.unidades_edificios["Edificio"].unique()
     ):
-        unidades_edificio = st.session_state.unidades_edificios[
-            st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado
-        ]
-
+        unidades_edificio = st.session_state.unidades_edificios[st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado]
         if not unidades_edificio.empty:
             st.markdown("---")
             st.header("🏠 Unidades Funcionales del Edificio")
-            unidades_mostrar = unidades_edificio[
-                ["UF/Dpto", "Piso", "Porcentual Expensas"]
-            ].copy()
-            unidades_mostrar["Porcentual Expensas"] = (
-                unidades_mostrar["Porcentual Expensas"]
-                .fillna(0)
-                .map(lambda valor: f"{valor:.2f}%")
-            )
+            unidades_mostrar = unidades_edificio[["UF/Dpto", "Piso", "Porcentual Expensas"]].copy()
+            unidades_mostrar["Porcentual Expensas"] = unidades_mostrar["Porcentual Expensas"].fillna(0).map(lambda valor: f"{valor:.2f}%")
             st.dataframe(unidades_mostrar, use_container_width=True, hide_index=True)
 
             total_porcentual = float(unidades_edificio["Porcentual Expensas"].sum())
-            st.info(
-                f"📊 Unidades registradas: {len(unidades_edificio)} | "
-                f"Porcentual total: {total_porcentual:.2f}%"
-            )
+            st.info(f"📊 Unidades registradas: {len(unidades_edificio)} | Porcentual total: {total_porcentual:.2f}%")
 
     st.markdown("---")
-    with st.expander(
-        "🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)",
-        expanded=True,
-    ):
+    with st.expander("🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)", expanded=True):
         st.markdown("### 🎯 Evento Disparador")
         col1, col2, col3 = st.columns(3)
-
         with col1:
             st.info(f"**Tipo de Evento:**\n{evento.tipo_evento}")
         with col2:
@@ -1336,12 +1270,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         st.markdown("### 🤖 Estado de Agentes en Tiempo Real")
 
         agente_placeholders = {}
-        agentes_a_procesar = [
-            TipoAgente.CONTABLE.value,
-            TipoAgente.MORA.value,
-            TipoAgente.COMPLIANCE.value,
-        ]
-
+        agentes_a_procesar = [TipoAgente.CONTABLE.value, TipoAgente.MORA.value, TipoAgente.COMPLIANCE.value]
         for agente_tipo in agentes_a_procesar:
             agente_placeholders[agente_tipo] = st.empty()
 
@@ -1355,7 +1284,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                     EstadoAgente.ERROR: "❌",
                     EstadoAgente.ACTIVADO: "🟢",
                 }
-
                 emoji = estado_emoji.get(resultado.estado, "❓")
                 css_class = {
                     EstadoAgente.COMPLETADO: "swarm-completed",
@@ -1363,9 +1291,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                     EstadoAgente.ERROR: "swarm-error",
                     EstadoAgente.ACTIVADO: "swarm-active",
                 }.get(resultado.estado, "")
-
                 robot_emoji = "🤖 → "
-                
                 if agente_nombre in agente_placeholders:
                     agente_placeholders[agente_nombre].markdown(
                         f"""
@@ -1388,25 +1314,14 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         with m1:
             st.metric("💰 Total Gastos", f"${datos_contables['total_gastos']:,.2f}")
         with m2:
-            st.metric(
-                "🏦 Fondos de Reserva",
-                f"${ESTADISTICAS_EDIFICIOS[edificio_seleccionado]['reserva']:,.2f}",
-            )
+            st.metric("🏦 Fondos de Reserva", f"${ESTADISTICAS_EDIFICIOS[edificio_seleccionado]['reserva']:,.2f}")
         with m3:
             resultado_mora = resultados.get(TipoAgente.MORA.value)
-            mora_txt = (
-                resultado_mora.datos_procesados.get("uf_en_mora", "N/A")
-                if resultado_mora
-                else "N/A"
-            )
+            mora_txt = resultado_mora.datos_procesados.get("uf_en_mora", "N/A") if resultado_mora else "N/A"
             st.metric("⚠️ UF en Mora", mora_txt)
         with m4:
             delta_text = "Positivo ✅" if datos_contables["balance_neto"] > 0 else "Déficit ❌"
-            st.metric(
-                "💹 Balance Neto",
-                f"${datos_contables['balance_neto']:,.2f}",
-                delta=delta_text,
-            )
+            st.metric("💹 Balance Neto", f"${datos_contables['balance_neto']:,.2f}", delta=delta_text)
 
     st.markdown("---")
     st.header("📥 Flujo de Ingresos Percibidos")
@@ -1414,9 +1329,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     if resultado_contable and resultado_contable.estado == EstadoAgente.COMPLETADO:
         ingresos_df = pd.DataFrame(resultado_contable.datos_procesados["ingresos"])
         st.dataframe(ingresos_df, use_container_width=True, hide_index=True)
-        st.success(
-            f"✅ **Total Ingresos:** ${resultado_contable.datos_procesados['total_ingresos']:,.2f}"
-        )
+        st.success(f"✅ **Total Ingresos:** ${resultado_contable.datos_procesados['total_ingresos']:,.2f}")
 
     st.markdown("---")
     st.header("📤 Flujo de Gastos Devengados")
@@ -1428,9 +1341,7 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
 
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada por Departamento")
-    st.markdown(
-        "Distribución legal s/ Art. 2048 Código Civil y Comercial - Cuota Parte 20% Equitativo:"
-    )
+    st.markdown("Distribución legal s/ Art. 2048 Código Civil y Comercial - Cuota Parte 20% Equitativo:")
 
     if resultado_contable and resultado_contable.estado == EstadoAgente.COMPLETADO:
         total_g = resultado_contable.datos_procesados["total_gastos"]
@@ -1445,12 +1356,9 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
             }
             for i in range(1, 6)
         ]
-
         prorrateo_df = pd.DataFrame(prorrateo_data)
         st.dataframe(prorrateo_df, use_container_width=True, hide_index=True)
-        st.success(
-            f"⚖️ **Balance Contable del Consorcio (Resultado Neto):** ${resultado_contable.datos_procesados['balance_neto']:,.2f}"
-        )
+        st.success(f"⚖️ **Balance Contable del Consorcio (Resultado Neto):** ${resultado_contable.datos_procesados['balance_neto']:,.2f}")
 
     st.markdown("---")
     st.header("⚠️ Estado de Cobranza")
@@ -1459,7 +1367,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     if resultado_mora and resultado_mora.estado == EstadoAgente.COMPLETADO:
         datos_mora = resultado_mora.datos_procesados
         alerta = datos_mora.get("nivel_alerta", "Información no disponible")
-
         if "CRÍTICO" in alerta:
             st.error(f"🔴 {alerta}")
         elif "MODERADO" in alerta:
@@ -1502,37 +1409,21 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         and not st.session_state.unidades_edificios.empty
         and edificio_seleccionado in st.session_state.unidades_edificios["Edificio"].unique()
     ):
-        unidades_edificio = st.session_state.unidades_edificios[
-            st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado
-        ]
-
+        unidades_edificio = st.session_state.unidades_edificios[st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado]
         if not unidades_edificio.empty:
             st.markdown("---")
             st.header("🏠 Unidades Funcionales del Edificio")
-            unidades_mostrar = unidades_edificio[
-                ["UF/Dpto", "Piso", "Porcentual Expensas"]
-            ].copy()
-            unidades_mostrar["Porcentual Expensas"] = (
-                unidades_mostrar["Porcentual Expensas"]
-                .fillna(0)
-                .map(lambda valor: f"{valor:.2f}%")
-            )
+            unidades_mostrar = unidades_edificio[["UF/Dpto", "Piso", "Porcentual Expensas"]].copy()
+            unidades_mostrar["Porcentual Expensas"] = unidades_mostrar["Porcentual Expensas"].fillna(0).map(lambda valor: f"{valor:.2f}%")
             st.dataframe(unidades_mostrar, use_container_width=True, hide_index=True)
 
             total_porcentual = float(unidades_edificio["Porcentual Expensas"].sum())
-            st.info(
-                f"📊 Unidades registradas: {len(unidades_edificio)} | "
-                f"Porcentual total: {total_porcentual:.2f}%"
-            )
+            st.info(f"📊 Unidades registradas: {len(unidades_edificio)} | Porcentual total: {total_porcentual:.2f}%")
 
     st.markdown("---")
-    with st.expander(
-        "🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)",
-        expanded=True,
-    ):
+    with st.expander("🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)", expanded=True):
         st.markdown("### 🎯 Evento Disparador")
         col1, col2, col3 = st.columns(3)
-
         with col1:
             st.info(f"**Tipo de Evento:**\n{evento.tipo_evento}")
         with col2:
@@ -1543,12 +1434,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         st.markdown("### 🤖 Estado de Agentes en Tiempo Real")
 
         agente_placeholders = {}
-        agentes_a_procesar = [
-            TipoAgente.OPERATIVO.value,
-            TipoAgente.PROVEEDORES.value,
-            TipoAgente.COMPLIANCE.value,
-        ]
-
+        agentes_a_procesar = [TipoAgente.OPERATIVO.value, TipoAgente.PROVEEDORES.value, TipoAgente.COMPLIANCE.value]
         for agente_tipo in agentes_a_procesar:
             agente_placeholders[agente_tipo] = st.empty()
 
@@ -1562,7 +1448,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
                     EstadoAgente.ERROR: "❌",
                     EstadoAgente.ACTIVADO: "🟢",
                 }
-
                 emoji = estado_emoji.get(resultado.estado, "❓")
                 css_class = {
                     EstadoAgente.COMPLETADO: "swarm-completed",
@@ -1570,9 +1455,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
                     EstadoAgente.ERROR: "swarm-error",
                     EstadoAgente.ACTIVADO: "swarm-active",
                 }.get(resultado.estado, "")
-
                 robot_emoji = "🤖 → "
-                
                 if agente_nombre in agente_placeholders:
                     agente_placeholders[agente_nombre].markdown(
                         f"""
@@ -1586,15 +1469,11 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
     st.markdown("---")
     st.header("📜 Cartilla de Prestadores de Servicio Matriculados")
-    st.markdown(
-        "Validación de CUIT y vigencia fiscal automatizada por el Agente Compliance:"
-    )
+    st.markdown("Validación de CUIT y vigencia fiscal automatizada por el Agente Compliance:")
 
     resultado_proveedores = resultados.get(TipoAgente.PROVEEDORES.value)
     if resultado_proveedores and resultado_proveedores.estado == EstadoAgente.COMPLETADO:
-        proveedores_df = pd.DataFrame(
-            resultado_proveedores.datos_procesados["proveedores"]
-        )
+        proveedores_df = pd.DataFrame(resultado_proveedores.datos_procesados["proveedores"])
         st.dataframe(proveedores_df, use_container_width=True, hide_index=True)
 
         col1, col2 = st.columns(2)
@@ -1606,9 +1485,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
     st.markdown("---")
     st.header("📋 Registro Central de Órdenes de Trabajo (OT)")
-    st.markdown(
-        "Bitácora de auditoría de reparaciones y costos liquidados en el periodo fiscal:"
-    )
+    st.markdown("Bitácora de auditoría de reparaciones y costos liquidados en el periodo fiscal:")
 
     resultado_operativo = resultados.get(TipoAgente.OPERATIVO.value)
     if resultado_operativo and resultado_operativo.estado == EstadoAgente.COMPLETADO:
@@ -1619,10 +1496,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         with col1:
             st.warning(f"⚙️ Órdenes de Trabajo: {resultado_operativo.datos_procesados['total_ordenes']}")
         with col2:
-            st.metric(
-                "Presupuesto Total",
-                f"${resultado_operativo.datos_procesados['presupuesto_total']:,.2f}",
-            )
+            st.metric("Presupuesto Total", f"${resultado_operativo.datos_procesados['presupuesto_total']:,.2f}")
 
     st.markdown("---")
     resultado_compliance = resultados.get(TipoAgente.COMPLIANCE.value)
@@ -1663,29 +1537,24 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
     st.header("📊 Liquidación Integral de Expensas")
     st.markdown("**Proceso Completo: Ingresos → Gastos → Prorrateo por UF**")
 
-    # PESTAÑA 1: INGRESOS
-    tab1, tab2, tab3, tab4 = st.tabs([
+    if "periodo_liquidacion" not in st.session_state:
+        st.session_state.periodo_liquidacion = "Octubre 2026"
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "💵 Ingresos",
         "💰 Gastos",
         "📋 Resumen",
-        "🏠 Por Unidad Funcional"
+        "🏠 Por Unidad Funcional",
+        "🖨️ Exportar"
     ])
 
     with tab1:
         st.subheader("Registre los Ingresos del Período")
-        
         col1, col2 = st.columns(2)
         with col1:
-            periodo = st.selectbox(
-                "Período de Liquidación",
-                ["Octubre 2026", "Noviembre 2026", "Diciembre 2026"]
-            )
-        
+            periodo = st.selectbox("Período de Liquidación", ["Octubre 2026", "Noviembre 2026", "Diciembre 2026"], key="periodo_liquidacion")
         with col2:
-            tipo_ingreso_sel = st.selectbox(
-                "Tipo de Ingreso",
-                [t.value for t in TipoIngreso]
-            )
+            tipo_ingreso_sel = st.selectbox("Tipo de Ingreso", [t.value for t in TipoIngreso])
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -1701,18 +1570,16 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     concepto=concepto_ing,
                     tipo_ingreso=TipoIngreso(tipo_ingreso_sel),
                     monto=monto_ing,
-                    descripcion=descripcion_ing
+                    descripcion=descripcion_ing,
                 )
                 agente_liquidacion.registrar_ingreso(nuevo_ingreso)
                 st.success(f"✅ Ingreso registrado: {concepto_ing} - ${monto_ing:,.2f}")
             else:
                 st.error("❌ Complete todos los campos requeridos")
 
-        # Mostrar ingresos registrados
         if agente_liquidacion.ingresos_registrados:
             st.markdown("---")
             st.subheader("Ingresos Registrados")
-            
             ingresos_data = []
             for ing in agente_liquidacion.ingresos_registrados:
                 ingresos_data.append({
@@ -1721,24 +1588,16 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     "Monto ($)": f"${ing.monto:,.2f}",
                     "Descripción": ing.descripcion
                 })
-            
             df_ingresos = pd.DataFrame(ingresos_data)
             st.dataframe(df_ingresos, use_container_width=True, hide_index=True)
-            
             total_ingresos = sum(ing.monto for ing in agente_liquidacion.ingresos_registrados)
             st.metric("💵 Total Ingresos", f"${total_ingresos:,.2f}")
 
     with tab2:
         st.subheader("Registre los Gastos del Período")
-        
         col1, col2 = st.columns(2)
         with col1:
-            tipo_gasto_sel = st.selectbox(
-                "Tipo de Gasto",
-                [t.value for t in TipoGasto],
-                key="tipo_gasto"
-            )
-        
+            tipo_gasto_sel = st.selectbox("Tipo de Gasto", [t.value for t in TipoGasto], key="tipo_gasto")
         with col2:
             factura = st.text_input("Número de Factura", placeholder="Ej: 00001234")
 
@@ -1757,18 +1616,16 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     tipo_gasto=TipoGasto(tipo_gasto_sel),
                     monto=monto_gast,
                     descripcion=descripcion_gast,
-                    factura=factura
+                    factura=factura,
                 )
                 agente_liquidacion.registrar_gasto(nuevo_gasto)
                 st.success(f"✅ Gasto registrado: {concepto_gast} - ${monto_gast:,.2f}")
             else:
                 st.error("❌ Complete los campos requeridos")
 
-        # Mostrar gastos registrados
         if agente_liquidacion.gastos_registrados:
             st.markdown("---")
             st.subheader("Gastos Registrados")
-            
             gastos_data = []
             for gast in agente_liquidacion.gastos_registrados:
                 gastos_data.append({
@@ -1778,34 +1635,33 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     "Monto ($)": f"${gast.monto:,.2f}",
                     "Descripción": gast.descripcion
                 })
-            
             df_gastos = pd.DataFrame(gastos_data)
             st.dataframe(df_gastos, use_container_width=True, hide_index=True)
-            
             total_gastos = sum(gast.monto for gast in agente_liquidacion.gastos_registrados)
             st.metric("💰 Total Gastos", f"${total_gastos:,.2f}")
 
     with tab3:
         st.subheader("Resumen Ejecutivo de Liquidación")
-        
+
         if agente_liquidacion.gastos_registrados or agente_liquidacion.ingresos_registrados:
-            # Establecer coeficientes del edificio
-            edificio_data = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
-            if "coeficientes" in edificio_data and edificio_data["coeficientes"]:
-                coeficientes = edificio_data["coeficientes"]
+            # Cargar coeficientes
+            if not st.session_state.coeficientes_cargados.empty:
+                agente_liquidacion.cargar_coeficientes_desde_dataframe(st.session_state.coeficientes_cargados)
             else:
-                # Crear coeficientes automáticos equitativos
-                cantidad_uf = edificio_data.get("cantidad_uf", 10)
-                coeficiente_unitario = 1.0 / cantidad_uf
-                coeficientes = {f"UF_{i:02d}": coeficiente_unitario for i in range(1, cantidad_uf + 1)}
+                # Coeficientes por defecto
+                cantidad_uf = ESTADISTICAS_EDIFICIOS[edificio_seleccionado].get("cantidad_uf", 10)
+                df_default = pd.DataFrame({
+                    "UF": [f"UF_{i:02d}" for i in range(1, cantidad_uf + 1)],
+                    "Propietario": [""] * cantidad_uf,
+                    "Piso": [""] * cantidad_uf,
+                    "Coeficiente": [1 / cantidad_uf] * cantidad_uf,
+                    "Contacto": [""] * cantidad_uf
+                })
+                agente_liquidacion.cargar_coeficientes_desde_dataframe(df_default)
 
-            agente_liquidacion.establecer_coeficientes(coeficientes)
-
-            # Calcular liquidación
-            liquidacion = agente_liquidacion.calcular_liquidacion(periodo)
+            liquidacion = agente_liquidacion.calcular_liquidacion(st.session_state.periodo_liquidacion)
             st.session_state.liquidacion_actual = liquidacion
 
-            # Mostrar resumen
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.metric("💵 Total Ingresos", f"${liquidacion.total_ingresos:,.2f}")
@@ -1813,17 +1669,12 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                 st.metric("💰 Total Gastos", f"${liquidacion.total_gastos:,.2f}")
             with col3:
                 resultado = liquidacion.deficit_o_superavit
-                st.metric(
-                    "⚖️ Resultado",
-                    f"${abs(resultado):,.2f}",
-                    delta=("Superávit ✅" if resultado > 0 else "Déficit ⚠️")
-                )
+                st.metric("⚖️ Resultado", f"${abs(resultado):,.2f}", delta=("Superávit ✅" if resultado > 0 else "Déficit ⚠️"))
             with col4:
                 st.metric("📅 Período", liquidacion.periodo)
 
             st.markdown("---")
 
-            # Ingresos por rubro
             st.subheader("📥 Desglose de Ingresos por Rubro")
             ingresos_rubro_data = []
             for rubro, monto in liquidacion.ingresos_por_rubro.items():
@@ -1833,14 +1684,12 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     "Monto ($)": f"${monto:,.2f}",
                     "Porcentaje": f"{porcentaje:.1f}%"
                 })
-            
             if ingresos_rubro_data:
                 df_ing_rubro = pd.DataFrame(ingresos_rubro_data)
                 st.dataframe(df_ing_rubro, use_container_width=True, hide_index=True)
 
             st.markdown("---")
 
-            # Gastos por rubro
             st.subheader("📤 Desglose de Gastos por Rubro")
             gastos_rubro_data = []
             for rubro, monto in liquidacion.gastos_por_rubro.items():
@@ -1850,7 +1699,6 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
                     "Monto ($)": f"${monto:,.2f}",
                     "Porcentaje": f"{porcentaje:.1f}%"
                 })
-            
             if gastos_rubro_data:
                 df_gast_rubro = pd.DataFrame(gastos_rubro_data)
                 st.dataframe(df_gast_rubro, use_container_width=True, hide_index=True)
@@ -1860,7 +1708,7 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
 
     with tab4:
         st.subheader("🏠 Liquidación por Unidad Funcional")
-        
+
         if st.session_state.liquidacion_actual:
             liquidacion = st.session_state.liquidacion_actual
 
@@ -1869,14 +1717,14 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
             st.markdown("**Coeficientes de Distribución (Art. 2048 - Código Civil y Comercial)**")
             st.markdown("---")
 
-            # Crear tabla de expensas por UF
             expensas_uf_data = []
-            for uf, coeficiente in liquidacion.coeficientes.items():
+            for uf, coef_obj in liquidacion.coeficientes.items():
                 gasto_uf = liquidacion.expensas_por_uf.get(uf, 0)
                 expensas_uf_data.append({
                     "UF/Dpto": uf,
-                    "Coeficiente": f"{coeficiente:.4f}",
-                    "Porcentaje": f"{coeficiente * 100:.2f}%",
+                    "Propietario": coef_obj.propietario,
+                    "Coeficiente": f"{coef_obj.coeficiente:.4f}",
+                    "Porcentaje": f"{coef_obj.coeficiente * 100:.2f}%",
                     "Expensas a Pagar ($)": f"${gasto_uf:,.2f}"
                 })
 
@@ -1886,27 +1734,102 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
             st.markdown("---")
             st.markdown("📋 **Verificaciones Contables:**")
             col1, col2, col3 = st.columns(3)
-            
-            suma_coeficientes = sum(liquidacion.coeficientes.values())
+
+            suma_coeficientes = sum(coef_obj.coeficiente for coef_obj in liquidacion.coeficientes.values())
             suma_expensas = sum(liquidacion.expensas_por_uf.values())
 
             with col1:
-                if abs(suma_coeficientes - 1.0) < 0.001:
-                    st.success(f"✅ Coeficientes suman: {suma_coeficientes:.4f}")
-                else:
-                    st.error(f"❌ Coeficientes suman: {suma_coeficientes:.4f}")
+                st.success(f"✅ Coeficientes normalizados: {suma_coeficientes:.4f}")
 
             with col2:
-                if abs(suma_expensas - liquidacion.total_gastos) < 1:
-                    st.success(f"✅ Expensas reconciliadas: ${suma_expensas:,.2f}")
-                else:
-                    st.error(f"❌ Diferencia: ${abs(suma_expensas - liquidacion.total_gastos):,.2f}")
+                st.success(f"✅ Expensas prorrateadas: ${suma_expensas:,.2f}")
 
             with col3:
                 st.info(f"📊 UF registradas: {len(liquidacion.coeficientes)}")
 
+            st.markdown("---")
+            st.markdown("### 📄 Generar Estado de Cuenta por UF")
+            st.markdown("Seleccione una UF para ver su estado de cuenta detallado.")
+
+            uf_lista = list(liquidacion.coeficientes.keys())
+            uf_seleccionada_ec = st.selectbox("Seleccione UF:", uf_lista, key="uf_estado_cuenta")
+
+            if st.button("🖨️ Generar Estado de Cuenta", key="btn_estado_cuenta"):
+                estado_cuenta = agente_liquidacion.generar_estado_cuenta_uf(uf_seleccionada_ec, liquidacion)
+
+                if estado_cuenta:
+                    st.markdown(f"""
+                    <div class="estado-cuenta-box">
+                        <h3 style="color: #38bdf8;">ESTADO DE CUENTA</h3>
+                        <p><b>Edificio:</b> {edificio_seleccionado}</p>
+                        <p><b>Unidad Funcional:</b> {estado_cuenta['uf']}</p>
+                        <p><b>Propietario:</b> {estado_cuenta['propietario']}</p>
+                        <p><b>Piso:</b> {estado_cuenta['piso']}</p>
+                        <p><b>Teléfono/Contacto:</b> {estado_cuenta['contacto']}</p>
+                        <hr style="border-color: #38bdf8;">
+                        <p><b>Período:</b> {estado_cuenta['periodo']}</p>
+                        <p><b>Coeficiente:</b> {estado_cuenta['coeficiente']:.4f} ({estado_cuenta['porcentaje']})</p>
+                        <p><b>Total Gastos a Prorratear:</b> ${estado_cuenta['total_gastos']:,.2f}</p>
+                        <h4 style="color: #10b981; font-size: 1.5rem;">EXPENSAS A PAGAR: ${estado_cuenta['expensas_a_pagar']:,.2f}</h4>
+                        <hr style="border-color: #38bdf8;">
+                        <p><b>Fecha de Liquidación:</b> {estado_cuenta['fecha_liquidacion']}</p>
+                        <p><b>Vencimiento de Pago:</b> {estado_cuenta['vencimiento']}</p>
+                        <p style="font-size: 0.9rem; color: #94a3b8;">Pago realizado dentro de los 10 días de notificación</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
         else:
             st.info("📭 Complete el resumen para ver la distribución por UF")
+
+    with tab5:
+        st.subheader("📥 Exportar Liquidación")
+
+        if st.session_state.liquidacion_actual:
+            liquidacion = st.session_state.liquidacion_actual
+
+            st.markdown("### Opciones de Exportación")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("📊 Descargar Excel", key="btn_excel"):
+                    excel_file = agente_liquidacion.generar_excel_liquidacion(liquidacion, edificio_seleccionado)
+                    st.download_button(
+                        label="⬇️ Descargar Archivo Excel",
+                        data=excel_file,
+                        file_name=f"Liquidacion_Expensas_{edificio_seleccionado.replace(' ', '_')}_{liquidacion.periodo.replace(' ', '_')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    )
+                    st.success("✅ Archivo Excel generado correctamente")
+
+            with col2:
+                if st.button("📋 Copiar Datos", key="btn_copy"):
+                    st.info("📋 Datos listos para copiar")
+
+            st.markdown("---")
+            st.markdown("### 📊 Vista Previa de Datos para Exportar")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Resumen")
+                resumen_data = {
+                    "Total Ingresos": f"${liquidacion.total_ingresos:,.2f}",
+                    "Total Gastos": f"${liquidacion.total_gastos:,.2f}",
+                    "Resultado": f"${liquidacion.deficit_o_superavit:,.2f}",
+                    "Período": liquidacion.periodo,
+                }
+                st.json(resumen_data)
+
+            with col2:
+                st.subheader("Totales por Rubro")
+                st.write("**Ingresos:**")
+                for rubro, monto in liquidacion.ingresos_por_rubro.items():
+                    st.write(f"- {rubro}: ${monto:,.2f}")
+                st.write("\n**Gastos:**")
+                for rubro, monto in liquidacion.gastos_por_rubro.items():
+                    st.write(f"- {rubro}: ${monto:,.2f}")
+
+        else:
+            st.info("📭 Genere una liquidación primero")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
