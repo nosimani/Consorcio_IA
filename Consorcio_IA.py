@@ -883,9 +883,7 @@ class OrquestadorSwarm:
             )
 
         elif evento.tipo_evento == "MODULO_COBROS":
-            self.resultados_enjambre[TipoAgente.TESORERIA.value] = {
-                "tesoreria_lista": True
-            }
+            pass
 
         self.resultados_enjambre[TipoAgente.AUDITOR.value] = (
             self.enjambre[TipoAgente.AUDITOR].procesar(evento, self.resultados_enjambre)
@@ -1129,7 +1127,7 @@ if "pagos_registrados" not in st.session_state:
     st.session_state.pagos_registrados = []
 
 orquestador = st.session_state.orquestador
-agente_tesoreria = st.session_state.orquestador.enjambre[TipoAgente.TESORERIA]
+agente_tesoreria = orquestador.enjambre[TipoAgente.TESORERIA]
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -1761,14 +1759,11 @@ elif pantalla_activa == "💰 Ingreso de Cobros":
             # Preparar datos para la tabla
             datos_tabla = []
             for pago in pagos_edificio:
-                # Determinar color según forma de pago
-                forma_pago_display = pago.forma_pago
-                
                 datos_tabla.append({
                     "Fecha": pago.fecha,
                     "UF/Dpto": pago.uf_dpto,
                     "Importe ($)": f"${pago.importe:,.2f}",
-                    "Forma de Pago": forma_pago_display,
+                    "Forma de Pago": pago.forma_pago,
                     "Referencia": pago.referencia,
                     "Estado": pago.estado,
                 })
@@ -1794,7 +1789,7 @@ elif pantalla_activa == "💰 Ingreso de Cobros":
                 st.metric("💰 Total Cobrado", f"${total_cobrado:,.2f}")
             
             with col2:
-                st.metric("📊 Total de Pagos", cantidad_cobrado)
+                st.metric("📊 Total de Pagos", cantidad_pagos)
             
             with col3:
                 promedio_pago = total_cobrado / cantidad_pagos if cantidad_pagos > 0 else 0
