@@ -85,6 +85,26 @@ class EstadoAgente(Enum):
     ERROR = "🔴 Error"
 
 
+class TipoGasto(Enum):
+    """Clasificación de gastos por rubro"""
+    SERVICIOS_BASICOS = "Servicios Básicos"
+    PERSONAL = "Personal y Cargas Sociales"
+    MANTENIMIENTO = "Mantenimiento y Reparaciones"
+    LIMPIEZA = "Limpieza y Desinfección"
+    SEGUROS = "Seguros y Seguridad"
+    ADMINISTRACION = "Administración"
+    PROVISIONES = "Provisiones y Fondos"
+    OTROS = "Otros Gastos"
+
+
+class TipoIngreso(Enum):
+    """Clasificación de ingresos"""
+    EXPENSAS = "Expensas Cobradas"
+    SERVICIOS = "Ingresos por Servicios"
+    FINANCIEROS = "Ingresos Financieros"
+    OTROS = "Otros Ingresos"
+
+
 @dataclass
 class EventoSwarm:
     """Evento que dispara el enjambre - el 'qué' solicita el usuario"""
@@ -105,6 +125,39 @@ class ResultadoAgente:
     dependencias_cumplidas: List[str]
 
 
+@dataclass
+class RegistroGasto:
+    """Registro de un gasto del consorcio"""
+    concepto: str
+    tipo_gasto: TipoGasto
+    monto: float
+    descripcion: str = ""
+    factura: str = ""
+
+
+@dataclass
+class RegistroIngreso:
+    """Registro de un ingreso del consorcio"""
+    concepto: str
+    tipo_ingreso: TipoIngreso
+    monto: float
+    descripcion: str = ""
+
+
+@dataclass
+class LiquidacionExpensas:
+    """Liquidación completa de expensas del período"""
+    periodo: str
+    fecha_liquidacion: str
+    total_ingresos: float
+    total_gastos: float
+    deficit_o_superavit: float
+    gastos_por_rubro: Dict[str, float]
+    ingresos_por_rubro: Dict[str, float]
+    coeficientes: Dict[str, float]
+    expensas_por_uf: Dict[str, float]
+
+
 # ════════════════════════════════════════════════════════════════════════════════
 # 2. BASE DE DATOS GLOBAL (INMUTABLE)
 # ════════════════════════════════════════════════════════════════════════════════
@@ -115,35 +168,53 @@ ESTADISTICAS_EDIFICIOS = {
         "factor": 1.0,
         "mora": "1",
         "tasa": 4.5,
-        "ots": "5"
+        "ots": "5",
+        "cantidad_uf": 50,
+        "coeficientes": {
+            "1A": 0.024, "1B": 0.017, "2A": 0.026, "2B": 0.018,
+            "3A": 0.026, "3B": 0.020, "4A": 0.025, "4B": 0.019,
+            "5A": 0.030, "5B": 0.022,
+        }
     },
     "Larrea 435, CABA": {
         "reserva": 380000.0,
         "factor": 0.6,
         "mora": "2",
         "tasa": 5.0,
-        "ots": "5"
+        "ots": "5",
+        "cantidad_uf": 30,
+        "coeficientes": {
+            "1A": 0.035, "1B": 0.025, "2A": 0.036, "2B": 0.026,
+            "3A": 0.036, "3B": 0.028, "4A": 0.035, "4B": 0.027,
+            "5A": 0.038, "5B": 0.034,
+        }
     },
     "Montevideo 891, CABA": {
         "reserva": 620000.0,
         "factor": 0.8,
         "mora": "2",
         "tasa": 6.2,
-        "ots": "5"
+        "ots": "5",
+        "cantidad_uf": 40,
+        "coeficientes": {}
     },
     "San Jose 1111, CABA": {
         "reserva": 290000.0,
         "factor": 0.5,
         "mora": "1",
         "tasa": 3.8,
-        "ots": "5"
+        "ots": "5",
+        "cantidad_uf": 25,
+        "coeficientes": {}
     },
     "Guayaquil 399, CABA": {
         "reserva": 850000.0,
         "factor": 1.5,
         "mora": "1",
         "tasa": 7.5,
-        "ots": "5"
+        "ots": "5",
+        "cantidad_uf": 60,
+        "coeficientes": {}
     }
 }
 
@@ -358,6 +429,109 @@ def registrar_edificio_desde_base(df: pd.DataFrame):
             "mora": "1" if promedio_expensas > 20 else "0",
             "tasa": round(4.0 + (promedio_expensas / 10.0), 1),
             "ots": str(min(5, max(1, total_unidades // 2))),
+            "cantidad_uf": total_unidades,
+            "coeficientes": {}
+        }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# PROCESO COMPLETO DE LIQUIDACIÓN DE EXPENSAS
+# ════════════════════════════════════════════════════════════════════════════════
+
+class AgenteLiquidacion:
+    """💰 Especialista en liquidación integral de expensas"""
+
+    def __init__(self):
+        self.gastos_registrados: List[RegistroGasto] = []
+        self.ingresos_registrados: List[RegistroIngreso] = []
+        self.coeficientes_uf: Dict[str, float] = {}
+        self.estado = EstadoAgente.INACTIVO
+
+    def activar(self):
+        self.estado = EstadoAgente.ACTIVADO
+
+    def registrar_gasto(self, gasto: RegistroGasto):
+        """Registra un gasto del período"""
+        self.gastos_registrados.append(gasto)
+
+    def registrar_ingreso(self, ingreso: RegistroIngreso):
+        """Registra un ingreso del período"""
+        self.ingresos_registrados.append(ingreso)
+
+    def establecer_coeficientes(self, coeficientes: Dict[str, float]):
+        """Establece los coeficientes de prorrateo por UF"""
+        self.coeficientes_uf = coeficientes
+        
+        # Validar que sumen 1.00
+        total_coef = sum(coeficientes.values())
+        if abs(total_coef - 1.0) > 0.001:
+            raise ValueError(f"Coeficientes no suman 1.00. Total: {total_coef}")
+
+    def calcular_liquidacion(self, periodo: str) -> LiquidacionExpensas:
+        """Calcula la liquidación completa del período"""
+        self.activar()
+        self.estado = EstadoAgente.PROCESANDO
+
+        # Calcular totales por rubro
+        gastos_por_rubro = {}
+        for gasto in self.gastos_registrados:
+            rubro = gasto.tipo_gasto.value
+            if rubro not in gastos_por_rubro:
+                gastos_por_rubro[rubro] = 0.0
+            gastos_por_rubro[rubro] += gasto.monto
+
+        ingresos_por_rubro = {}
+        for ingreso in self.ingresos_registrados:
+            rubro = ingreso.tipo_ingreso.value
+            if rubro not in ingresos_por_rubro:
+                ingresos_por_rubro[rubro] = 0.0
+            ingresos_por_rubro[rubro] += ingreso.monto
+
+        # Totales
+        total_gastos = sum(gastos_por_rubro.values())
+        total_ingresos = sum(ingresos_por_rubro.values())
+
+        # Calcular expensas por UF
+        expensas_por_uf = {}
+        for uf, coeficiente in self.coeficientes_uf.items():
+            expensas_por_uf[uf] = total_gastos * coeficiente
+
+        self.estado = EstadoAgente.COMPLETADO
+
+        return LiquidacionExpensas(
+            periodo=periodo,
+            fecha_liquidacion=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            total_ingresos=total_ingresos,
+            total_gastos=total_gastos,
+            deficit_o_superavit=total_ingresos - total_gastos,
+            gastos_por_rubro=gastos_por_rubro,
+            ingresos_por_rubro=ingresos_por_rubro,
+            coeficientes=self.coeficientes_uf,
+            expensas_por_uf=expensas_por_uf
+        )
+
+    def obtener_estado_cuenta_uf(self, uf: str, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
+        """Genera el estado de cuenta de una UF específica"""
+        if uf not in liquidacion.expensas_por_uf:
+            return None
+
+        return {
+            "uf": uf,
+            "coeficiente": liquidacion.coeficientes.get(uf, 0),
+            "expensas_mes": liquidacion.expensas_por_uf[uf],
+            "porcentaje_total": f"{(liquidacion.coeficientes.get(uf, 0) * 100):.2f}%"
+        }
+
+    def generar_resumen_desglose(self, liquidacion: LiquidacionExpensas) -> Dict[str, Any]:
+        """Genera resumen con desglose por conceptos"""
+        return {
+            "periodo": liquidacion.periodo,
+            "fecha_liquidacion": liquidacion.fecha_liquidacion,
+            "total_ingresos": liquidacion.total_ingresos,
+            "total_gastos": liquidacion.total_gastos,
+            "resultado": liquidacion.deficit_o_superavit,
+            "gastos_por_rubro": liquidacion.gastos_por_rubro,
+            "ingresos_por_rubro": liquidacion.ingresos_por_rubro,
         }
 
 
@@ -748,7 +922,9 @@ class OrquestadorSwarm:
                 "factor": 0.8,
                 "mora": "0",
                 "tasa": 5.0,
-                "ots": "3"
+                "ots": "3",
+                "cantidad_uf": 10,
+                "coeficientes": {}
             }
 
         edificio_data = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
@@ -946,6 +1122,16 @@ st.markdown(
             color: #7dd3fc;
             font-weight: 800;
         }
+        
+        .titulo-edificio {
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+            color: #0f172a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin: 20px 0 15px 0;
+        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -968,7 +1154,14 @@ if "unidades_edificios" not in st.session_state:
         ]
     )
 
+if "agente_liquidacion" not in st.session_state:
+    st.session_state.agente_liquidacion = AgenteLiquidacion()
+
+if "liquidacion_actual" not in st.session_state:
+    st.session_state.liquidacion_actual = None
+
 orquestador = st.session_state.orquestador
+agente_liquidacion = st.session_state.agente_liquidacion
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -990,7 +1183,11 @@ with st.sidebar:
 
     pantalla_activa = st.radio(
         "📌 Seleccione Módulo de Control:",
-        ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"],
+        [
+            "📋 Dashboard y Contabilidad",
+            "🔧 Órdenes de Trabajo de Campo",
+            "📊 Liquidación de Expensas"
+        ],
         index=0,
     )
 
@@ -1445,7 +1642,275 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 9. FOOTER - INFORMACIÓN DEL SISTEMA
+# 9. MÓDULO LIQUIDACIÓN DE EXPENSAS
+# ════════════════════════════════════════════════════════════════════════════════
+
+elif pantalla_activa == "📊 Liquidación de Expensas":
+
+    st.markdown(
+        """
+        <div class="header-brand">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Imagen de edificio">
+            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(f"📍 **Edificio Activo:** {edificio_seleccionado}")
+    st.markdown("---")
+
+    st.header("📊 Liquidación Integral de Expensas")
+    st.markdown("**Proceso Completo: Ingresos → Gastos → Prorrateo por UF**")
+
+    # PESTAÑA 1: INGRESOS
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "💵 Ingresos",
+        "💰 Gastos",
+        "📋 Resumen",
+        "🏠 Por Unidad Funcional"
+    ])
+
+    with tab1:
+        st.subheader("Registre los Ingresos del Período")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            periodo = st.selectbox(
+                "Período de Liquidación",
+                ["Octubre 2026", "Noviembre 2026", "Diciembre 2026"]
+            )
+        
+        with col2:
+            tipo_ingreso_sel = st.selectbox(
+                "Tipo de Ingreso",
+                [t.value for t in TipoIngreso]
+            )
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            concepto_ing = st.text_input("Concepto", placeholder="Ej: Expensas octubre")
+        with col2:
+            monto_ing = st.number_input("Monto ($)", min_value=0.0, step=100.0)
+        with col3:
+            descripcion_ing = st.text_input("Descripción", placeholder="Detalles adicionales")
+
+        if st.button("✅ Registrar Ingreso", key="btn_ingreso"):
+            if concepto_ing and monto_ing > 0:
+                nuevo_ingreso = RegistroIngreso(
+                    concepto=concepto_ing,
+                    tipo_ingreso=TipoIngreso(tipo_ingreso_sel),
+                    monto=monto_ing,
+                    descripcion=descripcion_ing
+                )
+                agente_liquidacion.registrar_ingreso(nuevo_ingreso)
+                st.success(f"✅ Ingreso registrado: {concepto_ing} - ${monto_ing:,.2f}")
+            else:
+                st.error("❌ Complete todos los campos requeridos")
+
+        # Mostrar ingresos registrados
+        if agente_liquidacion.ingresos_registrados:
+            st.markdown("---")
+            st.subheader("Ingresos Registrados")
+            
+            ingresos_data = []
+            for ing in agente_liquidacion.ingresos_registrados:
+                ingresos_data.append({
+                    "Concepto": ing.concepto,
+                    "Tipo": ing.tipo_ingreso.value,
+                    "Monto ($)": f"${ing.monto:,.2f}",
+                    "Descripción": ing.descripcion
+                })
+            
+            df_ingresos = pd.DataFrame(ingresos_data)
+            st.dataframe(df_ingresos, use_container_width=True, hide_index=True)
+            
+            total_ingresos = sum(ing.monto for ing in agente_liquidacion.ingresos_registrados)
+            st.metric("💵 Total Ingresos", f"${total_ingresos:,.2f}")
+
+    with tab2:
+        st.subheader("Registre los Gastos del Período")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            tipo_gasto_sel = st.selectbox(
+                "Tipo de Gasto",
+                [t.value for t in TipoGasto],
+                key="tipo_gasto"
+            )
+        
+        with col2:
+            factura = st.text_input("Número de Factura", placeholder="Ej: 00001234")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            concepto_gast = st.text_input("Concepto", placeholder="Ej: Electricidad", key="concepto_gasto")
+        with col2:
+            monto_gast = st.number_input("Monto ($)", min_value=0.0, step=100.0, key="monto_gasto")
+        with col3:
+            descripcion_gast = st.text_input("Descripción", placeholder="Detalles", key="desc_gasto")
+
+        if st.button("✅ Registrar Gasto", key="btn_gasto"):
+            if concepto_gast and monto_gast > 0:
+                nuevo_gasto = RegistroGasto(
+                    concepto=concepto_gast,
+                    tipo_gasto=TipoGasto(tipo_gasto_sel),
+                    monto=monto_gast,
+                    descripcion=descripcion_gast,
+                    factura=factura
+                )
+                agente_liquidacion.registrar_gasto(nuevo_gasto)
+                st.success(f"✅ Gasto registrado: {concepto_gast} - ${monto_gast:,.2f}")
+            else:
+                st.error("❌ Complete los campos requeridos")
+
+        # Mostrar gastos registrados
+        if agente_liquidacion.gastos_registrados:
+            st.markdown("---")
+            st.subheader("Gastos Registrados")
+            
+            gastos_data = []
+            for gast in agente_liquidacion.gastos_registrados:
+                gastos_data.append({
+                    "Concepto": gast.concepto,
+                    "Tipo": gast.tipo_gasto.value,
+                    "Factura": gast.factura,
+                    "Monto ($)": f"${gast.monto:,.2f}",
+                    "Descripción": gast.descripcion
+                })
+            
+            df_gastos = pd.DataFrame(gastos_data)
+            st.dataframe(df_gastos, use_container_width=True, hide_index=True)
+            
+            total_gastos = sum(gast.monto for gast in agente_liquidacion.gastos_registrados)
+            st.metric("💰 Total Gastos", f"${total_gastos:,.2f}")
+
+    with tab3:
+        st.subheader("Resumen Ejecutivo de Liquidación")
+        
+        if agente_liquidacion.gastos_registrados or agente_liquidacion.ingresos_registrados:
+            # Establecer coeficientes del edificio
+            edificio_data = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
+            if "coeficientes" in edificio_data and edificio_data["coeficientes"]:
+                coeficientes = edificio_data["coeficientes"]
+            else:
+                # Crear coeficientes automáticos equitativos
+                cantidad_uf = edificio_data.get("cantidad_uf", 10)
+                coeficiente_unitario = 1.0 / cantidad_uf
+                coeficientes = {f"UF_{i:02d}": coeficiente_unitario for i in range(1, cantidad_uf + 1)}
+
+            agente_liquidacion.establecer_coeficientes(coeficientes)
+
+            # Calcular liquidación
+            liquidacion = agente_liquidacion.calcular_liquidacion(periodo)
+            st.session_state.liquidacion_actual = liquidacion
+
+            # Mostrar resumen
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("💵 Total Ingresos", f"${liquidacion.total_ingresos:,.2f}")
+            with col2:
+                st.metric("💰 Total Gastos", f"${liquidacion.total_gastos:,.2f}")
+            with col3:
+                resultado = liquidacion.deficit_o_superavit
+                st.metric(
+                    "⚖️ Resultado",
+                    f"${abs(resultado):,.2f}",
+                    delta=("Superávit ✅" if resultado > 0 else "Déficit ⚠️")
+                )
+            with col4:
+                st.metric("📅 Período", liquidacion.periodo)
+
+            st.markdown("---")
+
+            # Ingresos por rubro
+            st.subheader("📥 Desglose de Ingresos por Rubro")
+            ingresos_rubro_data = []
+            for rubro, monto in liquidacion.ingresos_por_rubro.items():
+                porcentaje = (monto / liquidacion.total_ingresos * 100) if liquidacion.total_ingresos > 0 else 0
+                ingresos_rubro_data.append({
+                    "Rubro": rubro,
+                    "Monto ($)": f"${monto:,.2f}",
+                    "Porcentaje": f"{porcentaje:.1f}%"
+                })
+            
+            if ingresos_rubro_data:
+                df_ing_rubro = pd.DataFrame(ingresos_rubro_data)
+                st.dataframe(df_ing_rubro, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+
+            # Gastos por rubro
+            st.subheader("📤 Desglose de Gastos por Rubro")
+            gastos_rubro_data = []
+            for rubro, monto in liquidacion.gastos_por_rubro.items():
+                porcentaje = (monto / liquidacion.total_gastos * 100) if liquidacion.total_gastos > 0 else 0
+                gastos_rubro_data.append({
+                    "Rubro": rubro,
+                    "Monto ($)": f"${monto:,.2f}",
+                    "Porcentaje": f"{porcentaje:.1f}%"
+                })
+            
+            if gastos_rubro_data:
+                df_gast_rubro = pd.DataFrame(gastos_rubro_data)
+                st.dataframe(df_gast_rubro, use_container_width=True, hide_index=True)
+
+        else:
+            st.info("📭 Registre ingresos y gastos para generar el resumen")
+
+    with tab4:
+        st.subheader("🏠 Liquidación por Unidad Funcional")
+        
+        if st.session_state.liquidacion_actual:
+            liquidacion = st.session_state.liquidacion_actual
+
+            st.markdown(f"**Período:** {liquidacion.periodo}")
+            st.markdown(f"**Total a Prorratear:** ${liquidacion.total_gastos:,.2f}")
+            st.markdown("**Coeficientes de Distribución (Art. 2048 - Código Civil y Comercial)**")
+            st.markdown("---")
+
+            # Crear tabla de expensas por UF
+            expensas_uf_data = []
+            for uf, coeficiente in liquidacion.coeficientes.items():
+                gasto_uf = liquidacion.expensas_por_uf.get(uf, 0)
+                expensas_uf_data.append({
+                    "UF/Dpto": uf,
+                    "Coeficiente": f"{coeficiente:.4f}",
+                    "Porcentaje": f"{coeficiente * 100:.2f}%",
+                    "Expensas a Pagar ($)": f"${gasto_uf:,.2f}"
+                })
+
+            df_expensas_uf = pd.DataFrame(expensas_uf_data)
+            st.dataframe(df_expensas_uf, use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+            st.markdown("📋 **Verificaciones Contables:**")
+            col1, col2, col3 = st.columns(3)
+            
+            suma_coeficientes = sum(liquidacion.coeficientes.values())
+            suma_expensas = sum(liquidacion.expensas_por_uf.values())
+
+            with col1:
+                if abs(suma_coeficientes - 1.0) < 0.001:
+                    st.success(f"✅ Coeficientes suman: {suma_coeficientes:.4f}")
+                else:
+                    st.error(f"❌ Coeficientes suman: {suma_coeficientes:.4f}")
+
+            with col2:
+                if abs(suma_expensas - liquidacion.total_gastos) < 1:
+                    st.success(f"✅ Expensas reconciliadas: ${suma_expensas:,.2f}")
+                else:
+                    st.error(f"❌ Diferencia: ${abs(suma_expensas - liquidacion.total_gastos):,.2f}")
+
+            with col3:
+                st.info(f"📊 UF registradas: {len(liquidacion.coeficientes)}")
+
+        else:
+            st.info("📭 Complete el resumen para ver la distribución por UF")
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 10. FOOTER - INFORMACIÓN DEL SISTEMA
 # ════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
