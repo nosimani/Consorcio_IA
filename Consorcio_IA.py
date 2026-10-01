@@ -1,12 +1,12 @@
 """
-╔═════════════════════════════════════════════════════════════════──[...]
-║                    RESILIA_CONDOMINIOS v2.0                               ║
-║         SISTEMA MULTIAGENTE DE ENJAMBRE PARA GESTIÓN DE CONDOMINIOS        ║
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    RESILIA_CONDOMINIOS v2.0                                  ║
+║         SISTEMA MULTIAGENTE DE ENJAMBRE PARA GESTIÓN DE CONDOMINIOS         ║
 ║                                                                            ║
 ║  Arquitectura: Orquestador Central + 7 Agentes Especializados              ║
 ║  Patrón: Swarm Intelligence con Coordinación Emergente                     ║
 ║  Enfoque: Cada petición dispara activación selectiva del enjambre          ║
-╚═════════════════════════════════════════════════════════════════──[...]
+╚═══════════════════════════════════════════════════════════════════════════════╝
 """
 
 import streamlit as st
@@ -18,9 +18,9 @@ from datetime import datetime
 import time
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 1. DEFINICIONES ESTRUCTURALES DEL ENJAMBRE
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 class TipoAgente(Enum):
     """Clasificación de roles dentro del enjambre"""
@@ -63,9 +63,9 @@ class ResultadoAgente:
     dependencias_cumplidas: List[str]
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 2. BASE DE DATOS GLOBAL (INMUTABLE)
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 ESTADISTICAS_EDIFICIOS = {
     "Av. Corrientes 1234, CABA": {
@@ -207,10 +207,121 @@ TABLA_SOLICITADA_OT = [
     }
 ]
 
+# ════════════════════════════════════════════════════════════════════════════════
+# CARGA DE BASES DE EDIFICIOS DESDE CSV/EXCEL
+# ════════════════════════════════════════════════════════════════════════════════
 
-# ════════════════════════════════════════════════════════════════──[...]
+CAMPOS_UNIDADES_REQUERIDOS = [
+    "Calle",
+    "Numero",
+    "Ciudad",
+    "UF/Dpto",
+    "Piso",
+    "Porcentual Expensas",
+]
+
+
+def cargar_base_unidades(archivo) -> pd.DataFrame:
+    """
+    Carga una base de datos de unidades funcionales desde CSV o Excel.
+    Requiere columnas:
+    Calle, Numero, Ciudad, UF/Dpto, Piso, Porcentual Expensas
+    """
+    nombre_archivo = archivo.name.lower()
+
+    if nombre_archivo.endswith(".csv"):
+        df = pd.read_csv(archivo, encoding="utf-8-sig")
+    elif nombre_archivo.endswith((".xlsx", ".xls")):
+        df = pd.read_excel(archivo)
+    else:
+        raise ValueError("El archivo debe estar en formato CSV o Excel.")
+
+    df.columns = [str(col).strip() for col in df.columns]
+
+    campos_faltantes = [
+        campo for campo in CAMPOS_UNIDADES_REQUERIDOS
+        if campo not in df.columns
+    ]
+
+    if campos_faltantes:
+        raise ValueError(
+            "Faltan las siguientes columnas obligatorias: "
+            + ", ".join(campos_faltantes)
+        )
+
+    for campo in ["Calle", "Ciudad", "UF/Dpto", "Piso"]:
+        df[campo] = df[campo].fillna("").astype(str).str.strip()
+
+    df["Numero"] = (
+        df["Numero"]
+        .fillna("")
+        .astype(str)
+        .str.replace(".0", "", regex=False)
+        .str.strip()
+    )
+
+    df["Porcentual Expensas"] = (
+        df["Porcentual Expensas"]
+        .astype(str)
+        .str.replace("%", "", regex=False)
+        .str.replace(",", ".", regex=False)
+        .str.strip()
+    )
+    df["Porcentual Expensas"] = pd.to_numeric(
+        df["Porcentual Expensas"],
+        errors="coerce",
+    ).fillna(0)
+
+    df["Edificio"] = (
+        df["Calle"].fillna("").astype(str)
+        + " "
+        + df["Numero"].fillna("").astype(str)
+        + ", "
+        + df["Ciudad"].fillna("").astype(str)
+    )
+
+    df["Edificio"] = df["Edificio"].str.replace("  ", " ", regex=False).str.strip()
+
+    columnas_ordenadas = [
+        "Edificio",
+        "Calle",
+        "Numero",
+        "Ciudad",
+        "UF/Dpto",
+        "Piso",
+        "Porcentual Expensas",
+    ]
+
+    return df[columnas_ordenadas]
+
+
+def registrar_edificio_desde_base(df: pd.DataFrame):
+    """
+    Registra cada edificio cargado en ESTADISTICAS_EDIFICIOS, con datos
+    mínimos para que el resto del sistema pueda seguir funcionando.
+    """
+    if df.empty:
+        return
+
+    for edificio, grupo in df.groupby("Edificio"):
+        if edificio in ESTADISTICAS_EDIFICIOS:
+            continue
+
+        total_unidades = len(grupo)
+        promedio_expensas = float(grupo["Porcentual Expensas"].mean()) if total_unidades else 0.0
+
+        ESTADISTICAS_EDIFICIOS[edificio] = {
+            "reserva": max(200000.0, total_unidades * 50000.0),
+            "factor": round(max(0.3, promedio_expensas / 100.0), 2),
+            "mora": "1" if promedio_expensas > 20 else "0",
+            "tasa": round(4.0 + (promedio_expensas / 10.0), 1),
+            "ots": str(min(5, max(1, total_unidades // 2))),
+        }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # 3. NÚCLEO DEL ENJAMBRE - AGENTES ESPECIALIZADOS
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 class AgenteBase:
     """Clase base para todos los agentes del enjambre"""
@@ -248,7 +359,6 @@ class AgenteContable(AgenteBase):
             f_cal = edificio_data["factor"]
             tasa_act = edificio_data["tasa"]
 
-            # Cálculos de ingresos
             ingresos = [
                 {"Ingresos": "ingresos por expensas", "Monto ($)": 320000.0 * f_cal},
                 {
@@ -261,7 +371,6 @@ class AgenteContable(AgenteBase):
                 },
             ]
 
-            # Cálculos de gastos
             gastos = [
                 {"Gastos": "reparaciones", "Monto ($)": 45000.0 * f_cal},
                 {
@@ -412,7 +521,6 @@ class AgenteOperativo(AgenteBase):
             else:
                 ots_filtradas = TABLA_SOLICITADA_OT
 
-            # Calcular presupuesto total
             presupuesto_total = 0
             for ot in ots_filtradas:
                 presupuesto_str = (
@@ -558,10 +666,9 @@ class AgenteReportes(AgenteBase):
         )
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 4. ORQUESTADOR CENTRAL - El "cerebro" del enjambre
-# ════════════════════════════════════════════════════════════════──[...]
-
+# ════════════════════════════════════════════════════════════════════════════════
 
 class OrquestadorSwarm:
     """🎯 Coordinador central que activa el enjambre según el evento"""
@@ -587,12 +694,23 @@ class OrquestadorSwarm:
         self.evento_actual = evento
         self.resultados_enjambre = {}
 
+        if edificio_seleccionado not in ESTADISTICAS_EDIFICIOS:
+            registrar_edificio_desde_base(
+                st.session_state.get("unidades_edificios", pd.DataFrame())
+            )
+
+        if edificio_seleccionado not in ESTADISTICAS_EDIFICIOS:
+            ESTADISTICAS_EDIFICIOS[edificio_seleccionado] = {
+                "reserva": 250000.0,
+                "factor": 0.8,
+                "mora": "0",
+                "tasa": 5.0,
+                "ots": "3"
+            }
+
         edificio_data = ESTADISTICAS_EDIFICIOS[edificio_seleccionado]
 
-        # LÓGICA DE ACTIVACIÓN SELECTIVA: cada módulo dispara diferentes agentes
-
         if evento.tipo_evento == "MODULO_CONTABILIDAD":
-            # 🎯 Activar célula de análisis financiero
             self.resultados_enjambre[TipoAgente.CONTABLE.value] = (
                 self.enjambre[TipoAgente.CONTABLE].procesar(evento, edificio_data)
             )
@@ -604,7 +722,6 @@ class OrquestadorSwarm:
             )
 
         elif evento.tipo_evento == "MODULO_OPERATIVO":
-            # 🔧 Activar célula operativa de campo
             self.resultados_enjambre[TipoAgente.OPERATIVO.value] = (
                 self.enjambre[TipoAgente.OPERATIVO].procesar(evento, edificio_seleccionado)
             )
@@ -615,7 +732,6 @@ class OrquestadorSwarm:
                 self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
             )
 
-        # SIEMPRE: Auditoría y reportes finales (supervisión del enjambre)
         self.resultados_enjambre[TipoAgente.AUDITOR.value] = (
             self.enjambre[TipoAgente.AUDITOR].procesar(evento, self.resultados_enjambre)
         )
@@ -626,9 +742,9 @@ class OrquestadorSwarm:
         return self.resultados_enjambre
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 5. CONFIGURACIÓN DE STREAMLIT
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 st.set_page_config(
     page_title="Resil_IA Condominios",
@@ -720,7 +836,6 @@ st.markdown(
             background: rgba(239, 68, 68, 0.1) !important;
         }
         
-        /* Estilos para el logo centrado en sidebar */
         .logo-container {
             display: flex;
             justify-content: center;
@@ -778,14 +893,27 @@ st.markdown(
 if "orquestador" not in st.session_state:
     st.session_state.orquestador = OrquestadorSwarm()
 
+if "unidades_edificios" not in st.session_state:
+    st.session_state.unidades_edificios = pd.DataFrame(
+        columns=[
+            "Edificio",
+            "Calle",
+            "Numero",
+            "Ciudad",
+            "UF/Dpto",
+            "Piso",
+            "Porcentual Expensas",
+        ]
+    )
+
 orquestador = st.session_state.orquestador
 
-# ════════════════════════════════════════════════════════════════──[...]
+
+# ════════════════════════════════════════════════════════════════════════════════
 # 6. SIDEBAR - CONTROL CENTRAL CON LOGO
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    # LOGO CENTRADO Y PEQUEÑO
     st.markdown(
         """
         <div class="logo-container">
@@ -805,8 +933,68 @@ with st.sidebar:
     )
 
     st.markdown("---")
+
+    st.subheader("🏢 Cargar base de edificios")
+    archivos_edificios = st.file_uploader(
+        "Seleccione uno o varios archivos CSV o Excel",
+        type=["csv", "xlsx", "xls"],
+        accept_multiple_files=True,
+        help=(
+            "Cada archivo debe contener las columnas: "
+            "Calle, Numero, Ciudad, UF/Dpto, Piso y Porcentual Expensas."
+        ),
+    )
+
+    if archivos_edificios:
+        bases_cargadas = []
+        errores_carga = []
+
+        for archivo in archivos_edificios:
+            try:
+                base_edificio = cargar_base_unidades(archivo)
+                bases_cargadas.append(base_edificio)
+            except Exception as error:
+                errores_carga.append(f"{archivo.name}: {str(error)}")
+
+        if bases_cargadas:
+            base_total = pd.concat(bases_cargadas, ignore_index=True)
+            st.session_state.unidades_edificios = pd.concat(
+                [st.session_state.unidades_edificios, base_total],
+                ignore_index=True,
+            )
+
+            # Evitar duplicados
+            st.session_state.unidades_edificios = (
+                st.session_state.unidades_edificios.drop_duplicates()
+                .reset_index(drop=True)
+            )
+
+            registrar_edificio_desde_base(st.session_state.unidades_edificios)
+
+            st.success(
+                f"✅ Se cargaron {len(st.session_state.unidades_edificios)} unidades funcionales."
+            )
+
+        for error in errores_carga:
+            st.error(f"❌ {error}")
+
+    edificios_base = list(ESTADISTICAS_EDIFICIOS.keys())
+    edificios_cargados = []
+
+    if not st.session_state.unidades_edificios.empty:
+        edificios_cargados = sorted(
+            st.session_state.unidades_edificios["Edificio"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+
+    edificios_disponibles = sorted(set(edificios_base).union(edificios_cargados))
+
+    st.markdown("---")
     edificio_seleccionado = st.selectbox(
-        "🏗️ Edificio Activo de Control", list(ESTADISTICAS_EDIFICIOS.keys())
+        "🏗️ Edificio Activo de Control",
+        edificios_disponibles,
     )
 
     st.markdown("---")
@@ -819,13 +1007,12 @@ with st.sidebar:
     )
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 7. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO CONTABILIDAD
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 if pantalla_activa == "📋 Dashboard y Contabilidad":
 
-    # 🚀 DISPARO DEL ENJAMBRE PARA CONTABILIDAD
     evento = EventoSwarm(
         timestamp=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         tipo_evento="MODULO_CONTABILIDAD",
@@ -836,11 +1023,10 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
 
     resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
 
-    # TÍTULO PRINCIPAL
     st.markdown(
         """
         <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="NYC Skyline">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Imagen de edificio">
             <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
         </div>
         """,
@@ -848,7 +1034,34 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
     )
     st.markdown(f"📍 **Edificio Monitorizado:** {edificio_seleccionado}")
 
-    # SECCIÓN: VISUALIZACIÓN DEL ENJAMBRE EN ACCIÓN
+    if (
+        "unidades_edificios" in st.session_state
+        and not st.session_state.unidades_edificios.empty
+        and edificio_seleccionado in st.session_state.unidades_edificios["Edificio"].unique()
+    ):
+        unidades_edificio = st.session_state.unidades_edificios[
+            st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado
+        ]
+
+        if not unidades_edificio.empty:
+            st.markdown("---")
+            st.header("🏠 Unidades Funcionales del Edificio")
+            unidades_mostrar = unidades_edificio[
+                ["UF/Dpto", "Piso", "Porcentual Expensas"]
+            ].copy()
+            unidades_mostrar["Porcentual Expensas"] = (
+                unidades_mostrar["Porcentual Expensas"]
+                .fillna(0)
+                .map(lambda valor: f"{valor:.2f}%")
+            )
+            st.dataframe(unidades_mostrar, use_container_width=True, hide_index=True)
+
+            total_porcentual = float(unidades_edificio["Porcentual Expensas"].sum())
+            st.info(
+                f"📊 Unidades registradas: {len(unidades_edificio)} | "
+                f"Porcentual total: {total_porcentual:.2f}%"
+            )
+
     st.markdown("---")
     with st.expander(
         "🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)",
@@ -892,7 +1105,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 unsafe_allow_html=True,
             )
 
-    # MÉTRICAS PRINCIPALES
     st.markdown("---")
     st.header("📊 Panel de Métricas Clave")
 
@@ -924,7 +1136,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 delta=delta_text,
             )
 
-    # SECCIÓN 1: FLUJO DE INGRESOS
     st.markdown("---")
     st.header("📥 Flujo de Ingresos Percibidos")
 
@@ -935,7 +1146,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
             f"✅ **Total Ingresos:** ${resultado_contable.datos_procesados['total_ingresos']:,.2f}"
         )
 
-    # SECCIÓN 2: FLUJO DE GASTOS
     st.markdown("---")
     st.header("📤 Flujo de Gastos Devengados")
 
@@ -944,7 +1154,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
         st.dataframe(gastos_df, use_container_width=True, hide_index=True)
         st.info(f"📌 **Total Gastos:** ${resultado_contable.datos_procesados['total_gastos']:,.2f}")
 
-    # SECCIÓN 3: LIQUIDACIÓN PRORRATEADA
     st.markdown("---")
     st.header("🧮 Liquidación Prorrateada por Departamento")
     st.markdown(
@@ -971,7 +1180,6 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
             f"⚖️ **Balance Contable del Consorcio (Resultado Neto):** ${resultado_contable.datos_procesados['balance_neto']:,.2f}"
         )
 
-    # SECCIÓN 4: ALERTA DE MORA
     st.markdown("---")
     st.header("⚠️ Estado de Cobranza")
 
@@ -992,13 +1200,12 @@ if pantalla_activa == "📋 Dashboard y Contabilidad":
                 st.write(f"• {accion}")
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 8. LÓGICA DE ACTIVACIÓN DEL ENJAMBRE - MÓDULO OPERATIVO
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
-    # 🚀 DISPARO DEL ENJAMBRE PARA OPERATIVO
     evento = EventoSwarm(
         timestamp=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         tipo_evento="MODULO_OPERATIVO",
@@ -1009,11 +1216,10 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
     resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
 
-    # TÍTULO PRINCIPAL
     st.markdown(
         """
         <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="NYC Skyline">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Imagen de edificio">
             <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
         </div>
         """,
@@ -1021,7 +1227,34 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
     )
     st.markdown(f"📍 **Edificio Operando:** {edificio_seleccionado}")
 
-    # SECCIÓN: VISUALIZACIÓN DEL ENJAMBRE
+    if (
+        "unidades_edificios" in st.session_state
+        and not st.session_state.unidades_edificios.empty
+        and edificio_seleccionado in st.session_state.unidades_edificios["Edificio"].unique()
+    ):
+        unidades_edificio = st.session_state.unidades_edificios[
+            st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado
+        ]
+
+        if not unidades_edificio.empty:
+            st.markdown("---")
+            st.header("🏠 Unidades Funcionales del Edificio")
+            unidades_mostrar = unidades_edificio[
+                ["UF/Dpto", "Piso", "Porcentual Expensas"]
+            ].copy()
+            unidades_mostrar["Porcentual Expensas"] = (
+                unidades_mostrar["Porcentual Expensas"]
+                .fillna(0)
+                .map(lambda valor: f"{valor:.2f}%")
+            )
+            st.dataframe(unidades_mostrar, use_container_width=True, hide_index=True)
+
+            total_porcentual = float(unidades_edificio["Porcentual Expensas"].sum())
+            st.info(
+                f"📊 Unidades registradas: {len(unidades_edificio)} | "
+                f"Porcentual total: {total_porcentual:.2f}%"
+            )
+
     st.markdown("---")
     with st.expander(
         "🐝 **ACTIVIDAD DEL ENJAMBRE** (Ver cómo trabajan los agentes)",
@@ -1065,7 +1298,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
                 unsafe_allow_html=True,
             )
 
-    # SECCIÓN 1: CARTILLA DE PROVEEDORES
     st.markdown("---")
     st.header("📜 Cartilla de Prestadores de Servicio Matriculados")
     st.markdown(
@@ -1086,7 +1318,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
             rubros = ", ".join(resultado_proveedores.datos_procesados["rubros"])
             st.info(f"🏷️ Rubros Disponibles: {rubros}")
 
-    # SECCIÓN 2: ÓRDENES DE TRABAJO
     st.markdown("---")
     st.header("📋 Registro Central de Órdenes de Trabajo (OT)")
     st.markdown(
@@ -1107,7 +1338,6 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
                 f"${resultado_operativo.datos_procesados['presupuesto_total']:,.2f}",
             )
 
-    # SECCIÓN 3: VALIDACIÓN COMPLIANCE
     st.markdown("---")
     resultado_compliance = resultados.get(TipoAgente.COMPLIANCE.value)
     if resultado_compliance and resultado_compliance.estado == EstadoAgente.COMPLETADO:
@@ -1125,9 +1355,9 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
             st.success(validaciones.get("vigencia_fiscal", "N/A"))
 
 
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 # 9. FOOTER - INFORMACIÓN DEL SISTEMA
-# ════════════════════════════════════════════════════════════════──[...]
+# ════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
 st.markdown(
