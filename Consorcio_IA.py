@@ -30,7 +30,6 @@ ROBOTS_ANIMADOS = {
     "MORA": ["🤖", "⚠️", "💰"],
     "AUDITOR": ["🤖", "🔍", "📋"],
     "REPORTES": ["🤖", "📊", "📈"],
-    "TESORERIA": ["🤖", "💵", "💳"],
 }
 
 def obtener_robot_animado(agente_tipo: str, paso: int) -> str:
@@ -75,7 +74,6 @@ class TipoAgente(Enum):
     MORA = "⚠️ Agente de Cobranza"
     AUDITOR = "🔍 Agente de Auditoría"
     REPORTES = "📈 Agente de Reportes"
-    TESORERIA = "💰 Agente de Tesorería"
 
 
 class EstadoAgente(Enum):
@@ -85,14 +83,6 @@ class EstadoAgente(Enum):
     PROCESANDO = "🟡 Procesando"
     COMPLETADO = "✅ Completado"
     ERROR = "🔴 Error"
-
-
-class FormaPago(Enum):
-    """Formas de pago disponibles"""
-    EFECTIVO = "💵 Efectivo"
-    DEBITO = "🏧 Débito"
-    CREDITO = "💳 Crédito"
-    TRANSFERENCIA = "🏦 Transferencia"
 
 
 @dataclass
@@ -113,18 +103,6 @@ class ResultadoAgente:
     datos_procesados: Dict[str, Any]
     tiempo_procesamiento: str
     dependencias_cumplidas: List[str]
-
-
-@dataclass
-class RegistroPago:
-    """Registro de un pago de expensas"""
-    fecha: str
-    edificio: str
-    uf_dpto: str
-    importe: float
-    forma_pago: str
-    referencia: str
-    estado: str
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -380,90 +358,6 @@ def registrar_edificio_desde_base(df: pd.DataFrame):
             "mora": "1" if promedio_expensas > 20 else "0",
             "tasa": round(4.0 + (promedio_expensas / 10.0), 1),
             "ots": str(min(5, max(1, total_unidades // 2))),
-        }
-
-
-# ════════════════════════════════════════════════════════════════════════════════
-# AGENTE DE TESORERÍA - GESTIÓN DE COBROS
-# ════════════════════════════════════════════════════════════════════════════════
-
-class AgenteTesoreria:
-    """💰 Especialista en ingresos y cobros de expensas"""
-
-    def __init__(self):
-        self.tipo_agente = TipoAgente.TESORERIA
-        self.estado = EstadoAgente.INACTIVO
-        self.historial_pagos = []
-
-    def activar(self):
-        """Pasa el agente a estado ACTIVADO"""
-        self.estado = EstadoAgente.ACTIVADO
-
-    def registrar_pago(self, pago: RegistroPago) -> ResultadoAgente:
-        """Registra un pago en el sistema"""
-        self.activar()
-        self.estado = EstadoAgente.PROCESANDO
-        tiempo_inicio = time.time()
-
-        try:
-            self.historial_pagos.append(pago)
-            
-            self.estado = EstadoAgente.COMPLETADO
-            tiempo_procesamiento = f"⚡ {(time.time() - tiempo_inicio)*1000:.2f}ms"
-
-            return ResultadoAgente(
-                agente=self.tipo_agente.value,
-                estado=self.estado,
-                datos_procesados={
-                    "pago_registrado": True,
-                    "fecha": pago.fecha,
-                    "edificio": pago.edificio,
-                    "uf": pago.uf_dpto,
-                    "importe": pago.importe,
-                    "forma_pago": pago.forma_pago,
-                    "estado_pago": pago.estado,
-                },
-                tiempo_procesamiento=tiempo_procesamiento,
-                dependencias_cumplidas=[],
-            )
-        except Exception as e:
-            self.estado = EstadoAgente.ERROR
-            return ResultadoAgente(
-                agente=self.tipo_agente.value,
-                estado=self.estado,
-                datos_procesados={"error": str(e)},
-                tiempo_procesamiento="❌ Error en procesamiento",
-                dependencias_cumplidas=[],
-            )
-
-    def obtener_pagos_edificio(self, edificio: str) -> List[RegistroPago]:
-        """Retorna todos los pagos de un edificio específico"""
-        return [p for p in self.historial_pagos if p.edificio == edificio]
-
-    def obtener_resumen_pagos(self, edificio: str = None) -> Dict[str, Any]:
-        """Retorna un resumen de pagos"""
-        pagos = self.historial_pagos if edificio is None else self.obtener_pagos_edificio(edificio)
-        
-        if not pagos:
-            return {
-                "total_pagos": 0,
-                "monto_total": 0.0,
-                "por_forma_pago": {},
-            }
-
-        total_monto = sum(p.importe for p in pagos)
-        por_forma = {}
-        
-        for pago in pagos:
-            if pago.forma_pago not in por_forma:
-                por_forma[pago.forma_pago] = {"cantidad": 0, "monto": 0.0}
-            por_forma[pago.forma_pago]["cantidad"] += 1
-            por_forma[pago.forma_pago]["monto"] += pago.importe
-
-        return {
-            "total_pagos": len(pagos),
-            "monto_total": total_monto,
-            "por_forma_pago": por_forma,
         }
 
 
@@ -830,7 +724,6 @@ class OrquestadorSwarm:
             TipoAgente.MORA: AgenteMora(),
             TipoAgente.AUDITOR: AgenteAuditor(),
             TipoAgente.REPORTES: AgenteReportes(),
-            TipoAgente.TESORERIA: AgenteTesoreria(),
         }
         self.evento_actual = None
         self.resultados_enjambre = {}
@@ -881,9 +774,6 @@ class OrquestadorSwarm:
             self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = (
                 self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
             )
-
-        elif evento.tipo_evento == "MODULO_COBROS":
-            pass
 
         self.resultados_enjambre[TipoAgente.AUDITOR.value] = (
             self.enjambre[TipoAgente.AUDITOR].procesar(evento, self.resultados_enjambre)
@@ -1056,51 +946,6 @@ st.markdown(
             color: #7dd3fc;
             font-weight: 800;
         }
-        
-        .tabla-pagos {
-            background-color: rgba(15, 23, 42, 0.8) !important;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
-        .titulo-edificio {
-            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-            color: #0f172a;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin: 20px 0 15px 0;
-        }
-        
-        .forma-pago-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .forma-pago-efectivo {
-            background-color: rgba(34, 197, 94, 0.2) !important;
-            color: #86efac !important;
-        }
-        
-        .forma-pago-debito {
-            background-color: rgba(59, 130, 246, 0.2) !important;
-            color: #93c5fd !important;
-        }
-        
-        .forma-pago-credito {
-            background-color: rgba(168, 85, 247, 0.2) !important;
-            color: #d8b4fe !important;
-        }
-        
-        .forma-pago-transferencia {
-            background-color: rgba(249, 115, 22, 0.2) !important;
-            color: #fed7aa !important;
-        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -1123,11 +968,7 @@ if "unidades_edificios" not in st.session_state:
         ]
     )
 
-if "pagos_registrados" not in st.session_state:
-    st.session_state.pagos_registrados = []
-
 orquestador = st.session_state.orquestador
-agente_tesoreria = orquestador.enjambre[TipoAgente.TESORERIA]
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -1149,11 +990,7 @@ with st.sidebar:
 
     pantalla_activa = st.radio(
         "📌 Seleccione Módulo de Control:",
-        [
-            "📋 Dashboard y Contabilidad",
-            "🔧 Órdenes de Trabajo de Campo",
-            "💰 Ingreso de Cobros"
-        ],
+        ["📋 Dashboard y Contabilidad", "🔧 Órdenes de Trabajo de Campo"],
         index=0,
     )
 
@@ -1608,275 +1445,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# 9. MÓDULO INGRESO DE COBROS DE EXPENSAS
-# ════════════════════════════════════════════════════════════════════════════════
-
-elif pantalla_activa == "💰 Ingreso de Cobros":
-
-    evento = EventoSwarm(
-        timestamp=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        tipo_evento="MODULO_COBROS",
-        descripcion="Usuario registra ingreso de cobro de expensas",
-        modulo_solicitante="💰 Tesorería",
-        parametros={"edificio": edificio_seleccionado},
-    )
-
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Imagen de edificio">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(f"📍 **Edificio Activo:** {edificio_seleccionado}")
-
-    st.markdown("---")
-    st.header("💳 Ingreso de Cobro de Expensas")
-    st.markdown("Registre el pago de expensas de los propietarios con diferentes formas de pago")
-
-    # FORMULARIO DE REGISTRO DE PAGO
-    with st.form("forma_ingreso_pago", clear_on_submit=True):
-        st.subheader("📝 Datos del Pago")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fecha_pago = st.date_input(
-                "📅 Fecha del Pago",
-                value=datetime.now().date()
-            )
-        
-        with col2:
-            hora_pago = st.time_input(
-                "🕒 Hora del Pago",
-                value=datetime.now().time()
-            )
-
-        # Obtener UF disponibles del edificio seleccionado
-        uf_disponibles = []
-        if (
-            not st.session_state.unidades_edificios.empty
-            and edificio_seleccionado in st.session_state.unidades_edificios["Edificio"].unique()
-        ):
-            unidades = st.session_state.unidades_edificios[
-                st.session_state.unidades_edificios["Edificio"] == edificio_seleccionado
-            ]
-            uf_disponibles = unidades["UF/Dpto"].unique().tolist()
-        else:
-            uf_disponibles = ["1A", "2A", "3A", "4A", "5A"]
-
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            uf_seleccionada = st.selectbox(
-                "🏠 Seleccione Unidad Funcional (UF/Dpto)",
-                uf_disponibles
-            )
-        
-        with col2:
-            importe_pago = st.number_input(
-                "💵 Importe ($)",
-                min_value=0.0,
-                step=100.0,
-                format="%.2f"
-            )
-
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            forma_pago = st.selectbox(
-                "💳 Forma de Pago",
-                [
-                    FormaPago.EFECTIVO.value,
-                    FormaPago.DEBITO.value,
-                    FormaPago.CREDITO.value,
-                    FormaPago.TRANSFERENCIA.value,
-                ]
-            )
-        
-        with col2:
-            referencia = st.text_input(
-                "📋 Referencia (Cheque, CBU, Tarjeta, etc.)",
-                placeholder="Ej: Tarjeta 4532... o CBU o Nro de cheque"
-            )
-
-        st.markdown("---")
-
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            boton_registrar = st.form_submit_button(
-                "✅ Registrar Pago",
-                use_container_width=True,
-                type="primary"
-            )
-        
-        with col2:
-            boton_limpiar = st.form_submit_button(
-                "🔄 Limpiar",
-                use_container_width=True
-            )
-
-        if boton_registrar and importe_pago > 0:
-            timestamp_completo = datetime.combine(fecha_pago, hora_pago).strftime("%d/%m/%Y %H:%M:%S")
-            
-            nuevo_pago = RegistroPago(
-                fecha=timestamp_completo,
-                edificio=edificio_seleccionado,
-                uf_dpto=uf_seleccionada,
-                importe=importe_pago,
-                forma_pago=forma_pago,
-                referencia=referencia if referencia else "Sin referencia",
-                estado="✅ Confirmado"
-            )
-            
-            st.session_state.pagos_registrados.append(nuevo_pago)
-            
-            resultado_tesoreria = agente_tesoreria.registrar_pago(nuevo_pago)
-            
-            st.success(f"✅ Pago registrado correctamente por ${importe_pago:,.2f}")
-            st.balloons()
-
-    st.markdown("---")
-    
-    # MOSTRAR TABLA DE PAGOS POR EDIFICIO
-    if st.session_state.pagos_registrados:
-        
-        # Obtener pagos del edificio seleccionado
-        pagos_edificio = [
-            p for p in st.session_state.pagos_registrados
-            if p.edificio == edificio_seleccionado
-        ]
-
-        if pagos_edificio:
-            st.markdown(
-                f'<div class="titulo-edificio">📊 Registro de Cobros - {edificio_seleccionado}</div>',
-                unsafe_allow_html=True
-            )
-
-            # Preparar datos para la tabla
-            datos_tabla = []
-            for pago in pagos_edificio:
-                datos_tabla.append({
-                    "Fecha": pago.fecha,
-                    "UF/Dpto": pago.uf_dpto,
-                    "Importe ($)": f"${pago.importe:,.2f}",
-                    "Forma de Pago": pago.forma_pago,
-                    "Referencia": pago.referencia,
-                    "Estado": pago.estado,
-                })
-
-            df_pagos = pd.DataFrame(datos_tabla)
-            
-            st.dataframe(
-                df_pagos,
-                use_container_width=True,
-                hide_index=True,
-            )
-
-            # RESUMEN DE PAGOS
-            st.markdown("---")
-            st.subheader("📈 Resumen de Cobros del Edificio")
-
-            total_cobrado = sum(p.importe for p in pagos_edificio)
-            cantidad_pagos = len(pagos_edificio)
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("💰 Total Cobrado", f"${total_cobrado:,.2f}")
-            
-            with col2:
-                st.metric("📊 Total de Pagos", cantidad_pagos)
-            
-            with col3:
-                promedio_pago = total_cobrado / cantidad_pagos if cantidad_pagos > 0 else 0
-                st.metric("📋 Promedio por Pago", f"${promedio_pago:,.2f}")
-
-            # DESGLOSE POR FORMA DE PAGO
-            st.markdown("---")
-            st.subheader("🔀 Desglose por Forma de Pago")
-
-            formas_pago_dict = {}
-            for pago in pagos_edificio:
-                if pago.forma_pago not in formas_pago_dict:
-                    formas_pago_dict[pago.forma_pago] = {"cantidad": 0, "monto": 0.0}
-                formas_pago_dict[pago.forma_pago]["cantidad"] += 1
-                formas_pago_dict[pago.forma_pago]["monto"] += pago.importe
-
-            desglose_data = []
-            for forma, datos in formas_pago_dict.items():
-                desglose_data.append({
-                    "Forma de Pago": forma,
-                    "Cantidad": datos["cantidad"],
-                    "Monto Total ($)": f"${datos['monto']:,.2f}",
-                    "Porcentaje": f"{(datos['monto'] / total_cobrado * 100):.1f}%"
-                })
-
-            df_desglose = pd.DataFrame(desglose_data)
-            st.dataframe(df_desglose, use_container_width=True, hide_index=True)
-
-            # DESGLOSE POR UNIDAD FUNCIONAL
-            st.markdown("---")
-            st.subheader("🏠 Desglose por Unidad Funcional")
-
-            uf_dict = {}
-            for pago in pagos_edificio:
-                if pago.uf_dpto not in uf_dict:
-                    uf_dict[pago.uf_dpto] = {"cantidad": 0, "monto": 0.0}
-                uf_dict[pago.uf_dpto]["cantidad"] += 1
-                uf_dict[pago.uf_dpto]["monto"] += pago.importe
-
-            uf_data = []
-            for uf, datos in sorted(uf_dict.items()):
-                uf_data.append({
-                    "UF/Dpto": uf,
-                    "Cantidad de Pagos": datos["cantidad"],
-                    "Monto Total ($)": f"${datos['monto']:,.2f}",
-                })
-
-            df_uf = pd.DataFrame(uf_data)
-            st.dataframe(df_uf, use_container_width=True, hide_index=True)
-
-        # MOSTRAR OTROS EDIFICIOS CON PAGOS
-        otros_edificios = set(p.edificio for p in st.session_state.pagos_registrados)
-        otros_edificios.discard(edificio_seleccionado)
-
-        if otros_edificios:
-            st.markdown("---")
-            st.header("🏢 Otros Edificios con Registros")
-
-            for otro_edificio in sorted(otros_edificios):
-                pagos_otro = [
-                    p for p in st.session_state.pagos_registrados
-                    if p.edificio == otro_edificio
-                ]
-
-                with st.expander(f"📍 {otro_edificio}"):
-                    datos_otro = []
-                    for pago in pagos_otro:
-                        datos_otro.append({
-                            "Fecha": pago.fecha,
-                            "UF/Dpto": pago.uf_dpto,
-                            "Importe ($)": f"${pago.importe:,.2f}",
-                            "Forma de Pago": pago.forma_pago,
-                            "Estado": pago.estado,
-                        })
-
-                    df_otro = pd.DataFrame(datos_otro)
-                    st.dataframe(df_otro, use_container_width=True, hide_index=True)
-
-                    total_otro = sum(p.importe for p in pagos_otro)
-                    st.success(f"💰 **Total Cobrado:** ${total_otro:,.2f}")
-
-    else:
-        st.info("📭 Aún no hay pagos registrados. Ingrese un pago para comenzar.")
-
-
-# ════════════════════════════════════════════════════════════════════════════════
-# 10. FOOTER - INFORMACIÓN DEL SISTEMA
+# 9. FOOTER - INFORMACIÓN DEL SISTEMA
 # ════════════════════════════════════════════════════════════════════════════════
 
 st.markdown("---")
