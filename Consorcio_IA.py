@@ -164,11 +164,6 @@ class LiquidacionExpensas:
     coeficientes: Dict[str, CoeficienteUF]
     expensas_por_uf: Dict[str, float]
 
-
-# ════════════════════════════════════════════════════════════════
-# 2. BASE DE DATOS GLOBAL (INMUTABLE)
-# ════════════════════════════════════════════════════════════════
-
 # ════════════════════════════════════════════════════════════════
 # 2. BASE DE DATOS GLOBAL (ACTUALIZADA CON DIRECCIONES CORREGIDAS)
 # ════════════════════════════════════════════════════════════════
@@ -471,7 +466,6 @@ CAMPOS_COEFICIENTES_REQUERIDOS = [
     "Coeficiente",
     "Contacto",
 ]
-
 
 def cargar_base_unidades(archivo) -> pd.DataFrame:
     nombre_archivo = archivo.name.lower()
