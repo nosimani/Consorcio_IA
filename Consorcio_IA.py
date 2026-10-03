@@ -169,8 +169,12 @@ class LiquidacionExpensas:
 # 2. BASE DE DATOS GLOBAL (INMUTABLE)
 # ════════════════════════════════════════════════════════════════
 
+# ════════════════════════════════════════════════════════════════
+# 2. BASE DE DATOS GLOBAL (ACTUALIZADA CON DIRECCIONES CORREGIDAS)
+# ════════════════════════════════════════════════════════════════
+
 ESTADISTICAS_EDIFICIOS = {
-    "Av. Corrientes 1234, CABA": {
+    "Avda Corrientes 1234, CABA": {
         "reserva": 450000.0,
         "factor": 1.0,
         "mora": "1",
@@ -197,7 +201,7 @@ ESTADISTICAS_EDIFICIOS = {
         "cantidad_uf": 40,
         "coeficientes": {}
     },
-    "San Jose 1111, CABA": {
+    "San Josè 1111, CABA": {
         "reserva": 290000.0,
         "factor": 0.5,
         "mora": "1",
