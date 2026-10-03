@@ -15,9 +15,6 @@ import hmac
 import os
 import re
 import unicodedata
-from modulo_cobranzas import (render_modulo_cobranzas, get_conn, init_db, crear_consorcio,
-                              cargar_unidades_desde_df)
-from mora import cuenta_corriente
 import pandas as pd
 from dataclasses import dataclass
 from enum import Enum
