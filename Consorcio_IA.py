@@ -787,6 +787,90 @@ class AgenteLiquidacion:
         output.seek(0)
         return output
 
+    def mostrar_panel_recibos_y_planilla(self, liquidacion: LiquidacionExpensas, edificio_nombre: str):
+        import streamlit as st
+        st.markdown("---")
+        st.markdown("### 📊 Panel de Exportación y Documentación")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 📑 Planilla de Liquidación Global")
+            st.write("Genera el libro de expensas completo con el resumen general de rubros y prorrateo.")
+            try:
+                excel_binario = self.generar_excel_liquidacion(liquidacion, edificio_nombre)
+                st.download_button(
+                    label="📥 Descargar Liquidación Completa (.xlsx)",
+                    data=excel_binario,
+                    file_name=f"Liquidacion_{edificio_nombre.replace(' ', '_')}_{liquidacion.periodo}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="btn_descarga_excel_global"
+                )
+            except Exception as e:
+                st.error(f"Error al compilar la planilla Excel: {str(e)}")
+
+        with col2:
+            st.markdown("#### 🧾 Emisión de Recibos Individuales")
+            st.write("Selecciona una unidad para comprobar su estado de cuenta y monto neto.")
+            
+            unidades_disponibles = sorted(list(liquidacion.coeficientes.keys()))
+            uf_seleccionada = st.selectbox(
+                "Seleccionar Unidad Funcional (UF):", 
+                options=unidades_disponibles,
+                key="selector_uf_recibo"
+            )
+            
+            if uf_seleccionada:
+                coef_obj = liquidacion.coeficientes[uf_seleccionada]
+                monto_uf = liquidacion.expensas_por_uf.get(uf_seleccionada, 0.0)
+                
+                st.markdown(
+                    f"""
+                    <div style="background-color: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #38bdf8; color: #f8fafc;">
+                        <p style="margin: 0; color: #38bdf8; font-weight: bold; font-size: 14px;">CONDOMINIO DIGITAL: {edificio_nombre.upper()}</p>
+                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #334155;">
+                        <table style="width: 100%; font-size: 13px;">
+                            <tr><td><b>Unidad:</b> {uf_seleccionada}</td><td><b>Piso:</b> {coef_obj.piso}</td></tr>
+                            <tr><td colspan="2"><b>Propietario:</b> {coef_obj.propietario}</td></tr>
+                            <tr><td><b>Período:</b> {liquidacion.periodo}</td><td><b>Coeficiente:</b> {coef_obj.coeficiente * 100:.4f}%</td></tr>
+                        </table>
+                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #334155;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #1e293b; padding: 8px; border-radius: 4px;">
+                            <span style="font-size: 13px; color: #94a3b8;">Total Expensas a pagar:</span>
+                            <b style="font-size: 16px; color: #4ade80;">$ {monto_uf:,.2f}</b>
+                        </div>
+                        <p style="margin: 8px 0 0 0; font-size: 11px; color: #64748b; text-align: right;"><i>Emitido el: {liquidacion.fecha_liquidacion}</i></p>
+                    </div>
+                    """, 
+                    unsafe_allow_html=True
+                )
+                
+                texto_recibo = (
+                    f"==================================================\n"
+                    f"               RECIBO DE EXPENSAS                 \n"
+                    f"==================================================\n"
+                    f"Consorcio: {edificio_nombre}\n"
+                    f"Período: {liquidacion.periodo}\n"
+                    f"Fecha de Emisión: {liquidacion.fecha_liquidacion}\n"
+                    f"--------------------------------------------------\n"
+                    f"Unidad Funcional: {uf_seleccionada}\n"
+                    f"Piso/Dpto: {coef_obj.piso}\n"
+                    f"Copropietario: {coef_obj.propietario}\n"
+                    f"Porcentual de Participación: {coef_obj.coeficiente * 100:.4f}%\n"
+                    f"--------------------------------------------------\n"
+                    f"TOTAL GASTOS DEL MES: $ {liquidacion.total_gastos:,.2f}\n"
+                    f"MONTO NETO INDIVIDUAL A PAGAR: $ {monto_uf:,.2f}\n"
+                    f"==================================================\n"
+                )
+                
+                st.download_button(
+                    label=f"📥 Descargar Recibo {uf_seleccionada} (.txt)",
+                    data=texto_recibo,
+                    file_name=f"Recibo_{uf_seleccionada}_{liquidacion.periodo}.txt",
+                    mime="text/plain",
+                    key=f"btn_descarga_{uf_seleccionada}"
+                )
+
 
 # ════════════════════════════════════════════════════════════════
 # 3. NÚCLEO DEL ENJAMBRE - AGENTES ESPECIALIZADOS
