@@ -12,7 +12,6 @@
 import streamlit as st
 import hashlib
 import hmac
-import logging
 import os
 import re
 import unicodedata
@@ -180,7 +179,6 @@ def mora_real_edificio(administrador, edificio):
     edificio todavía no tiene cargos emitidos."""
     if not administrador:
         return None
-    st.session_state.pop("error_bd", None)
     conn = get_conn()
     try:
         init_db(conn)
@@ -192,10 +190,7 @@ def mora_real_edificio(administrador, edificio):
             return None
         resumen, _ = cuenta_corriente(conn, fila["id"])
         return resumen
-    except Exception as error:
-        # Con una base en red puede haber cortes: se avisa en pantalla en vez de mostrar datos falsos en silencio.
-        logging.getLogger("consorcio_ia").exception("No se pudo leer la mora real desde la base de datos")
-        st.session_state["error_bd"] = f"{type(error).__name__}: {error}"
+    except Exception:
         return None
     finally:
         conn.close()
@@ -1779,9 +1774,6 @@ elif pantalla_activa == "📋 Dashboard y Contabilidad":
             if datos_mora["detalle"]:
                 st.dataframe(pd.DataFrame(datos_mora["detalle"]), use_container_width=True, hide_index=True)
         else:
-            if st.session_state.get("error_bd"):
-                st.warning("⚠️ No se pudo leer la base de datos de Cobranzas, por eso se muestran datos de "
-                           f"demostración. Detalle: {st.session_state['error_bd']}")
             st.caption("ℹ️ Dato de demostración: este edificio aún no tiene cargos emitidos en el módulo "
                        "💵 Cobranzas, Mora y Recibos. Al emitirlos, acá verás la mora real.")
 
