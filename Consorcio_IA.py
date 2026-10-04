@@ -10,6 +10,15 @@
 """
 
 import streamlit as st
+import hashlib
+import hmac
+import logging
+import os
+import re
+import unicodedata
+from modulo_cobranzas import (render_modulo_cobranzas, get_conn, init_db, crear_consorcio,
+                              cargar_unidades_desde_df)
+from mora import cuenta_corriente
 import pandas as pd
 from dataclasses import dataclass
 from enum import Enum
@@ -65,6 +74,131 @@ def animar_robot_procesando(placeholder, agente_nombre: str, agente_tipo: str, d
             unsafe_allow_html=True,
         )
         time.sleep(0.1)
+
+
+# ════════════════════════════════════════════════════════════════
+# AUTENTICACIÓN (protege el módulo de Cobranzas) Y DATOS REALES
+# ════════════════════════════════════════════════════════════════
+
+def hash_clave(clave: str, salt_hex: str = None, iteraciones: int = 200_000) -> str:
+    """Hash PBKDF2-SHA256 con sal. Formato: pbkdf2$iteraciones$sal$hash"""
+    salt = bytes.fromhex(salt_hex) if salt_hex else os.urandom(16)
+    dk = hashlib.pbkdf2_hmac("sha256", clave.encode("utf-8"), salt, iteraciones)
+    return f"pbkdf2${iteraciones}${salt.hex()}${dk.hex()}"
+
+
+_HASH_FALSO = hash_clave("x", "00" * 16, 1000)
+
+
+def verificar_clave(clave: str, registro: str) -> bool:
+    try:
+        _, it, salt_hex, hash_hex = registro.split("$")
+        calculado = hash_clave(clave, salt_hex, int(it)).split("$")[3]
+        return hmac.compare_digest(calculado, hash_hex)
+    except Exception:
+        return False
+
+
+def usuarios_configurados() -> dict:
+    """Usuarios definidos en .streamlit/secrets.toml, sección [usuarios]."""
+    try:
+        return dict(st.secrets["usuarios"])
+    except Exception:
+        return {}
+
+
+def login_cobranzas() -> bool:
+    """Pide usuario y clave. Devuelve True si hay una sesión iniciada."""
+    if st.session_state.get("usuario"):
+        c1, c2 = st.columns([4, 1])
+        c1.success(f"👤 Sesión iniciada: {st.session_state['usuario']}")
+        if c2.button("Cerrar sesión"):
+            st.session_state.pop("usuario", None)
+            st.rerun()
+        return True
+
+    usuarios = usuarios_configurados()
+    if not usuarios:
+        st.warning("🔐 El módulo de Cobranzas maneja datos de pagos y requiere usuarios con clave. "
+                   "Aún no hay ninguno configurado.")
+        st.markdown("1. Generá el hash de cada clave con `python generar_clave.py`.\n"
+                    "2. Pegalo en `.streamlit/secrets.toml` (en Streamlit Cloud: *Settings → Secrets*):")
+        st.code('[usuarios]\nadmin1 = "pbkdf2$200000$...$..."', language="toml")
+        return False
+
+    intentos = st.session_state.get("intentos_login", 0)
+    if intentos >= 5:
+        st.error("Demasiados intentos fallidos. Recargá la página para volver a intentar.")
+        return False
+
+    with st.form("form_login_cobranzas"):
+        usuario = st.text_input("Usuario")
+        clave = st.text_input("Clave", type="password")
+        if st.form_submit_button("Ingresar"):
+            registro = usuarios.get(usuario, _HASH_FALSO)      # siempre se calcula el hash
+            if verificar_clave(clave, registro) and usuario in usuarios:
+                st.session_state["usuario"] = usuario
+                st.session_state["intentos_login"] = 0
+                st.rerun()
+            st.session_state["intentos_login"] = intentos + 1
+            st.error("Usuario o clave incorrectos.")
+    return False
+
+
+def normalizar_edificio(nombre: str) -> str:
+    """'Av. Corrientes 1234, CABA' y 'Avda. Corrientes 1234' -> 'av corrientes 1234'
+    (sin tildes, sin puntuación, sin 'CABA'). Sirve para comparar nombres de edificios."""
+    t = unicodedata.normalize("NFKD", str(nombre)).encode("ascii", "ignore").decode().lower()
+    t = re.sub(r"[^a-z0-9 ]", " ", t)
+    t = re.sub(r"\b(avda|avenida|av)\b", "av", t)
+    t = re.sub(r"\bcaba\b", " ", t)
+    return " ".join(t.split())
+
+
+def coeficientes_para_liquidar(edificio: str):
+    """Coeficientes REALES para liquidar: primero el archivo de coeficientes; si no hay,
+    el porcentual de la base de edificios. Si no hay ninguno devuelve None (no se inventa nada)."""
+    df = st.session_state.get("coeficientes_cargados")
+    if df is not None and not df.empty and float(df["Coeficiente"].sum()) > 0:
+        return df
+    base = st.session_state.get("unidades_edificios")
+    if base is not None and not base.empty:
+        g = base[base["Edificio"] == edificio]
+        if not g.empty and float(g["Porcentual Expensas"].sum()) > 0:
+            return pd.DataFrame({
+                "UF": g["UF/Dpto"].astype(str).str.strip().str.upper().values,
+                "Propietario": "",
+                "Piso": g["Piso"].values,
+                "Coeficiente": g["Porcentual Expensas"].values,
+                "Contacto": "",
+            })
+    return None
+
+
+def mora_real_edificio(administrador, edificio):
+    """Resumen de mora real (desde cargos y pagos de la base de Cobranzas) o None si ese
+    edificio todavía no tiene cargos emitidos."""
+    if not administrador:
+        return None
+    st.session_state.pop("error_bd", None)
+    conn = get_conn()
+    try:
+        init_db(conn)
+        fila = conn.execute("SELECT id FROM consorcios WHERE administrador=? AND nombre=?",
+                            (administrador, edificio)).fetchone()
+        if not fila:
+            return None
+        if not conn.execute("SELECT 1 FROM cargos WHERE consorcio_id=? LIMIT 1", (fila["id"],)).fetchone():
+            return None
+        resumen, _ = cuenta_corriente(conn, fila["id"])
+        return resumen
+    except Exception as error:
+        # Con una base en red puede haber cortes: se avisa en pantalla en vez de mostrar datos falsos en silencio.
+        logging.getLogger("consorcio_ia").exception("No se pudo leer la mora real desde la base de datos")
+        st.session_state["error_bd"] = f"{type(error).__name__}: {error}"
+        return None
+    finally:
+        conn.close()
 
 
 # ════════════════════════════════════════════════════════════════
@@ -968,7 +1102,8 @@ class AgenteOperativo(AgenteBase):
 
         try:
             if edificio_filtro:
-                ots_filtradas = [ot for ot in TABLA_SOLICITADA_OT if edificio_filtro.lower() in ot["Edificio"].lower()]
+                ots_filtradas = [ot for ot in TABLA_SOLICITADA_OT
+                                 if normalizar_edificio(ot["Edificio"]) == normalizar_edificio(edificio_filtro)]
             else:
                 ots_filtradas = TABLA_SOLICITADA_OT
 
@@ -1003,19 +1138,56 @@ class AgenteMora(AgenteBase):
     def __init__(self):
         super().__init__(TipoAgente.MORA)
 
-    def procesar(self, evento: EventoSwarm, edificio_data: Dict) -> ResultadoAgente:
+    def procesar(self, evento: EventoSwarm, edificio_data: Dict, resumen_mora=None) -> ResultadoAgente:
         self.activar()
         self.estado = EstadoAgente.PROCESANDO
         tiempo_inicio = time.time()
 
-        mora_count = int(edificio_data.get("mora", "0"))
-
-        if mora_count > 1:
-            alerta_nivel = "🔴 CRÍTICO - Más de 1 UF en mora"
-        elif mora_count == 1:
-            alerta_nivel = "🟡 MODERADO - 1 UF en mora"
+        if resumen_mora is not None:
+            # Mora REAL: cargos emitidos, pagos acreditados e interés punitorio calculado
+            morosas = resumen_mora[(resumen_mora["Capital adeudado"] > 0) & (resumen_mora["Días de mora"] > 0)]
+            mora_count = len(morosas)
+            max_dias = int(morosas["Días de mora"].max()) if mora_count else 0
+            if mora_count > 1:
+                alerta_nivel = "🔴 CRÍTICO - Más de 1 UF en mora"
+            elif mora_count == 1:
+                alerta_nivel = "🟡 MODERADO - 1 UF en mora"
+            else:
+                alerta_nivel = "🟢 CONTROLADO - Sin mora registrada"
+            if max_dias > 90:
+                acciones = ["Intimación legal", "Contacto directo con el propietario"]
+            elif max_dias > 30:
+                acciones = ["Refinanciación", "Aviso formal de deuda"]
+            elif max_dias > 0:
+                acciones = ["Contacto preventivo"]
+            else:
+                acciones = ["Sin acciones pendientes"]
+            datos = {
+                "fuente": "real",
+                "uf_en_mora": mora_count,
+                "nivel_alerta": alerta_nivel,
+                "acciones_recomendadas": acciones,
+                "capital_adeudado": float(resumen_mora["Capital adeudado"].sum()),
+                "interes_punitorio": float(resumen_mora["Interés punitorio"].sum()),
+                "total_adeudado": float(resumen_mora["Total adeudado"].sum()),
+                "detalle": morosas[["UF", "Propietario", "Capital adeudado", "Interés punitorio",
+                                    "Total adeudado", "Días de mora", "Tramo"]].to_dict("records"),
+            }
         else:
-            alerta_nivel = "🟢 CONTROLADO - Sin mora registrada"
+            # Sin cargos emitidos para este edificio: se mantiene el dato de demostración
+            mora_count = int(edificio_data.get("mora", "0"))
+            if mora_count > 1:
+                alerta_nivel = "🔴 CRÍTICO - Más de 1 UF en mora"
+            elif mora_count == 1:
+                alerta_nivel = "🟡 MODERADO - 1 UF en mora"
+            else:
+                alerta_nivel = "🟢 CONTROLADO - Sin mora registrada"
+            datos = {
+                "fuente": "simulado",
+                "uf_en_mora": mora_count,
+                "nivel_alerta": alerta_nivel,
+                "acciones_recomendadas": ["Contacto preventivo", "Refinanciación", "Intimación legal"],
+            }
 
         self.estado = EstadoAgente.COMPLETADO
         tiempo_procesamiento = f"⚡ {(time.time() - tiempo_inicio)*1000:.2f}ms"
@@ -1023,15 +1195,7 @@ class AgenteMora(AgenteBase):
         return ResultadoAgente(
             agente=self.tipo_agente.value,
             estado=self.estado,
-            datos_procesados={
-                "uf_en_mora": mora_count,
-                "nivel_alerta": alerta_nivel,
-                "acciones_recomendadas": [
-                    "Contacto preventivo",
-                    "Refinanciación",
-                    "Intimación legal",
-                ],
-            },
+            datos_procesados=datos,
             tiempo_procesamiento=tiempo_procesamiento,
             dependencias_cumplidas=[TipoAgente.CONTABLE.value],
         )
@@ -1119,7 +1283,7 @@ class OrquestadorSwarm:
         self.resultados_enjambre = {}
         self.placeholders_animacion = {}
 
-    def disparar_enjambre(self, evento: EventoSwarm, edificio_seleccionado: str) -> Dict[str, ResultadoAgente]:
+    def disparar_enjambre(self, evento: EventoSwarm, edificio_seleccionado: str, resumen_mora=None) -> Dict[str, ResultadoAgente]:
         self.evento_actual = evento
         self.resultados_enjambre = {}
 
@@ -1140,7 +1304,7 @@ class OrquestadorSwarm:
 
         if evento.tipo_evento == "MODULO_CONTABILIDAD":
             self.resultados_enjambre[TipoAgente.CONTABLE.value] = self.enjambre[TipoAgente.CONTABLE].procesar(evento, edificio_data)
-            self.resultados_enjambre[TipoAgente.MORA.value] = self.enjambre[TipoAgente.MORA].procesar(evento, edificio_data)
+            self.resultados_enjambre[TipoAgente.MORA.value] = self.enjambre[TipoAgente.MORA].procesar(evento, edificio_data, resumen_mora)
             self.resultados_enjambre[TipoAgente.COMPLIANCE.value] = self.enjambre[TipoAgente.COMPLIANCE].procesar(evento)
 
         elif evento.tipo_evento == "MODULO_OPERATIVO":
@@ -1156,7 +1320,7 @@ class OrquestadorSwarm:
 
 # ════════════════════════════════════════════════════════════════
 # 5. CONFIGURACIÓN DE STREAMLIT
-# ════════════════════���═══════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 
 st.set_page_config(
     page_title="Resil_IA Condominios",
@@ -1202,9 +1366,6 @@ st.markdown(
 )
 
 # INICIALIZACIÓN DE SESIÓN
-if "orquestador" not in st.session_state:
-    st.session_state.orquestador = OrquestadorSwarm()
-
 if "unidades_edificios" not in st.session_state:
     st.session_state.unidades_edificios = pd.DataFrame(
         columns=["Edificio", "Calle", "Numero", "Ciudad", "UF/Dpto", "Piso", "Porcentual Expensas"]
@@ -1219,7 +1380,7 @@ if "agente_liquidacion" not in st.session_state:
 if "liquidacion_actual" not in st.session_state:
     st.session_state.liquidacion_actual = None
 
-orquestador = st.session_state.orquestador
+orquestador = OrquestadorSwarm()  # se recrea en cada ejecución (ver nota sobre Enum y reruns)
 agente_liquidacion = st.session_state.agente_liquidacion
 
 
@@ -1246,7 +1407,8 @@ with st.sidebar:
             "📋 Dashboard y Contabilidad",
             "🔧 Órdenes de Trabajo de Campo",
             "📊 Liquidación de Expensas",
-            "👷 Directorio de Prestadores"
+            "👷 Directorio de Prestadores",
+            "💵 Cobranzas, Mora y Recibos"
         ],
         index=0,
     )
@@ -1500,7 +1662,10 @@ elif pantalla_activa == "📋 Dashboard y Contabilidad":
         for agente_tipo in agentes_a_procesar:
             agente_placeholders[agente_tipo] = st.empty()
 
-        resultados = orquestador.disparar_enjambre(evento, edificio_seleccionado)
+        resultados = orquestador.disparar_enjambre(
+            evento, edificio_seleccionado,
+            mora_real_edificio(st.session_state.get("usuario"), edificio_seleccionado),
+        )
 
         for agente_nombre, resultado in resultados.items():
             if agente_nombre not in [TipoAgente.AUDITOR.value, TipoAgente.REPORTES.value]:
@@ -1531,6 +1696,8 @@ elif pantalla_activa == "📋 Dashboard y Contabilidad":
 
     st.markdown("---")
     st.header("📊 Panel de Métricas Clave")
+    st.caption("ℹ️ Los ingresos, gastos y el prorrateo de este panel son de demostración. "
+               "Los datos reales se cargan en 📊 Liquidación de Expensas y 💵 Cobranzas, Mora y Recibos.")
 
     resultado_contable = resultados.get(TipoAgente.CONTABLE.value)
     if resultado_contable and resultado_contable.estado == EstadoAgente.COMPLETADO:
@@ -1603,6 +1770,20 @@ elif pantalla_activa == "📋 Dashboard y Contabilidad":
         with st.expander("📋 Acciones Recomendadas"):
             for accion in datos_mora.get("acciones_recomendadas", []):
                 st.write(f"• {accion}")
+
+        if datos_mora.get("fuente") == "real":
+            mc1, mc2, mc3 = st.columns(3)
+            mc1.metric("Capital adeudado", f"${datos_mora['capital_adeudado']:,.2f}")
+            mc2.metric("Interés punitorio", f"${datos_mora['interes_punitorio']:,.2f}")
+            mc3.metric("Total adeudado", f"${datos_mora['total_adeudado']:,.2f}")
+            if datos_mora["detalle"]:
+                st.dataframe(pd.DataFrame(datos_mora["detalle"]), use_container_width=True, hide_index=True)
+        else:
+            if st.session_state.get("error_bd"):
+                st.warning("⚠️ No se pudo leer la base de datos de Cobranzas, por eso se muestran datos de "
+                           f"demostración. Detalle: {st.session_state['error_bd']}")
+            st.caption("ℹ️ Dato de demostración: este edificio aún no tiene cargos emitidos en el módulo "
+                       "💵 Cobranzas, Mora y Recibos. Al emitirlos, acá verás la mora real.")
 
 
 elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
@@ -1863,62 +2044,64 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
         st.subheader("Resumen Ejecutivo de Liquidación")
 
         if agente_liquidacion.gastos_registrados or agente_liquidacion.ingresos_registrados:
-            if not st.session_state.coeficientes_cargados.empty:
-                agente_liquidacion.cargar_coeficientes_desde_dataframe(st.session_state.coeficientes_cargados)
+            df_coef_liq = coeficientes_para_liquidar(edificio_seleccionado)
+            liquidacion = None
+            if df_coef_liq is None:
+                st.session_state.liquidacion_actual = None
+                st.error(f"❌ No hay coeficientes para {edificio_seleccionado}. Cargá el archivo de coeficientes "
+                         "(UF, Propietario, Piso, Coeficiente, Contacto) o la base de edificios en la barra "
+                         "lateral. El sistema ya no inventa unidades funcionales.")
             else:
-                cantidad_uf = ESTADISTICAS_EDIFICIOS[edificio_seleccionado].get("cantidad_uf", 10)
-                df_default = pd.DataFrame({
-                    "UF": [f"UF_{i:02d}" for i in range(1, cantidad_uf + 1)],
-                    "Propietario": [""] * cantidad_uf,
-                    "Piso": [""] * cantidad_uf,
-                    "Coeficiente": [1 / cantidad_uf] * cantidad_uf,
-                    "Contacto": [""] * cantidad_uf
-                })
-                agente_liquidacion.cargar_coeficientes_desde_dataframe(df_default)
+                agente_liquidacion.cargar_coeficientes_desde_dataframe(df_coef_liq)
+                try:
+                    liquidacion = agente_liquidacion.calcular_liquidacion(st.session_state.periodo_liquidacion)
+                    st.session_state.liquidacion_actual = liquidacion
+                except ValueError as e:
+                    st.session_state.liquidacion_actual = None
+                    st.error(f"❌ {e}")
 
-            liquidacion = agente_liquidacion.calcular_liquidacion(st.session_state.periodo_liquidacion)
-            st.session_state.liquidacion_actual = liquidacion
+            if liquidacion is not None:
 
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("💵 Total Ingresos", f"${liquidacion.total_ingresos:,.2f}")
-            with col2:
-                st.metric("💰 Total Gastos", f"${liquidacion.total_gastos:,.2f}")
-            with col3:
-                resultado = liquidacion.deficit_o_superavit
-                st.metric("⚖️ Resultado", f"${abs(resultado):,.2f}", delta=("Superávit ✅" if resultado > 0 else "Déficit ⚠️"))
-            with col4:
-                st.metric("📅 Período", liquidacion.periodo)
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("💵 Total Ingresos", f"${liquidacion.total_ingresos:,.2f}")
+                with col2:
+                    st.metric("💰 Total Gastos", f"${liquidacion.total_gastos:,.2f}")
+                with col3:
+                    resultado = liquidacion.deficit_o_superavit
+                    st.metric("⚖️ Resultado", f"${abs(resultado):,.2f}", delta=("Superávit ✅" if resultado > 0 else "Déficit ⚠️"))
+                with col4:
+                    st.metric("📅 Período", liquidacion.periodo)
 
-            st.markdown("---")
+                st.markdown("---")
 
-            st.subheader("📥 Desglose de Ingresos por Rubro")
-            ingresos_rubro_data = []
-            for rubro, monto in liquidacion.ingresos_por_rubro.items():
-                porcentaje = (monto / liquidacion.total_ingresos * 100) if liquidacion.total_ingresos > 0 else 0
-                ingresos_rubro_data.append({
-                    "Rubro": rubro,
-                    "Monto ($)": f"${monto:,.2f}",
-                    "Porcentaje": f"{porcentaje:.1f}%"
-                })
-            if ingresos_rubro_data:
-                df_ing_rubro = pd.DataFrame(ingresos_rubro_data)
-                st.dataframe(df_ing_rubro, use_container_width=True, hide_index=True)
+                st.subheader("📥 Desglose de Ingresos por Rubro")
+                ingresos_rubro_data = []
+                for rubro, monto in liquidacion.ingresos_por_rubro.items():
+                    porcentaje = (monto / liquidacion.total_ingresos * 100) if liquidacion.total_ingresos > 0 else 0
+                    ingresos_rubro_data.append({
+                        "Rubro": rubro,
+                        "Monto ($)": f"${monto:,.2f}",
+                        "Porcentaje": f"{porcentaje:.1f}%"
+                    })
+                if ingresos_rubro_data:
+                    df_ing_rubro = pd.DataFrame(ingresos_rubro_data)
+                    st.dataframe(df_ing_rubro, use_container_width=True, hide_index=True)
 
-            st.markdown("---")
+                st.markdown("---")
 
-            st.subheader("📤 Desglose de Gastos por Rubro")
-            gastos_rubro_data = []
-            for rubro, monto in liquidacion.gastos_por_rubro.items():
-                porcentaje = (monto / liquidacion.total_gastos * 100) if liquidacion.total_gastos > 0 else 0
-                gastos_rubro_data.append({
-                    "Rubro": rubro,
-                    "Monto ($)": f"${monto:,.2f}",
-                    "Porcentaje": f"{porcentaje:.1f}%"
-                })
-            if gastos_rubro_data:
-                df_gast_rubro = pd.DataFrame(gastos_rubro_data)
-                st.dataframe(df_gast_rubro, use_container_width=True, hide_index=True)
+                st.subheader("📤 Desglose de Gastos por Rubro")
+                gastos_rubro_data = []
+                for rubro, monto in liquidacion.gastos_por_rubro.items():
+                    porcentaje = (monto / liquidacion.total_gastos * 100) if liquidacion.total_gastos > 0 else 0
+                    gastos_rubro_data.append({
+                        "Rubro": rubro,
+                        "Monto ($)": f"${monto:,.2f}",
+                        "Porcentaje": f"{porcentaje:.1f}%"
+                    })
+                if gastos_rubro_data:
+                    df_gast_rubro = pd.DataFrame(gastos_rubro_data)
+                    st.dataframe(df_gast_rubro, use_container_width=True, hide_index=True)
 
         else:
             st.info("📭 Registre ingresos y gastos para generar el resumen")
@@ -2051,6 +2234,48 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
 
         else:
             st.info("📭 Genere una liquidación primero")
+
+
+elif pantalla_activa == "💵 Cobranzas, Mora y Recibos":
+
+    st.markdown(
+        """
+        <div class="header-brand">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
+            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"📍 **Edificio Activo:** {edificio_seleccionado}")
+    st.markdown("---")
+    st.header("💵 Cobranzas, Mora y Recibos")
+
+    if login_cobranzas():
+        usuario_actual = st.session_state["usuario"]
+
+        with st.expander("🔗 Traer el edificio activo a Cobranzas (consorcio + unidades funcionales)"):
+            st.caption("Crea el consorcio con el nombre del edificio activo y carga sus UF desde los "
+                       "coeficientes cargados o, si no hay, desde la base de edificios.")
+            if st.button("Importar edificio activo", key="btn_importar_cobranzas"):
+                df_uf = coeficientes_para_liquidar(edificio_seleccionado)
+                if df_uf is None:
+                    st.error("No hay coeficientes ni base de unidades para este edificio. Cargalos en la barra lateral.")
+                else:
+                    conn_imp = get_conn()
+                    try:
+                        init_db(conn_imp)
+                        cid_imp = crear_consorcio(conn_imp, usuario_actual, edificio_seleccionado)
+                        n_imp = cargar_unidades_desde_df(conn_imp, cid_imp, df_uf)
+                    finally:
+                        conn_imp.close()
+                    st.success(f"✅ Consorcio «{edificio_seleccionado}» listo con {n_imp} unidades funcionales.")
+
+        liq_vigente = st.session_state.liquidacion_actual
+        if liq_vigente:
+            st.info(f"📊 Liquidación vigente: **{edificio_seleccionado}** — {liq_vigente.periodo}. "
+                    "Sus expensas por UF se usan para emitir los cargos en la pestaña 📉 Mora y deuda.")
+        render_modulo_cobranzas(liq_vigente.expensas_por_uf if liq_vigente else None)
 
 
 # ════════════════════════════════════════════════════════════════
