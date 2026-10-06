@@ -1423,7 +1423,7 @@ a { color: var(--acento) !important; }
 [data-testid="stSidebar"] .block-container, [data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }
 .logo-container { display: flex; justify-content: center; margin: 6px 0 4px 0; padding: 6px 0 14px 0; }
 .logo-container img { max-width: 96px; height: auto; border-radius: 16px; border: 1px solid var(--borde-fuerte); box-shadow: 0 6px 20px rgba(56,189,248,.18); }
-.sidebar-tag { text-align: center; color: #ff1744; font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 8px 0; }
+.sidebar-tag, [data-testid="stSidebar"] p.sidebar-tag { text-align: center; color: #ff1744 !important; font-size: .8rem !important; font-weight: 800 !important; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 8px 0; }
 .sidebar-nota { font-size: .8rem !important; color: var(--texto-3) !important; line-height: 1.5; }
 [data-testid="stSidebar"] h3 { font-size: 1rem !important; color: var(--texto) !important; }
 [data-testid="stSidebar"] .stRadio > div { gap: 4px; }
