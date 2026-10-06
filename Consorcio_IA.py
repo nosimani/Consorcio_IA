@@ -1402,7 +1402,7 @@ a { color: var(--acento) !important; }
     border: 1px solid rgba(56,189,248,.35);
 }
 .app-header .marca-nombre { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.03em; color: var(--texto); line-height: 1.1; }
-.app-header .marca-nombre .u { color: var(--texto-3); }
+.app-header .marca-nombre .u { color: #ff1744; }
 .app-header .marca-nombre .ia { color: #ff1744; }
 .app-header .marca-sub { color: #ff1744; font-size: .85rem; margin-top: 3px; font-weight: 600; }
 .app-header .derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
