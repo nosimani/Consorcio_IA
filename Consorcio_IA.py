@@ -1413,7 +1413,7 @@ a { color: var(--acento) !important; }
 }
 .chip.neutro { background: rgba(148,163,184,.08); border-color: var(--borde-fuerte); color: var(--texto-2); }
 .app-header .edificio { color: var(--texto); font-size: .95rem; font-weight: 600; }
-.app-header .edificio span { color: var(--texto-3); font-weight: 500; margin-right: 6px; }
+.app-header .edificio span { color: #39ff14; font-weight: 700; margin-right: 6px; text-shadow: 0 0 8px rgba(57,255,20,.45); }
 
 /* ── Barra lateral ── */
 [data-testid="stSidebar"] {
