@@ -1332,38 +1332,233 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        .main { background: radial-gradient(circle at top right, #0d1e3d 0%, #071126 100%); }
-        h1 { color: #ffffff; font-family: sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); font-size: 2.8rem !important; }
-        h2, h3 { color: #38bdf8; font-family: sans-serif; font-weight: 700; font-size: 2rem !important; }
-        .stMarkdown p, p, label, .stRadio label { color: #e2e8f0; font-size: 1.3rem !important; line-height: 1.6 !important; }
-        .stDataFrame td, .stDataFrame div, table, td, tr { font-size: 1.5rem !important; font-weight: 600 !important; color: #ffffff !important; }
-        th, .stDataFrame th div { font-weight: 800 !important; color: #38bdf8 !important; font-size: 1.4rem !important; }
-        div[data-testid="stMetric"] { background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important; border-radius: 20px !important; padding: 22px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; }
-        div[data-testid="stMetric"] label { color: #0f172a !important; font-weight: 800 !important; font-size: 1.1rem !important; }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #0b192c !important; font-weight: 900 !important; font-size: 2.4rem !important; }
-        .stDataFrame, .stTable { background-color: rgba(30, 41, 59, 0.5); border-radius: 16px; padding: 10px; }
-        .swarm-agent { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 5px solid #38bdf8; padding: 15px; margin: 8px 0; border-radius: 8px; font-size: 1.1rem; transition: all 0.3s ease; }
-        .swarm-completed { border-left-color: #10b981 !important; background: rgba(16, 185, 129, 0.1) !important; }
-        .swarm-processing { border-left-color: #f59e0b !important; background: rgba(245, 158, 11, 0.1) !important; animation: pulse 1.5s infinite; }
-        .swarm-active { border-left-color: #06b6d4 !important; background: rgba(6, 182, 212, 0.1) !important; }
-        .swarm-error { border-left-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        @keyframes robotMove { 0% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 100% { transform: translateX(-10px); } }
-        .robot-animado { display: inline-block; animation: robotMove 1s infinite; font-size: 1.5rem; }
-        .logo-container { display: flex; justify-content: center; align-items: center; margin: 20px 0 10px 0; padding: 8px 0 12px 0; border-bottom: 1px solid rgba(56, 189, 248, 0.25); }
-        .logo-container img { max-width: 110px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
-        .header-brand { display: flex; align-items: center; gap: 18px; margin: 20px 0 8px 0; padding: 8px 0; }
-        .header-brand img { height: 100px; width: auto; flex-shrink: 0; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
-        .header-brand h1 { margin: 0; color: #f8fafc; font-size: 3rem !important; letter-spacing: -2px; font-weight: 900; }
-        .header-brand .underscore { color: #ffffff; font-weight: 900; }
-        .header-brand .ia { color: #7dd3fc; font-weight: 800; }
-        .titulo-edificio { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #0f172a; padding: 12px 16px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; margin: 20px 0; }
-        .estado-cuenta-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #38bdf8; border-radius: 12px; padding: 20px; margin: 15px 0; }
-        .prestador-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #10b981; border-radius: 12px; padding: 16px; margin: 10px 0; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg: #0a1220;
+    --bg-2: #0e1a2f;
+    --card: #121e35;
+    --card-2: #16253f;
+    --borde: #1f3050;
+    --borde-fuerte: #2c4268;
+    --texto: #e7edf7;
+    --texto-2: #a4b3cb;
+    --texto-3: #6f819f;
+    --acento: #38bdf8;
+    --acento-2: #0ea5e9;
+    --oro: #e0b84a;
+    --ok: #22c55e;
+    --aviso: #f59e0b;
+    --error: #ef4444;
+    --radio: 14px;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.25);
+}
+
+html, body, [class*="css"], .stApp, button, input, textarea, select {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+}
+.stApp {
+    background:
+        radial-gradient(1200px 500px at 85% -10%, rgba(56,189,248,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%) !important;
+    color: var(--texto);
+    color-scheme: dark;
+}
+[data-testid="stHeader"] { background: transparent !important; }
+footer, #MainMenu { visibility: hidden; }
+.block-container { padding-top: 2rem !important; padding-bottom: 3rem !important; max-width: 1280px; }
+
+/* ── Tipografía ── */
+h1, h2, h3, h4 { font-family: 'Inter', sans-serif !important; letter-spacing: -0.02em; }
+h1 { color: var(--texto) !important; font-weight: 800 !important; font-size: 2rem !important; }
+h2 { color: var(--texto) !important; font-weight: 700 !important; font-size: 1.45rem !important;
+     padding-bottom: .4rem; border-bottom: 1px solid var(--borde); margin-top: 1.2rem !important; }
+h3 { color: var(--acento) !important; font-weight: 600 !important; font-size: 1.15rem !important; }
+h4 { color: var(--texto) !important; font-weight: 600 !important; font-size: 1rem !important; }
+.stMarkdown p, p, li, .stRadio label, .stCheckbox label, .stSelectbox label, .stTextInput label,
+.stNumberInput label, .stDateInput label, .stFileUploader label, .stTextArea label {
+    color: var(--texto) !important; font-size: 0.97rem !important; line-height: 1.6 !important;
+}
+label, [data-testid="stWidgetLabel"] p { color: var(--texto-2) !important; font-weight: 500 !important; font-size: .9rem !important; }
+small, .stCaption, [data-testid="stCaptionContainer"] { color: var(--texto-3) !important; }
+hr { border-color: var(--borde) !important; margin: 1.2rem 0 !important; }
+a { color: var(--acento) !important; }
+
+/* ── Cabecera de la app ── */
+.app-header {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
+    border: 1px solid var(--borde); border-radius: 18px; padding: 18px 22px; margin: 4px 0 22px 0;
+    box-shadow: var(--sombra); position: relative; overflow: hidden;
+}
+.app-header::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: linear-gradient(180deg, var(--acento), var(--acento-2));
+}
+.app-header .marca { display: flex; align-items: center; gap: 16px; }
+.app-header .marca-icono {
+    width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem;
+    background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(14,165,233,.08));
+    border: 1px solid rgba(56,189,248,.35);
+}
+.app-header .marca-nombre { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.03em; color: var(--texto); line-height: 1.1; }
+.app-header .marca-nombre .u { color: var(--texto-3); }
+.app-header .marca-nombre .ia { color: var(--acento); }
+.app-header .marca-sub { color: var(--texto-2); font-size: .85rem; margin-top: 3px; font-weight: 500; }
+.app-header .derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
+    background: rgba(56,189,248,.10); border: 1px solid rgba(56,189,248,.30);
+    color: var(--acento); font-size: .8rem; font-weight: 600; letter-spacing: .01em;
+}
+.chip.neutro { background: rgba(148,163,184,.08); border-color: var(--borde-fuerte); color: var(--texto-2); }
+.app-header .edificio { color: var(--texto); font-size: .95rem; font-weight: 600; }
+.app-header .edificio span { color: var(--texto-3); font-weight: 500; margin-right: 6px; }
+
+/* ── Barra lateral ── */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0c1628 0%, #08101e 100%) !important;
+    border-right: 1px solid var(--borde);
+}
+[data-testid="stSidebar"] .block-container, [data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }
+.logo-container { display: flex; justify-content: center; margin: 6px 0 4px 0; padding: 6px 0 14px 0; }
+.logo-container img { max-width: 96px; height: auto; border-radius: 16px; border: 1px solid var(--borde-fuerte); box-shadow: 0 6px 20px rgba(56,189,248,.18); }
+.sidebar-tag { text-align: center; color: var(--acento); font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 8px 0; }
+.sidebar-nota { font-size: .8rem !important; color: var(--texto-3) !important; line-height: 1.5; }
+[data-testid="stSidebar"] h3 { font-size: 1rem !important; color: var(--texto) !important; }
+[data-testid="stSidebar"] .stRadio > div { gap: 4px; }
+[data-testid="stSidebar"] .stRadio label {
+    padding: 9px 12px !important; border-radius: 10px; border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease; width: 100%;
+}
+[data-testid="stSidebar"] .stRadio label:hover { background: rgba(56,189,248,.07); }
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    background: rgba(56,189,248,.14); border-color: rgba(56,189,248,.40);
+}
+[data-testid="stSidebar"] .stRadio label p { font-size: .93rem !important; font-weight: 500 !important; color: var(--texto) !important; }
+
+/* ── Métricas ── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 100%) !important;
+    border: 1px solid var(--borde) !important; border-top: 3px solid var(--acento) !important;
+    border-radius: var(--radio) !important; padding: 16px 18px !important; box-shadow: var(--sombra) !important;
+}
+div[data-testid="stMetric"] label, div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
+    color: var(--texto-2) !important; font-weight: 600 !important; font-size: .82rem !important;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: var(--texto) !important; font-weight: 800 !important; font-size: 1.85rem !important; letter-spacing: -0.02em;
+}
+
+/* ── Tablas ── */
+.stDataFrame, .stTable, [data-testid="stDataFrame"] {
+    background: var(--card) !important; border: 1px solid var(--borde); border-radius: var(--radio) !important; overflow: hidden;
+}
+table { border-collapse: collapse; width: 100%; }
+th { background: var(--card-2) !important; color: var(--texto-2) !important; font-weight: 600 !important;
+     font-size: .78rem !important; text-transform: uppercase; letter-spacing: .05em; padding: 10px 12px !important; border-bottom: 1px solid var(--borde-fuerte) !important; }
+td { color: var(--texto) !important; font-size: .92rem !important; font-weight: 500 !important; padding: 9px 12px !important; border-bottom: 1px solid var(--borde) !important; }
+tr:hover td { background: rgba(56,189,248,.04); }
+
+/* ── Botones ── */
+.stButton > button, .stDownloadButton > button, [data-testid="stFormSubmitButton"] > button {
+    background: linear-gradient(180deg, var(--acento) 0%, var(--acento-2) 100%) !important;
+    color: #04121f !important; border: none !important; border-radius: 10px !important;
+    font-weight: 700 !important; font-size: .92rem !important; padding: .55rem 1.1rem !important;
+    box-shadow: 0 2px 10px rgba(14,165,233,.30); transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.stButton > button:hover, .stDownloadButton > button:hover, [data-testid="stFormSubmitButton"] > button:hover {
+    filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(14,165,233,.40);
+}
+.stButton > button:active { transform: translateY(0); }
+.stButton > button p, .stDownloadButton > button p, [data-testid="stFormSubmitButton"] > button p { color: #04121f !important; font-weight: 700 !important; font-size: .92rem !important; }
+.stButton > button[kind="secondary"] {
+    background: transparent !important; color: var(--texto) !important; border: 1px solid var(--borde-fuerte) !important; box-shadow: none;
+}
+.stButton > button[kind="secondary"] p { color: var(--texto) !important; }
+
+/* ── Campos ── */
+.stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input,
+[data-baseweb="select"] > div, [data-baseweb="input"] {
+    background: var(--bg) !important; color: var(--texto) !important;
+    border: 1px solid var(--borde-fuerte) !important; border-radius: 10px !important; font-size: .95rem !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
+    border-color: var(--acento) !important; box-shadow: 0 0 0 3px rgba(56,189,248,.18) !important;
+}
+[data-testid="stFileUploaderDropzone"] {
+    background: rgba(56,189,248,.04) !important; border: 1.5px dashed var(--borde-fuerte) !important; border-radius: var(--radio) !important;
+}
+[data-testid="stFileUploaderDropzone"]:hover { border-color: var(--acento) !important; }
+
+/* ── Desplegables, pestañas, formularios, avisos ── */
+[data-testid="stExpander"] {
+    background: var(--card) !important; border: 1px solid var(--borde) !important; border-radius: var(--radio) !important; overflow: hidden;
+}
+[data-testid="stExpander"] summary { font-weight: 600; color: var(--texto); }
+[data-testid="stExpander"] summary:hover { background: rgba(56,189,248,.05); }
+[data-testid="stForm"] { background: var(--card) !important; border: 1px solid var(--borde) !important; border-radius: var(--radio) !important; padding: 18px !important; }
+.stTabs [data-baseweb="tab-list"] { gap: 6px; border-bottom: 1px solid var(--borde); }
+.stTabs [data-baseweb="tab"] { color: var(--texto-2) !important; font-weight: 600; padding: 10px 16px; border-radius: 10px 10px 0 0; }
+.stTabs [aria-selected="true"] { color: var(--acento) !important; background: rgba(56,189,248,.08); }
+.stTabs [data-baseweb="tab-highlight"] { background: var(--acento) !important; }
+[data-testid="stAlert"] { border-radius: 12px !important; border: 1px solid var(--borde-fuerte) !important; }
+[data-testid="stAlert"] p { font-size: .93rem !important; }
+[data-testid="stSuccess"], div[data-baseweb="notification"][kind="positive"] { background: rgba(34,197,94,.10) !important; }
+
+/* ── Enjambre de agentes ── */
+.swarm-agent {
+    background: var(--card); border: 1px solid var(--borde); border-left: 4px solid var(--acento);
+    padding: 12px 16px; margin: 8px 0; border-radius: 12px; font-size: .93rem; color: var(--texto);
+    box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: all .2s ease;
+}
+.swarm-agent b { font-weight: 600; }
+.swarm-completed { border-left-color: var(--ok) !important; background: rgba(34,197,94,.07) !important; }
+.swarm-processing { border-left-color: var(--aviso) !important; background: rgba(245,158,11,.08) !important; animation: pulse 1.5s infinite; }
+.swarm-active { border-left-color: var(--acento) !important; background: rgba(56,189,248,.07) !important; }
+.swarm-error { border-left-color: var(--error) !important; background: rgba(239,68,68,.08) !important; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+@keyframes robotMove { 0% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 100% { transform: translateX(-3px); } }
+.robot-animado { display: inline-block; animation: robotMove 1.2s infinite; font-size: 1.1rem; margin-right: 4px; }
+
+/* ── Tarjetas varias ── */
+.titulo-edificio { background: linear-gradient(135deg, var(--acento) 0%, var(--acento-2) 100%); color: #04121f; padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 1rem; margin: 16px 0; }
+.estado-cuenta-box { background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid var(--borde-fuerte); border-top: 3px solid var(--acento); border-radius: 14px; padding: 22px; margin: 15px 0; box-shadow: var(--sombra); }
+.estado-cuenta-box p { font-size: .95rem !important; }
+.prestador-card { background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid var(--borde); border-left: 4px solid var(--ok); border-radius: 12px; padding: 16px 18px; margin: 10px 0; box-shadow: var(--sombra); }
+.prestador-card p { font-size: .92rem !important; margin: 3px 0; }
+.pie { text-align: center; color: var(--texto-3); font-size: .8rem; padding: 22px 0 6px 0; line-height: 1.7; }
+
+@media (max-width: 760px) {
+    .app-header { padding: 14px 16px; }
+    .app-header .derecha { align-items: flex-start; }
+    .app-header .marca-nombre { font-size: 1.35rem; }
+    h1 { font-size: 1.6rem !important; }
+}
+
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+def encabezado(modulo: str, etiqueta: str = "", valor: str = "") -> None:
+    """Cabecera común de todas las pantallas. El texto se escapa: viene de archivos que sube el usuario."""
+    import html as _html
+    derecha = f'<span class="chip">{_html.escape(modulo)}</span>'
+    if valor:
+        derecha += (f'<div class="edificio"><span>📍 {_html.escape(etiqueta)}</span>'
+                    f'{_html.escape(valor)}</div>')
+    elif etiqueta:
+        derecha += f'<div class="edificio"><span>📍 {_html.escape(etiqueta)}</span></div>'
+    st.markdown(
+        '<div class="app-header"><div class="marca"><div class="marca-icono">🏙️</div><div>'
+        '<div class="marca-nombre">Resil<span class="u">_</span><span class="ia">IA</span> Condominios</div>'
+        '<div class="marca-sub">Gestión inteligente de consorcios · Sistema multiagente</div></div></div>'
+        f'<div class="derecha">{derecha}</div></div>',
+        unsafe_allow_html=True,
+    )
+
 
 # INICIALIZACIÓN DE SESIÓN
 if "unidades_edificios" not in st.session_state:
@@ -1398,7 +1593,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("<p style='font-size: 1.5rem; color: #ff1744; font-weight: bold; text-align: center;'>Sistema Multiagente Avanzado</p>", unsafe_allow_html=True)
+    st.markdown("<p class='sidebar-tag'>Sistema multiagente avanzado</p>", unsafe_allow_html=True)
     st.markdown("---")
 
     pantalla_activa = st.radio(
@@ -1478,7 +1673,7 @@ with st.sidebar:
     st.info("**CUIT:** 30-11111111-9\n\n**Jurisdicción:** Ley 941 CABA")
     st.markdown("---")
     st.markdown(
-        "<p style='font-size: 0.9rem; color: #64748b;'>ℹ️ <b>Arquitectura Multiagente</b><br/>Cada solicitud activa el enjambre de agentes especializados</p>",
+        "<p class='sidebar-nota'>ℹ️ <b>Arquitectura multiagente</b><br/>Cada solicitud activa el enjambre de agentes especializados</p>",
         unsafe_allow_html=True,
     )
 
@@ -1489,17 +1684,7 @@ with st.sidebar:
 
 if pantalla_activa == "👷 Directorio de Prestadores":
     
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    
-    st.markdown("📍 **Directorio Completo de Prestadores de Servicios Homologados**")
+    encabezado("Directorio de Prestadores", "Prestadores de servicios homologados")
     st.markdown("---")
     
     st.header("👷 Cartilla de Prestadores")
@@ -1617,16 +1802,7 @@ elif pantalla_activa == "📋 Dashboard y Contabilidad":
         parametros={"edificio": edificio_seleccionado},
     )
 
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(f"📍 **Edificio Monitorizado:** {edificio_seleccionado}")
+    encabezado("Dashboard y Contabilidad", "Edificio monitorizado:", edificio_seleccionado)
 
     if (
         "unidades_edificios" in st.session_state
@@ -1796,16 +1972,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
         parametros={"edificio": edificio_seleccionado},
     )
 
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(f"📍 **Edificio Operando:** {edificio_seleccionado}")
+    encabezado("Órdenes de Trabajo", "Edificio operando:", edificio_seleccionado)
 
     if (
         "unidades_edificios" in st.session_state
@@ -1921,17 +2088,7 @@ elif pantalla_activa == "🔧 Órdenes de Trabajo de Campo":
 
 elif pantalla_activa == "📊 Liquidación de Expensas":
 
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(f"📍 **Edificio Activo:** {edificio_seleccionado}")
+    encabezado("Liquidación de Expensas", "Edificio activo:", edificio_seleccionado)
     st.markdown("---")
 
     st.header("📊 Liquidación Integral de Expensas")
@@ -2238,16 +2395,7 @@ elif pantalla_activa == "📊 Liquidación de Expensas":
 
 elif pantalla_activa == "💵 Cobranzas, Mora y Recibos":
 
-    st.markdown(
-        """
-        <div class="header-brand">
-            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80&blend=https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80&blend_mode=screen" alt="Resilia Header">
-            <h1>Resil<span class="underscore">_</span><span class="ia">IA</span> Condominios</h1>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(f"📍 **Edificio Activo:** {edificio_seleccionado}")
+    encabezado("Cobranzas, Mora y Recibos", "Edificio activo:", edificio_seleccionado)
     st.markdown("---")
     st.header("💵 Cobranzas, Mora y Recibos")
 
@@ -2285,7 +2433,7 @@ elif pantalla_activa == "💵 Cobranzas, Mora y Recibos":
 st.markdown("---")
 st.markdown(
     """
-    <div style='text-align: center; color: #64748b; font-size: 0.9rem; padding: 20px;'>
+    <div class='pie'>
     <b>🏢 Resilia_IA v2.0 - Arquitectura Multiagente con Enjambre Coordinado</b><br/>
     <small>Cada solicitud dispara un equipo de agentes especializados que trabajan sinérgicamente<br/>
     🐝 Sistema de Inteligencia Distribuida para Gestión de Condominios</small>
