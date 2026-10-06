@@ -1403,8 +1403,8 @@ a { color: var(--acento) !important; }
 }
 .app-header .marca-nombre { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.03em; color: var(--texto); line-height: 1.1; }
 .app-header .marca-nombre .u { color: var(--texto-3); }
-.app-header .marca-nombre .ia { color: var(--acento); }
-.app-header .marca-sub { color: var(--texto-2); font-size: .85rem; margin-top: 3px; font-weight: 500; }
+.app-header .marca-nombre .ia { color: #ff1744; }
+.app-header .marca-sub { color: #ff1744; font-size: .85rem; margin-top: 3px; font-weight: 600; }
 .app-header .derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .chip {
     display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
@@ -1423,7 +1423,7 @@ a { color: var(--acento) !important; }
 [data-testid="stSidebar"] .block-container, [data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }
 .logo-container { display: flex; justify-content: center; margin: 6px 0 4px 0; padding: 6px 0 14px 0; }
 .logo-container img { max-width: 96px; height: auto; border-radius: 16px; border: 1px solid var(--borde-fuerte); box-shadow: 0 6px 20px rgba(56,189,248,.18); }
-.sidebar-tag { text-align: center; color: var(--acento); font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 8px 0; }
+.sidebar-tag { text-align: center; color: #ff1744; font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 8px 0; }
 .sidebar-nota { font-size: .8rem !important; color: var(--texto-3) !important; line-height: 1.5; }
 [data-testid="stSidebar"] h3 { font-size: 1rem !important; color: var(--texto) !important; }
 [data-testid="stSidebar"] .stRadio > div { gap: 4px; }
@@ -1554,7 +1554,7 @@ def encabezado(modulo: str, etiqueta: str = "", valor: str = "") -> None:
     st.markdown(
         '<div class="app-header"><div class="marca"><div class="marca-icono">🏙️</div><div>'
         '<div class="marca-nombre">Resil<span class="u">_</span><span class="ia">IA</span> Condominios</div>'
-        '<div class="marca-sub">Gestión inteligente de consorcios · Sistema multiagente</div></div></div>'
+        '<div class="marca-sub">Gestión inteligente de consorcios</div></div></div>'
         f'<div class="derecha">{derecha}</div></div>',
         unsafe_allow_html=True,
     )
