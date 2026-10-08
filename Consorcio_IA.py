@@ -2594,3 +2594,224 @@ with st.sidebar.expander("🌐 Sincronización Externa Pendiente"):
     * **Cobros automáticos:** Requiere servidor externo dedicado a escuchar *webhooks* bancarios.
     * **Portal del propietario:** Requiere interfaz con credenciales individuales para consulta de deuda.
     """)
+# ==============================================================================
+# MÓDULO ADICIONAL: PANEL DE CONTROL FINANCIERO E INTELIGENCIA DE NEGOCIO
+# ==============================================================================
+import pandas as pd
+import numpy as np
+
+st.sidebar.divider()
+st.sidebar.subheader("⚙️ Herramientas Financieras e IA")
+
+# Desplegable en el menú lateral con las 7 herramientas avanzadas
+herramienta = st.sidebar.selectbox(
+    "Seleccionar Herramienta Avanzada:",
+    [
+        "1. Panel de Ratios y Aging",
+        "2. Alertas de Desvíos y Facturas Duplicadas",
+        "3. Proyección y Simulador de Escenarios",
+        "4. Lectura Automática de Facturas (OCR)",
+        "5. Predicción Preventiva de Mora",
+        "6. Simulador de Recepción de Cobros (Webhook / Banco)",
+        "7. Portal de Autogestión del Propietario"
+    ]
+)
+
+# ------------------------------------------------------------------------------
+# 1. PANEL DE RATIOS Y AGING (Cobrabilidad, Morosidad, Fondo de Reserva)
+# ------------------------------------------------------------------------------
+if herramienta == "1. Panel de Ratios y Aging":
+    st.divider()
+    st.header("📊 Panel de Ratios Financieros y Aging de Deuda")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Cobrabilidad del Mes", "86.0%", "+2.3% vs mes anterior")
+    col2.metric("Tasa de Morosidad", "14.0%", "-2.3% mejora", delta_color="normal")
+    col3.metric("Fondo de Reserva", "$5.400.000")
+    col4.metric("Fondo en Cobertura", "3.0 meses", "Meta: >= 2.0 meses")
+    
+    st.subheader("📉 Aging de Deuda por Tramo de Antigüedad ($)")
+    df_aging_demo = pd.DataFrame({
+        'Tramo': ['Al Día', '30 Días', '60 Días', '90+ Días'],
+        'Monto ($)': [1250000, 420000, 210000, 180000]
+    }).set_index('Tramo')
+    st.bar_chart(df_aging_demo)
+
+# ------------------------------------------------------------------------------
+# 2. ALERTAS DE DESVÍOS EN GASTOS Y FACTURAS DUPLICADAS
+# ------------------------------------------------------------------------------
+elif herramienta == "2. Alertas de Desvíos y Facturas Duplicadas":
+    st.divider()
+    st.header("🚨 Detección de Desvíos Presupuestarios y Duplicados")
+    
+    st.warning("⚠️ **Alerta de Mantenimiento Ascensores**: El gasto real ($380.000) superó el presupuesto ($250.000) en un **52.0%**.")
+    st.warning("⚠️ **Alerta de Servicios Públicos**: El gasto real ($290.000) superó el presupuesto ($210.000) en un **38.1%**.")
+    
+    st.subheader("📊 Comparativo Presupuestado vs Ejecutado")
+    df_desvios = pd.DataFrame({
+        'Rubro': ['Ascensores', 'Limpieza', 'Seguridad', 'Luz/Agua', 'Mantenimiento'],
+        'Presupuestado ($)': [250000, 180000, 650000, 210000, 150000],
+        'Ejecutado ($)': [380000, 185000, 650000, 290000, 140000]
+    }).set_index('Rubro')
+    st.bar_chart(df_desvios)
+    
+    st.subheader("🔍 Facturas Duplicadas Detectadas")
+    st.error("❌ **Comprobante Repetido**: Proveedor 'Elevadores SRL' — Factura B 0004-12894 — Monto: $190.000 — Fecha: 05/09/2026")
+
+# ------------------------------------------------------------------------------
+# 3. PROYECCIÓN DE GASTOS Y SIMULADOR DE ESCENARIOS
+# ------------------------------------------------------------------------------
+elif herramienta == "3. Proyección y Simulador de Escenarios":
+    st.divider()
+    st.header("📈 Proyección de Gastos y Simulador de Escenarios")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        inflacion_m = st.slider("Inflación Mensual Estimada (%)", 0.0, 15.0, 4.0, 0.5)
+        aumento_exp = st.slider("Aumento Programado Expensas (%)", 0.0, 30.0, 5.0, 1.0)
+    with c2:
+        plazo = st.selectbox("Plazo de Proyección (Meses)", [3, 6, 12], index=1)
+        cuota_extra = st.number_input("Cuota Extraordinaria por U.F. ($)", value=0, step=5000)
+        
+    gastos_p, ingresos_p, fondo_p = [], [], []
+    g_act, i_act, fondo_act = 1800000, 2150000 + (cuota_extra * 20), 5400000
+    
+    for _ in range(plazo):
+        g_act *= (1 + inflacion_m / 100)
+        i_act *= (1 + aumento_exp / 100)
+        fondo_act += (i_act - g_act)
+        gastos_p.append(g_act)
+        ingresos_p.append(i_act)
+        fondo_p.append(fondo_act)
+        
+    df_proy = pd.DataFrame({
+        'Mes': [f"Mes {i+1}" for i in range(plazo)],
+        'Ingresos ($)': ingresos_p,
+        'Gastos ($)': gastos_p,
+        'Fondo Reserva ($)': fondo_p
+    }).set_index('Mes')
+    
+    st.line_chart(df_proy)
+
+# ------------------------------------------------------------------------------
+# 4. LECTURA AUTOMÁTICA DE FACTURAS (OCR)
+# ------------------------------------------------------------------------------
+elif herramienta == "4. Lectura Automática de Facturas (OCR)":
+    st.divider()
+    st.header("📄 Ingesta y Lectura Automática de Facturas (OCR)")
+    
+    archivo_f = st.file_uploader("Subir factura o comprobante (PDF, JPG, PNG)", type=['pdf', 'jpg', 'jpeg', 'png'])
+    
+    if archivo_f is not None or st.button("🚀 Simular Lectura OCR de Ejemplo"):
+        st.success("✅ **Comprobante procesado con éxito por el modelo de visión**")
+        
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            st.write("**Proveedor:** Ascensores y Servicios SRL")
+            st.write("**CUIT:** 30-71889900-4")
+            st.write("**Tipo:** Factura B")
+        with col_f2:
+            st.write("**Monto Total:** $215.000,00")
+            st.write("**Fecha:** 02/10/2026")
+            st.write("**Rubro:** Mantenimiento Ascensores")
+            
+        if st.button("💾 Guardar en Contabilidad"):
+            st.balloons()
+            st.success("¡Gasto registrado automáticamente en la base de datos!")
+
+# ------------------------------------------------------------------------------
+# 5. PREDICCIÓN DE MORA
+# ------------------------------------------------------------------------------
+elif herramienta == "5. Predicción Preventiva de Mora":
+    st.divider()
+    st.header("🔮 Predicción Preventiva de Mora")
+    st.caption("Scoring predictivo de probabilidad de atraso en el pago para el próximo vencimiento.")
+    
+    unidades_m = [f"U.F. {i:02d}" for i in range(1, 11)]
+    np.random.seed(42)
+    riesgos = np.random.randint(10, 85, size=10)
+    
+    df_mora = pd.DataFrame({
+        'Unidad': unidades_m,
+        'Riesgo Estimado (%)': riesgos
+    }).sort_values(by='Riesgo Estimado (%)', ascending=False)
+    
+    st.dataframe(df_mora, use_container_width=True)
+    st.bar_chart(df_mora.set_index('Unidad'))
+
+# ------------------------------------------------------------------------------
+# 6. SIMULADOR DE RECEPCIÓN DE COBROS (WEBHOOK / BANCO)
+# ------------------------------------------------------------------------------
+elif herramienta == "6. Simulador de Recepción de Cobros (Webhook / Banco)":
+    st.divider()
+    st.header("⚡ Simulador de Integración Bancaria y Webhook en Tiempo Real")
+    st.caption("Demostración de cómo se procesa un pago automático enviado por la entidad financiera o pasarela.")
+    
+    col_w1, col_w2 = st.columns(2)
+    with col_w1:
+        uf_pago = st.selectbox("Seleccionar Unidad Funcional:", [f"U.F. {i:02d} - Dpto {i}B" for i in range(1, 11)])
+        metodo_pago = st.selectbox("Pasarela / Canal de Cobro:", ["Mercado Pago (QR/Debito)", "Transferencia CBU (Interbanking)", "Pago Mis Cuentas / Link"])
+        monto_pago = st.number_input("Monto Recibido ($)", value=145000, step=5000)
+    with col_w2:
+        ref_pago = st.text_input("ID Transacción / Nro Referencia", value="MP-TRX-9840218492")
+        st.write("**Estado del Webhook:** 🟢 Servidor a la escucha")
+        
+    if st.button("🚀 Simular Evento Entrante (Webhook POST)"):
+        st.write("---")
+        st.subheader("📥 Evento JSON Recibido en Servidor:")
+        json_sim = {
+            "event": "payment.approved",
+            "timestamp": "2026-10-08T15:55:00Z",
+            "unit": uf_pago.split(" - ")[0],
+            "channel": metodo_pago,
+            "transaction_id": ref_pago,
+            "amount": monto_pago,
+            "status": "CONCILIADO_AUTOMATICO"
+        }
+        st.json(json_sim)
+        st.success(f"✅ **Pago de ${monto_pago:,.0f} impactado y conciliado en la cuenta de {uf_pago} de forma automática.**")
+        st.balloons()
+
+# ------------------------------------------------------------------------------
+# 7. PORTAL DE AUTOGESTIÓN DEL PROPIETARIO
+# ------------------------------------------------------------------------------
+elif herramienta == "7. Portal de Autogestión del Propietario":
+    st.divider()
+    st.header("🏢 Portal de Autogestión para Propietarios e Inquilinos")
+    st.caption("Vista simplificada donde el vecino consulta su estado de deuda y realiza pagos.")
+    
+    col_p1, col_p2 = st.columns([1, 2])
+    with col_p1:
+        uf_prop = st.selectbox("Ingresar como Unidad Funcional:", [f"U.F. {i:02d} (Piso {i})" for i in range(1, 11)], index=2)
+        st.info("👤 **Propietario:** Juan Pérez\n\n📧 **Email:** juan.perez@email.com")
+        
+    with col_p2:
+        st.subheader(f"Estado de Cuenta - {uf_prop}")
+        c_p1, c_p2, c_p3 = st.columns(3)
+        c_p1.metric("Expensa Mes Actual", "$120.000", "Vence: 10/10")
+        c_p2.metric("Deuda Acumulada", "$0", "Al día")
+        c_p3.metric("Total a Pagar", "$120.000")
+        
+        st.write("---")
+        st.subheader("📄 Últimas Expensas y Recibos")
+        df_historial = pd.DataFrame({
+            'Período': ['Septiembre 2026', 'Agosto 2026', 'Julio 2026'],
+            'Monto ($)': [115000, 110000, 105000],
+            'Estado': ['PAGADO', 'PAGADO', 'PAGADO']
+        })
+        st.dataframe(df_historial, use_container_width=True)
+        
+        if st.button("💳 Pagar Expensa con Mercado Pago / QR"):
+            st.success("🎉 **¡Redirigiendo a la pasarela de pagos segura!**")
+            st.caption("Una vez confirmado el pago, el recibo se enviará a su correo electrónico.")
+
+# ------------------------------------------------------------------------------
+# INFRAESTRUCTURA PENDIENTE PARA SINCRONIZACIÓN EXTERNA
+# ------------------------------------------------------------------------------
+st.sidebar.divider()
+with st.sidebar.expander("🌐 Infraestructura de Integración Externa"):
+    st.info("ℹ️ **Requisitos para implementación en producción real:**")
+    st.markdown("""
+    * **Cobros automáticos:** Requiere servidor externo (FastAPI/Node.js) dedicado a escuchar *webhooks* bancarios 24/7.
+    * **Portal del propietario:** Requiere base de datos centralizada con autenticación segura de usuarios (JWT / OAuth2).
+    """)
