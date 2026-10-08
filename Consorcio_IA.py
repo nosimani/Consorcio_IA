@@ -2441,3 +2441,22 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+# ==========================================
+# HOJA DE RUTA Y BRECHA COMPETITIVA
+# ==========================================
+st.sidebar.divider()
+st.sidebar.subheader("📌 Hoja de Ruta Sugerida")
+st.sidebar.markdown("""
+1. **Panel de ratios y aging** *(cobrabilidad, morosidad, fondo de reserva)*
+2. **Alertas de desvíos en gastos y facturas duplicadas**
+3. **Proyección de gastos y simulador de escenarios**
+4. **Lectura automática de facturas (OCR)**
+5. **Predicción de mora**
+""")
+
+with st.sidebar.expander("⚠️ Análisis de Brecha Competitiva"):
+    st.caption("""
+    **Ámbitos donde las plataformas establecidas llevan ventaja:**
+    * **Integración bancaria y cobros automáticos:** Requiere servidor externo para webhooks.
+    * **Experiencia del propietario:** Portal/App para consultar deuda y descargar recibos.
+    """)
