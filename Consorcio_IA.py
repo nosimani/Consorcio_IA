@@ -2444,6 +2444,9 @@ st.markdown(
 # ==============================================================================
 # MÓDULO ADICIONAL: PANEL DE CONTROL FINANCIERO E INTELIGENCIA DE NEGOCIO
 # ==============================================================================
+import pandas as pd
+import numpy as np
+
 st.sidebar.divider()
 st.sidebar.subheader("⚙️ Herramientas Financieras e IA")
 
@@ -2581,10 +2584,13 @@ elif herramienta == "5. Predicción Preventiva de Mora":
     st.dataframe(df_mora, use_container_width=True)
     st.bar_chart(df_mora.set_index('Unidad'))
 
-# Nota técnica sobre integración bancaria y portal
-with st.sidebar.expander("ℹ️ Nota de Integración Externa"):
-    st.caption("""
-    **Infraestructura pendiente para sincronización externa:**
+# ------------------------------------------------------------------------------
+# INFRAESTRUCTURA PENDIENTE PARA SINCRONIZACIÓN EXTERNA
+# ------------------------------------------------------------------------------
+st.sidebar.divider()
+with st.sidebar.expander("🌐 Sincronización Externa Pendiente"):
+    st.warning("⚠️ **Infraestructura pendiente para sincronización externa:**")
+    st.markdown("""
     * **Cobros automáticos:** Requiere servidor externo dedicado a escuchar *webhooks* bancarios.
     * **Portal del propietario:** Requiere interfaz con credenciales individuales para consulta de deuda.
     """)
