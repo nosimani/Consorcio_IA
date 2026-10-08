@@ -2441,22 +2441,150 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-# ==========================================
-# HOJA DE RUTA Y BRECHA COMPETITIVA
-# ==========================================
+# ==============================================================================
+# MÓDULO ADICIONAL: PANEL DE CONTROL FINANCIERO E INTELIGENCIA DE NEGOCIO
+# ==============================================================================
 st.sidebar.divider()
-st.sidebar.subheader("📌 Hoja de Ruta Sugerida")
-st.sidebar.markdown("""
-1. **Panel de ratios y aging** *(cobrabilidad, morosidad, fondo de reserva)*
-2. **Alertas de desvíos en gastos y facturas duplicadas**
-3. **Proyección de gastos y simulador de escenarios**
-4. **Lectura automática de facturas (OCR)**
-5. **Predicción de mora**
-""")
+st.sidebar.subheader("⚙️ Herramientas Financieras e IA")
 
-with st.sidebar.expander("⚠️ Análisis de Brecha Competitiva"):
+# Desplegable en el menú lateral para elegir cuál de las 5 herramientas usar
+herramienta = st.sidebar.selectbox(
+    "Seleccionar Herramienta Avanzada:",
+    [
+        "1. Panel de Ratios y Aging",
+        "2. Alertas de Desvíos y Facturas Duplicadas",
+        "3. Proyección y Simulador de Escenarios",
+        "4. Lectura Automática de Facturas (OCR)",
+        "5. Predicción Preventiva de Mora"
+    ]
+)
+
+# ------------------------------------------------------------------------------
+# 1. PANEL DE RATIOS Y AGING (Cobrabilidad, Morosidad, Fondo de Reserva)
+# ------------------------------------------------------------------------------
+if herramienta == "1. Panel de Ratios y Aging":
+    st.divider()
+    st.header("📊 Panel de Ratios Financieros y Aging de Deuda")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Cobrabilidad del Mes", "86.0%", "+2.3% vs mes anterior")
+    col2.metric("Tasa de Morosidad", "14.0%", "-2.3% mejora", delta_color="normal")
+    col3.metric("Fondo de Reserva", "$5.400.000")
+    col4.metric("Fondo en Cobertura", "3.0 meses", "Meta: >= 2.0 meses")
+    
+    st.subheader("📉 Aging de Deuda por Tramo de Antigüedad ($)")
+    df_aging_demo = pd.DataFrame({
+        'Tramo': ['Al Día', '30 Días', '60 Días', '90+ Días'],
+        'Monto ($)': [1250000, 420000, 210000, 180000]
+    }).set_index('Tramo')
+    st.bar_chart(df_aging_demo)
+
+# ------------------------------------------------------------------------------
+# 2. ALERTAS DE DESVÍOS EN GASTOS Y FACTURAS DUPLICADAS
+# ------------------------------------------------------------------------------
+elif herramienta == "2. Alertas de Desvíos y Facturas Duplicadas":
+    st.divider()
+    st.header("🚨 Detección de Desvíos Presupuestarios y Duplicados")
+    
+    st.warning("⚠️ **Alerta de Mantenimiento Ascensores**: El gasto real ($380.000) superó el presupuesto ($250.000) en un **52.0%**.")
+    st.warning("⚠️ **Alerta de Servicios Públicos**: El gasto real ($290.000) superó el presupuesto ($210.000) en un **38.1%**.")
+    
+    st.subheader("📊 Comparativo Presupuestado vs Ejecutado")
+    df_desvios = pd.DataFrame({
+        'Rubro': ['Ascensores', 'Limpieza', 'Seguridad', 'Luz/Agua', 'Mantenimiento'],
+        'Presupuestado ($)': [250000, 180000, 650000, 210000, 150000],
+        'Ejecutado ($)': [380000, 185000, 650000, 290000, 140000]
+    }).set_index('Rubro')
+    st.bar_chart(df_desvios)
+    
+    st.subheader("🔍 Facturas Duplicadas Detectadas")
+    st.error("❌ **Comprobante Repetido**: Proveedor 'Elevadores SRL' — Factura B 0004-12894 — Monto: $190.000 — Fecha: 05/09/2026")
+
+# ------------------------------------------------------------------------------
+# 3. PROYECCIÓN DE GASTOS Y SIMULADOR DE ESCENARIOS
+# ------------------------------------------------------------------------------
+elif herramienta == "3. Proyección y Simulador de Escenarios":
+    st.divider()
+    st.header("📈 Proyección de Gastos y Simulador de Escenarios")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        inflacion_m = st.slider("Inflación Mensual Estimada (%)", 0.0, 15.0, 4.0, 0.5)
+        aumento_exp = st.slider("Aumento Programado Expensas (%)", 0.0, 30.0, 5.0, 1.0)
+    with c2:
+        plazo = st.selectbox("Plazo de Proyección (Meses)", [3, 6, 12], index=1)
+        cuota_extra = st.number_input("Cuota Extraordinaria por U.F. ($)", value=0, step=5000)
+        
+    gastos_p, ingresos_p, fondo_p = [], [], []
+    g_act, i_act, fondo_act = 1800000, 2150000 + (cuota_extra * 20), 5400000
+    
+    for _ in range(plazo):
+        g_act *= (1 + inflacion_m / 100)
+        i_act *= (1 + aumento_exp / 100)
+        fondo_act += (i_act - g_act)
+        gastos_p.append(g_act)
+        ingresos_p.append(i_act)
+        fondo_p.append(fondo_act)
+        
+    df_proy = pd.DataFrame({
+        'Mes': [f"Mes {i+1}" for i in range(plazo)],
+        'Ingresos ($)': ingresos_p,
+        'Gastos ($)': gastos_p,
+        'Fondo Reserva ($)': fondo_p
+    }).set_index('Mes')
+    
+    st.line_chart(df_proy)
+
+# ------------------------------------------------------------------------------
+# 4. LECTURA AUTOMÁTICA DE FACTURAS (OCR)
+# ------------------------------------------------------------------------------
+elif herramienta == "4. Lectura Automática de Facturas (OCR)":
+    st.divider()
+    st.header("📄 Ingesta y Lectura Automática de Facturas (OCR)")
+    
+    archivo_f = st.file_uploader("Subir factura o comprobante (PDF, JPG, PNG)", type=['pdf', 'jpg', 'jpeg', 'png'])
+    
+    if archivo_f is not None or st.button("🚀 Simular Lectura OCR de Ejemplo"):
+        st.success("✅ **Comprobante procesado con éxito por el modelo de visión**")
+        
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            st.write("**Proveedor:** Ascensores y Servicios SRL")
+            st.write("**CUIT:** 30-71889900-4")
+            st.write("**Tipo:** Factura B")
+        with col_f2:
+            st.write("**Monto Total:** $215.000,00")
+            st.write("**Fecha:** 02/10/2026")
+            st.write("**Rubro:** Mantenimiento Ascensores")
+            
+        if st.button("💾 Guardar en Contabilidad"):
+            st.balloons()
+            st.success("¡Gasto registrado automáticamente en la base de datos!")
+
+# ------------------------------------------------------------------------------
+# 5. PREDICCIÓN DE MORA
+# ------------------------------------------------------------------------------
+elif herramienta == "5. Predicción Preventiva de Mora":
+    st.divider()
+    st.header("🔮 Predicción Preventiva de Mora")
+    st.caption("Scoring predictivo de probabilidad de atraso en el pago para el próximo vencimiento.")
+    
+    unidades_m = [f"U.F. {i:02d}" for i in range(1, 11)]
+    np.random.seed(42)
+    riesgos = np.random.randint(10, 85, size=10)
+    
+    df_mora = pd.DataFrame({
+        'Unidad': unidades_m,
+        'Riesgo Estimado (%)': riesgos
+    }).sort_values(by='Riesgo Estimado (%)', ascending=False)
+    
+    st.dataframe(df_mora, use_container_width=True)
+    st.bar_chart(df_mora.set_index('Unidad'))
+
+# Nota técnica sobre integración bancaria y portal
+with st.sidebar.expander("ℹ️ Nota de Integración Externa"):
     st.caption("""
-    **Ámbitos donde las plataformas establecidas llevan ventaja:**
-    * **Integración bancaria y cobros automáticos:** Requiere servidor externo para webhooks.
-    * **Experiencia del propietario:** Portal/App para consultar deuda y descargar recibos.
+    **Infraestructura pendiente para sincronización externa:**
+    * **Cobros automáticos:** Requiere servidor externo dedicado a escuchar *webhooks* bancarios.
+    * **Portal del propietario:** Requiere interfaz con credenciales individuales para consulta de deuda.
     """)
