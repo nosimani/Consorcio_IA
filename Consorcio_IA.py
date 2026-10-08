@@ -3094,28 +3094,6 @@ elif herramienta == "8. Visibilidad de Agentes en Vivo (Pensamiento, Checklist y
         check1 = st.empty()
         check2 = st.empty()
         check3 = st.empty()
-        
-        check1.info("⏳ Sumando porcentajes de copropiedad...")
-        time.sleep(0.6)
-        check1.success("✅ Sumando porcentajes de copropiedad... **[OK: 100.00%]**")
-        
-        check2.info("⏳ Validando cierre de caja contra el total de $11.630.297...")
-        time.sleep(0.6)
-        check2.success("✅ Validando cierre de caja contra el total de $11.630.297... **[OK]**")
-        
-        check3.info("⏳ Verificando cuotas extraordinarias y fondos de reserva...")
-        time.sleep(0.6)
-        check3.success("✅ Verificando cuotas extraordinarias y fondos de reserva... **[OK]**")
-        
-        st.balloons()
-
-# ------------------------------------------------------------------------------
-# INFRAESTRUCTURA PENDIENTE PARA SINCRONIZACIÓN EXTERNA
-# ------------------------------------------------------------------------------
-st.sidebar.divider()
-with st.sidebar.expander("🌐 Infraestructura de Integración Externa"):
-    st.info("ℹ️ **Requisitos para implementación en producción real:**")
-    st.markdown("""
-    * **Cobros automáticos:** Requiere servidor externo (FastAPI/Node.js) dedicado a escuchar *webhooks* bancarios 24/7.
-    * **Portal del propietario:** Requiere base de datos centralizada con autenticación segura de usuarios (JWT / OAuth2).
-    """)
+       # ==============================================================================
+# MÓDULO ADICIONAL: PANEL DE CONTROL FINANCIERO E INTELIGENCIA DE NEGOCIO
+# ==============================================================================
