@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
 
 # ==========================================
 # CONFIGURACIÓN GENERAL DE LA PÁGINA
@@ -28,12 +25,6 @@ st.markdown("""
         font-size: 1.1rem;
         color: #4B5563;
         margin-bottom: 1.5rem;
-    }
-    .metric-card {
-        background-color: #F3F4F6;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #2563EB;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -134,29 +125,15 @@ if opcion_menu == "1. Panel de Ratios y Aging":
     
     st.divider()
     
-    col_g1, col_g2 = st.columns([1, 1])
-    
-    with col_g1:
-        st.subheader("📌 Composición del Aging de Deuda")
-        totales_aging = {
-            'Al Día': df_aging['Al Día ($)'].sum(),
-            '30 Días': df_aging['30 Días ($)'].sum(),
-            '60 Días': df_aging['60 Días ($)'].sum(),
-            '90+ Días': df_aging['90+ Días ($)'].sum()
-        }
-        fig_pie = px.pie(
-            names=list(totales_aging.keys()),
-            values=list(totales_aging.values()),
-            hole=0.4,
-            color_discrete_sequence=px.colors.qualitative.Set2
-        )
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-    with col_g2:
-        st.subheader("📉 Deuda Acumulada por Tramo ($)")
-        df_tramo = pd.DataFrame(list(totales_aging.items()), columns=['Tramo', 'Monto ($)'])
-        fig_bar = px.bar(df_tramo, x='Tramo', y='Monto ($)', color='Tramo', text_auto=',.0f')
-        st.plotly_chart(fig_bar, use_container_width=True)
+    st.subheader("📉 Deuda Acumulada por Tramo de Antigüedad ($)")
+    totales_aging = {
+        'Al Día': df_aging['Al Día ($)'].sum(),
+        '30 Días': df_aging['30 Días ($)'].sum(),
+        '60 Días': df_aging['60 Días ($)'].sum(),
+        '90+ Días': df_aging['90+ Días ($)'].sum()
+    }
+    df_tramo = pd.DataFrame(list(totales_aging.items()), columns=['Tramo de Deuda', 'Monto ($)']).set_index('Tramo de Deuda')
+    st.bar_chart(df_tramo)
         
     st.subheader("📋 Detalle de Unidades Morosas")
     df_morosos = df_aging[df_aging['Total Deuda ($)'] > 0]
@@ -176,25 +153,17 @@ elif opcion_menu == "2. Alertas de Desvíos y Duplicados":
     
     st.divider()
     
-    col1, col2 = st.columns([1.2, 1])
-    
-    with col1:
-        st.subheader("📊 Comparativo Presupuesto vs Ejecutado")
-        fig_gastos = go.Figure(data=[
-            go.Bar(name='Presupuestado', x=df_gastos['Rubro'], y=df_gastos['Presupuestado ($)'], marker_color='#93C5FD'),
-            go.Bar(name='Ejecutado', x=df_gastos['Rubro'], y=df_gastos['Ejecutado ($)'], marker_color='#1E40AF')
-        ])
-        fig_gastos.update_layout(barmode='group', xaxis_tickangle=-30)
-        st.plotly_chart(fig_gastos, use_container_width=True)
+    st.subheader("📊 Comparativo Presupuesto vs Ejecutado")
+    df_chart_gastos = df_gastos.set_index('Rubro')[['Presupuestado ($)', 'Ejecutado ($)']]
+    st.bar_chart(df_chart_gastos)
         
-    with col2:
-        st.subheader("🔍 Facturas Duplicadas Detectadas")
-        facturas_dup = df_facturas[df_facturas['Estado'] == 'DUPLICADO DETECTADO']
-        if not facturas_dup.empty:
-            st.error(f"Se han encontrado {len(facturas_dup)} comprobante(s) duplicado(s):")
-            st.dataframe(facturas_dup[['ID', 'Proveedor', 'CUIT', 'Monto ($)', 'Fecha']], use_container_width=True)
-        else:
-            st.success("No se detectaron facturas duplicadas.")
+    st.subheader("🔍 Facturas Duplicadas Detectadas")
+    facturas_dup = df_facturas[df_facturas['Estado'] == 'DUPLICADO DETECTADO']
+    if not facturas_dup.empty:
+        st.error(f"Se han encontrado {len(facturas_dup)} comprobante(s) duplicado(s):")
+        st.dataframe(facturas_dup[['ID', 'Proveedor', 'CUIT', 'Monto ($)', 'Fecha']], use_container_width=True)
+    else:
+        st.success("No se detectaron facturas duplicadas.")
 
 # ==========================================
 # MÓDULO 3: PROYECCIÓN Y SIMULADOR
@@ -235,16 +204,15 @@ elif opcion_menu == "3. Proyección y Simulador de Escenarios":
         fondo_reserva_proyectado.append(fondo_acum)
         
     with col_res:
-        st.subheader("📉 Evolución del Fondo de Reserva")
+        st.subheader("📉 Evolución Proyectada ($)")
         df_proy = pd.DataFrame({
             'Mes': meses,
             'Ingresos Proyectados ($)': ingresos_proyectados,
             'Gastos Proyectados ($)': gastos_proyectados,
             'Fondo Reserva ($)': fondo_reserva_proyectado
-        })
+        }).set_index('Mes')
         
-        fig_proy = px.line(df_proy, x='Mes', y=['Ingresos Proyectados ($)', 'Gastos Proyectados ($)', 'Fondo Reserva ($)'], markers=True)
-        st.plotly_chart(fig_proy, use_container_width=True)
+        st.line_chart(df_proy)
         
     st.divider()
     if fondo_reserva_proyectado[-1] < 0:
@@ -317,8 +285,9 @@ elif opcion_menu == "5. Predicción de Mora":
     st.subheader("🎯 Scoring Preventivo por Unidad")
     st.dataframe(df_pred, use_container_width=True)
     
-    fig_risk = px.histogram(df_pred, x='Nivel de Riesgo', color='Nivel de Riesgo', title="Distribución de Riesgo de Mora")
-    st.plotly_chart(fig_risk, use_container_width=True)
+    st.subheader("📊 Riesgo Estimado por Unidad (%)")
+    chart_mora = df_pred.set_index('Unidad')[['Probabilidad de Mora Próximo Mes (%)']]
+    st.bar_chart(chart_mora)
 
 # ==========================================
 # MÓDULO 6: HOJA DE RUTA Y ANÁLISIS COMPETITIVO
