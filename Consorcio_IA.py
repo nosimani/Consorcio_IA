@@ -2441,6 +2441,3 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-# ==============================================================================
-# MÓDULO ADICIONAL: PANEL DE CONTROL FINANCIERO E INTELIGENCIA DE NEGOCIO
-# ==============================================================================
