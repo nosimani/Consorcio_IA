@@ -436,8 +436,9 @@ def _render_cobranzas(st, conn, usuario, expensas_por_uf) -> None:
             df_uf = pd.read_csv(up) if up.name.lower().endswith(".csv") else pd.read_excel(up)
             st.success(f"{cargar_unidades_desde_df(conn, cid, df_uf)} unidades cargadas.")
 
-    t1, t2, t3, t4, t5, t6 = st.tabs(["➕ Registrar pago", "📒 Libro de ingresos", "🏦 Conciliación",
-                                      "📊 Resumen", "⚠️ Sin identificar", "📉 Mora y deuda"])
+    t1, t2, t3, t4, t5, t6, t7, t8 = st.tabs(["➕ Registrar pago", "📒 Libro de ingresos", "🏦 Conciliación",
+                                              "📊 Resumen", "⚠️ Sin identificar", "📉 Mora y deuda",
+                                              "📈 Indicadores", "🔑 Portal propietarios"])
 
     with t1:
         ufs = [r["uf"] for r in conn.execute(
@@ -585,3 +586,48 @@ def _render_cobranzas(st, conn, usuario, expensas_por_uf) -> None:
                 if z:
                     st.download_button(f"Descargar {z[1]} estados de cuenta (ZIP)", z[0],
                                        "estados_de_cuenta.zip", "application/zip")
+
+    with t7:
+        from analitica import calcular_indicadores, render_panel_indicadores
+        hoy_i = st.date_input("Indicadores al", value=date.today(), key="hoy_ind")
+        render_panel_indicadores(st, calcular_indicadores(conn, cid, hoy_i), clave="cob")
+
+    with t8:
+        from portal_propietario import (accesos_de_consorcio, generar_acceso, revocar_acceso)
+        st.markdown("Cada propietario puede consultar **solo su** deuda y bajar **sus** recibos con un código personal.")
+        st.info("Para que lo usen, pasales la dirección de esta app terminada en **?portal=1** "
+                "(por ejemplo, la dirección de la app seguida de ?portal=1) y su código. "
+                "El código se muestra una sola vez: no se puede recuperar, solo reemplazar por uno nuevo.")
+        accesos = accesos_de_consorcio(conn, cid)
+        if accesos.empty:
+            st.warning("Primero cargá las unidades funcionales de este consorcio.")
+        else:
+            ids = dict(zip(accesos["UF"], accesos["unidad_id"]))
+            uf_p = st.selectbox("Unidad funcional", list(ids), key="uf_portal")
+            cA, cB = st.columns(2)
+            if cA.button("Generar código para esta UF"):
+                st.session_state["_codigos_portal"] = [(uf_p, generar_acceso(conn, int(ids[uf_p]), usuario))]
+            if cB.button("Generar para TODAS las UF"):
+                st.session_state["_codigos_portal"] = [
+                    (uf_i, generar_acceso(conn, int(uid_i), usuario)) for uf_i, uid_i in ids.items()]
+            nuevos = st.session_state.get("_codigos_portal")
+            if nuevos:
+                st.warning("Copiá estos códigos ahora: al salir de esta pantalla no se pueden volver a ver. "
+                           "Los códigos anteriores de estas unidades quedaron anulados.")
+                st.dataframe(pd.DataFrame(nuevos, columns=["UF", "Código de acceso"]),
+                             use_container_width=True, hide_index=True)
+                prop = dict(zip(accesos["UF"], accesos["Propietario"]))
+                csv = pd.DataFrame([(u, prop.get(u, ""), c) for u, c in nuevos],
+                                   columns=["UF", "Propietario", "Código de acceso"])
+                st.download_button("Descargar códigos (CSV)", csv.to_csv(index=False).encode("utf-8-sig"),
+                                   "codigos_portal.csv", "text/csv")
+            st.markdown("##### Estado de los accesos")
+            st.dataframe(accesos.drop(columns=["unidad_id"]), use_container_width=True, hide_index=True)
+            con_acceso = [u for u, a in zip(accesos["UF"], accesos["Acceso generado"]) if a]
+            if con_acceso:
+                uf_r = st.selectbox("Anular el acceso de", con_acceso, key="uf_revocar")
+                if st.button("Anular acceso"):
+                    revocar_acceso(conn, int(ids[uf_r]), usuario)
+                    st.session_state.pop("_codigos_portal", None)
+                    st.success(f"Acceso de la UF {uf_r} anulado.")
+                    st.rerun()
