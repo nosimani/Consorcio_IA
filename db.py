@@ -43,7 +43,7 @@ DB_PATH = os.getenv("CONSORCIOS_DB", "consorcios.db")
 
 # Tablas en orden de dependencia (las claves foráneas apuntan hacia arriba).
 TABLAS = ("consorcios", "unidades", "pagos", "auditoria", "cargos",
-          "config_mora", "recibos", "eventos_webhook")
+          "config_mora", "recibos", "eventos_webhook", "accesos_propietario")
 # Tablas con columna `id` autoincremental (el resto usa como clave una columna propia).
 TABLAS_CON_ID = ("consorcios", "unidades", "pagos", "auditoria", "cargos", "eventos_webhook")
 
@@ -203,6 +203,14 @@ CREATE TABLE IF NOT EXISTS recibos (
     emitido_por TEXT NOT NULL,
     desglose_json TEXT NOT NULL,                -- foto congelada de la imputación al emitir
     codigo TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS accesos_propietario (
+    unidad_id {FK} PRIMARY KEY REFERENCES unidades(id),
+    hash_clave TEXT NOT NULL,                   -- PBKDF2 del código de acceso: el código nunca se guarda
+    creado_por TEXT NOT NULL,
+    creado_en TEXT NOT NULL,
+    intentos_fallidos INTEGER NOT NULL DEFAULT 0,
+    bloqueado_hasta TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS eventos_webhook (
     id {PK},
